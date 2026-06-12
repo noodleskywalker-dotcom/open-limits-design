@@ -1,6 +1,15 @@
-import { fallbackCompanyProfile, fallbackProjects, fallbackServices, fallbackTeam } from "./fallback";
+import {
+  fallbackCompanyProfile,
+  fallbackFurnitureCategories,
+  fallbackFurnitureItems,
+  fallbackProjects,
+  fallbackServices,
+  fallbackTeam
+} from "./fallback";
 import type {
   CompanyProfile,
+  FurnitureCategory,
+  FurnitureItem,
   HomepageHeroImage,
   MediaAsset,
   Project,
@@ -20,6 +29,15 @@ type ProjectRow = Project & {
   project_comparisons?: ProjectComparison[];
 };
 
+type FurnitureImageRow = {
+  media: MediaAsset | null;
+  sort_order: number;
+};
+
+type FurnitureItemRow = FurnitureItem & {
+  furniture_item_images?: FurnitureImageRow[];
+};
+
 const projectSelect = `
   *,
   featured_image:media_assets(*),
@@ -34,6 +52,16 @@ const projectSelect = `
   )
 `;
 
+const furnitureSelect = `
+  *,
+  category:furniture_categories(*),
+  featured_image:media_assets(*),
+  furniture_item_images(
+    sort_order,
+    media:media_assets(*)
+  )
+`;
+
 function normalizeProject(project: ProjectRow): Project {
   const gallery = (project.project_images ?? [])
     .sort((a, b) => a.sort_order - b.sort_order)
@@ -44,6 +72,18 @@ function normalizeProject(project: ProjectRow): Project {
     ...project,
     gallery,
     comparisons: (project.project_comparisons ?? []).sort((a, b) => a.sort_order - b.sort_order)
+  };
+}
+
+function normalizeFurnitureItem(item: FurnitureItemRow): FurnitureItem {
+  const gallery = (item.furniture_item_images ?? [])
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((image) => image.media)
+    .filter((asset): asset is MediaAsset => Boolean(asset));
+
+  return {
+    ...item,
+    gallery
   };
 }
 
@@ -143,4 +183,58 @@ export async function getTeamMembers(includeUnpublished = false): Promise<TeamMe
   if (error || !data) return fallbackTeam;
 
   return data as TeamMember[];
+}
+
+export async function getFurnitureCategories(includeUnpublished = false): Promise<FurnitureCategory[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return fallbackFurnitureCategories;
+
+  let query = supabase
+    .from("furniture_categories")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (!includeUnpublished) {
+    query = query.eq("published", true);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return fallbackFurnitureCategories;
+
+  return data as FurnitureCategory[];
+}
+
+export async function getFurnitureItems(includeUnpublished = false): Promise<FurnitureItem[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return fallbackFurnitureItems;
+
+  let query = supabase
+    .from("furniture_items")
+    .select(furnitureSelect)
+    .order("sort_order", { ascending: true });
+
+  if (!includeUnpublished) {
+    query = query.eq("published", true);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return fallbackFurnitureItems;
+
+  return (data as FurnitureItemRow[]).map(normalizeFurnitureItem);
+}
+
+export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureItem | null> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return fallbackFurnitureItems.find((item) => item.slug === slug) ?? null;
+
+  const { data, error } = await supabase
+    .from("furniture_items")
+    .select(furnitureSelect)
+    .eq("slug", slug)
+    .eq("published", true)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return normalizeFurnitureItem(data as FurnitureItemRow);
 }

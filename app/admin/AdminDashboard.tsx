@@ -4,8 +4,9 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { MEDIA_CATEGORIES, type CompanyProfile, type MediaAsset, type MediaCategory, type Project, type ProjectComparison, type Service, type TeamMember } from "@/lib/cms/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import FurnitureAdminPanel from "./FurnitureAdminPanel";
 
-type AdminTab = "media" | "company" | "projects" | "team" | "services";
+type AdminTab = "media" | "company" | "projects" | "furniture" | "team" | "services";
 
 type ProjectForm = {
   id: string;
@@ -646,7 +647,7 @@ export default function AdminDashboard() {
 
       <div className="admin-shell">
         <aside className="admin-sidebar">
-          {(["media", "company", "projects", "team", "services"] as AdminTab[]).map((item) => (
+          {(["media", "company", "projects", "furniture", "team", "services"] as AdminTab[]).map((item) => (
             <button
               className={`tab-button ${tab === item ? "active" : ""}`}
               key={item}
@@ -889,6 +890,10 @@ export default function AdminDashboard() {
                 ))}
               </div>
             </div>
+          ) : null}
+
+          {tab === "furniture" ? (
+            <FurnitureAdminPanel media={media} />
           ) : null}
 
           {tab === "team" ? (

@@ -17,6 +17,7 @@ Next.js website with a Supabase-powered content management system for replacing 
   - CEO
   - Company
 - Dynamic project pages with cover images, galleries, locations, completion dates, and before/after comparisons
+- Furniture CMS with manageable categories, multiple item images, dimensions, materials, descriptions, and category assignments
 - Homepage CMS controls for CEO image, background images, hero copy, and company details
 - Team CMS for adding, editing, removing, publishing, and hiding staff members
 - Services CMS for editable service text
@@ -50,6 +51,7 @@ The migration creates:
 
 - `site-media` public storage bucket with image MIME type limits
 - CMS tables for media, company profile, homepage hero images, projects, project galleries, before/after comparisons, team members, and services
+- Furniture CMS tables for categories, items, and item image galleries
 - Row-level security policies:
   - visitors can read public/published content
   - authenticated users can manage CMS records and upload/delete storage objects
@@ -68,7 +70,8 @@ The migration creates:
    - gallery images
    - before/after comparison pairs
 4. Add staff photos in the Media tab using the Team category, then create team members in the Team tab.
-5. Edit services and company information from their CMS tabs.
+5. Upload furniture images using the Furniture category, then create furniture categories and items in the Furniture tab.
+6. Edit services and company information from their CMS tabs.
 
 ## Scripts
 

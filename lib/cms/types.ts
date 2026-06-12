@@ -93,3 +93,32 @@ export type HomepageHeroImage = {
   sort_order: number;
   media?: MediaAsset | null;
 };
+
+export type FurnitureCategory = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  sort_order: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FurnitureItem = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  dimensions: string | null;
+  materials: string | null;
+  category_id: string;
+  featured_image_id: string | null;
+  sort_order: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  category?: FurnitureCategory | null;
+  featured_image?: MediaAsset | null;
+  gallery?: MediaAsset[];
+};

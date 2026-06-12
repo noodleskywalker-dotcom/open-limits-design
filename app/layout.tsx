@@ -21,6 +21,7 @@ export default function RootLayout({
           </Link>
           <nav aria-label="Primary navigation">
             <Link href="/projects">Projects</Link>
+            <Link href="/furniture">Furniture</Link>
             <Link href="/team">Team</Link>
             <Link href="/admin">Admin</Link>
           </nav>
