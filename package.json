@@ -18,7 +18,8 @@
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
     "furniture:analyze": "node scripts/analyze-furniture-excel.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
-    "legacy:import-website": "node scripts/import-legacy-website.mjs"
+    "legacy:import-website": "node scripts/import-legacy-website.mjs",
+    "legacy:download-images": "node scripts/download-legacy-images.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

@@ -132,6 +132,13 @@ p {
   font-weight: 300;
 }
 
+.brand-logo {
+  display: block;
+  height: 2.25rem;
+  object-fit: contain;
+  width: auto;
+}
+
 .site-header nav {
   align-items: center;
   display: flex;

@@ -9,6 +9,12 @@ import {
   fallbackShowroomSections,
   fallbackTeam
 } from "./fallback";
+import {
+  LEGACY_INTRO_BLUEPRINT_URL,
+  LEGACY_INTRO_FINAL_URL,
+  legacyHeroImages,
+  legacyShowroomImagesBySection
+} from "./legacy-images";
 import { filterFurnitureProducts, getFurnitureCategory } from "@/lib/furniture-categories";
 import type {
   CompanyProfile,
@@ -117,7 +123,7 @@ export async function getCompanyProfile(): Promise<CompanyProfile> {
 
 export async function getHomepageHeroImages(): Promise<HomepageHeroImage[]> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return [];
+  if (!supabase) return legacyHeroImages;
 
   const { data, error } = await supabase
     .from("homepage_hero_images")
@@ -310,7 +316,7 @@ export async function getShowroomSectionBySlug(slug: string): Promise<ShowroomSe
 
 export async function getShowroomImages(sectionId: string): Promise<ShowroomImage[]> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return [];
+  if (!supabase) return legacyShowroomImagesBySection[sectionId] ?? [];
 
   for (const select of [
     "*, media:media_assets!showroom_images_media_id_fkey(*), hotspots:showroom_hotspots(*)",
@@ -338,8 +344,8 @@ const INTRO_SETTING_DEFAULTS: IntroSettings = {
   autoplayMs: 3200,
   introTitle: null,
   introSubtitle: null,
-  blueprintImageUrl: null,
-  finalRenderImageUrl: null
+  blueprintImageUrl: LEGACY_INTRO_BLUEPRINT_URL,
+  finalRenderImageUrl: LEGACY_INTRO_FINAL_URL
 };
 
 export async function getIntroSettings(): Promise<IntroSettings> {
