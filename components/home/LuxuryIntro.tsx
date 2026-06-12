@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useSyncExternalStore, useState } from "react";
 import type { IntroSettings, IntroSlide } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
 
@@ -16,6 +16,20 @@ type LuxuryIntroProps = {
   onEnter: () => void;
 };
 
+function subscribeToHydration(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("pageshow", onStoreChange);
+  return () => window.removeEventListener("pageshow", onStoreChange);
+}
+
+function getClientMounted() {
+  return true;
+}
+
+function getServerMounted() {
+  return false;
+}
+
 export default function LuxuryIntro({
   slides,
   ceoImageUrl,
@@ -27,8 +41,8 @@ export default function LuxuryIntro({
   onRevealShowroom,
   onEnter
 }: LuxuryIntroProps) {
+  const mounted = useSyncExternalStore(subscribeToHydration, getClientMounted, getServerMounted);
   const [exiting, setExiting] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   const backgroundSlides = useMemo(() => {
     const urls: string[] = [];
@@ -39,21 +53,20 @@ export default function LuxuryIntro({
     return urls;
   }, [slides]);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => setMounted(true), 50);
-    return () => window.clearTimeout(timer);
-  }, []);
-
   function enter() {
     setExiting(true);
     onRevealShowroom();
     window.setTimeout(onEnter, 700);
   }
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div
       aria-modal="true"
-      className={`luxury-intro ${mounted ? "luxury-intro-mounted" : ""} ${exiting ? "luxury-intro-exit" : ""}`}
+      className={`luxury-intro luxury-intro-mounted ${exiting ? "luxury-intro-exit" : ""}`}
       role="dialog"
     >
       <div className="luxury-intro-backdrop">

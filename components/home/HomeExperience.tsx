@@ -1,21 +1,37 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import type { IntroSettings, IntroSlide, ShowroomSection } from "@/lib/cms/types";
 import LuxuryIntro from "@/components/home/LuxuryIntro";
 import ShowroomEntry from "@/components/showroom/ShowroomEntry";
 
 const INTRO_KEY = "old-intro-seen";
 
-function readIntroState(enabled: boolean) {
-  if (typeof window === "undefined") {
-    return { showIntro: false, showroomReady: true };
+function subscribeToHydration(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("pageshow", onStoreChange);
+  return () => window.removeEventListener("pageshow", onStoreChange);
+}
+
+function getClientHydrated() {
+  return true;
+}
+
+function getServerHydrated() {
+  return false;
+}
+
+type IntroView = {
+  showIntro: boolean;
+  showShowroom: boolean;
+};
+
+function readIntroView(enabled: boolean): IntroView {
+  const dismissed = localStorage.getItem(INTRO_KEY) === "1";
+  if (!enabled || dismissed) {
+    return { showIntro: false, showShowroom: true };
   }
-  const seen = localStorage.getItem(INTRO_KEY) === "1";
-  if (!enabled || seen) {
-    return { showIntro: false, showroomReady: true };
-  }
-  return { showIntro: true, showroomReady: false };
+  return { showIntro: true, showShowroom: false };
 }
 
 type HomeExperienceProps = {
@@ -39,17 +55,31 @@ export default function HomeExperience({
   settings,
   sections
 }: HomeExperienceProps) {
-  const [showIntro, setShowIntro] = useState(() => readIntroState(settings.enabled).showIntro);
-  const [showroomReady, setShowroomReady] = useState(() => readIntroState(settings.enabled).showroomReady);
+  const hydrated = useSyncExternalStore(subscribeToHydration, getClientHydrated, getServerHydrated);
+  const [override, setOverride] = useState<Partial<IntroView>>({});
+
+  const baseView = useMemo((): IntroView => {
+    if (!hydrated) {
+      return { showIntro: false, showShowroom: false };
+    }
+    return readIntroView(settings.enabled);
+  }, [hydrated, settings.enabled]);
+
+  const showIntro = override.showIntro ?? baseView.showIntro;
+  const showShowroom = override.showShowroom ?? baseView.showShowroom;
 
   const revealShowroom = useCallback(() => {
-    setShowroomReady(true);
+    setOverride((current) => ({ ...current, showShowroom: true }));
   }, []);
 
   const completeIntro = useCallback(() => {
     localStorage.setItem(INTRO_KEY, "1");
-    setShowIntro(false);
+    setOverride({ showIntro: false, showShowroom: true });
   }, []);
+
+  if (!hydrated) {
+    return null;
+  }
 
   return (
     <>
@@ -66,7 +96,7 @@ export default function HomeExperience({
           tagline={tagline}
         />
       ) : null}
-      {showroomReady ? (
+      {showShowroom ? (
         <main className="showroom-entry-reveal visible">
           <ShowroomEntry sections={sections} />
         </main>
