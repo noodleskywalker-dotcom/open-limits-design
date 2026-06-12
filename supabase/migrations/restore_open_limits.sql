@@ -92,6 +92,58 @@ alter table public.company_profile add column if not exists ceo_name text;
 alter table public.company_profile add column if not exists ceo_bio text;
 alter table public.company_profile add column if not exists about_text text;
 alter table public.company_profile add column if not exists map_query text;
+alter table public.company_profile add column if not exists phone2 text;
+
+-- ---------- structured site content ----------
+create table if not exists public.site_content (
+  id uuid primary key default gen_random_uuid(),
+  section_key text not null unique,
+  title text,
+  body text,
+  metadata jsonb default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.homepage_content (
+  id integer primary key default 1 check (id = 1),
+  hero_title text,
+  hero_subtitle text,
+  hero_image_id uuid references public.media_assets(id) on delete set null,
+  ceo_image_id uuid references public.media_assets(id) on delete set null,
+  about_text text,
+  updated_at timestamptz not null default now()
+);
+
+-- ---------- leads & AI conversation storage ----------
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(),
+  name text,
+  phone text,
+  email text,
+  project_type text,
+  location text,
+  preferred_datetime text,
+  message text,
+  source text default 'contact_form',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.ai_conversations (
+  id uuid primary key default gen_random_uuid(),
+  session_id text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.ai_conversations(id) on delete cascade,
+  role text not null check (role in ('user', 'assistant', 'system')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists chat_messages_conversation_idx on public.chat_messages(conversation_id);
+create index if not exists leads_created_at_idx on public.leads(created_at desc);
 
 create table if not exists public.homepage_hero_images (
   id uuid primary key default gen_random_uuid(),
@@ -159,6 +211,7 @@ alter table public.furniture_items add column if not exists height text;
 alter table public.furniture_items add column if not exists finishes text;
 alter table public.furniture_items add column if not exists features text;
 alter table public.furniture_items add column if not exists availability text;
+alter table public.furniture_items add column if not exists upholstery text;
 
 create table if not exists public.furniture_item_images (
   furniture_item_id uuid not null references public.furniture_items(id) on delete cascade,
@@ -309,6 +362,55 @@ alter table public.furniture_item_materials enable row level security;
 alter table public.bookings enable row level security;
 alter table public.blocked_times enable row level security;
 alter table public.admin_users enable row level security;
+alter table public.site_content enable row level security;
+alter table public.homepage_content enable row level security;
+alter table public.leads enable row level security;
+alter table public.ai_conversations enable row level security;
+alter table public.chat_messages enable row level security;
+
+-- site content
+drop policy if exists "Public can read site content" on public.site_content;
+create policy "Public can read site content"
+on public.site_content for select to anon, authenticated using (true);
+
+drop policy if exists "Authenticated users can manage site content" on public.site_content;
+create policy "Authenticated users can manage site content"
+on public.site_content for all to authenticated using (true) with check (true);
+
+-- homepage content
+drop policy if exists "Public can read homepage content" on public.homepage_content;
+create policy "Public can read homepage content"
+on public.homepage_content for select to anon, authenticated using (true);
+
+drop policy if exists "Authenticated users can manage homepage content" on public.homepage_content;
+create policy "Authenticated users can manage homepage content"
+on public.homepage_content for all to authenticated using (true) with check (true);
+
+-- leads: public insert, admin read
+drop policy if exists "Anyone can submit a lead" on public.leads;
+create policy "Anyone can submit a lead"
+on public.leads for insert to anon, authenticated with check (true);
+
+drop policy if exists "Authenticated users can read leads" on public.leads;
+create policy "Authenticated users can read leads"
+on public.leads for select to authenticated using (true);
+
+-- AI conversations: public insert for chat, admin read
+drop policy if exists "Anyone can create ai conversations" on public.ai_conversations;
+create policy "Anyone can create ai conversations"
+on public.ai_conversations for insert to anon, authenticated with check (true);
+
+drop policy if exists "Authenticated users can read ai conversations" on public.ai_conversations;
+create policy "Authenticated users can read ai conversations"
+on public.ai_conversations for select to authenticated using (true);
+
+drop policy if exists "Anyone can append chat messages" on public.chat_messages;
+create policy "Anyone can append chat messages"
+on public.chat_messages for insert to anon, authenticated with check (true);
+
+drop policy if exists "Authenticated users can read chat messages" on public.chat_messages;
+create policy "Authenticated users can read chat messages"
+on public.chat_messages for select to authenticated using (true);
 
 -- media
 drop policy if exists "Public can read media" on public.media_assets;

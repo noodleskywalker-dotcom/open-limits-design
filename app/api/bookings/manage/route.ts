@@ -4,6 +4,11 @@ import { bookingConfirmedMessage, bookingRejectedMessage, sendSms } from "@/lib/
 
 export const dynamic = "force-dynamic";
 
+function formatBookingDate(isoDate: string) {
+  const [year, month, day] = isoDate.split("-");
+  return `${day}.${month}.${year.slice(2)}`;
+}
+
 /**
  * POST /api/bookings/manage
  * Admin-only: accept or reject a booking. Requires a Supabase access token.
@@ -57,7 +62,7 @@ export async function POST(request: NextRequest) {
     status === "confirmed"
       ? await sendSms(
           booking.client_phone,
-          bookingConfirmedMessage(booking.booking_date, booking.start_time.slice(0, 5))
+          bookingConfirmedMessage(formatBookingDate(booking.booking_date))
         )
       : await sendSms(booking.client_phone, bookingRejectedMessage());
 

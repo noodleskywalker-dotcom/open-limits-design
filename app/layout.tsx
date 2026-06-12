@@ -15,13 +15,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <header className="site-header">
           <Link className="brand" href="/">
             OPEN LIMITS <span>DESIGN</span>
           </Link>
           <nav aria-label="Primary navigation">
+            <Link href="/about">About</Link>
             <Link href="/projects">Projects</Link>
             <Link href="/furniture">Furniture</Link>
             <Link href="/materials">Materials</Link>

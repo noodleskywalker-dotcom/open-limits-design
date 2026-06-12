@@ -49,7 +49,12 @@ const tables = [
   "bookings",
   "blocked_times",
   "admin_users",
-  "site_settings"
+  "site_settings",
+  "site_content",
+  "homepage_content",
+  "leads",
+  "ai_conversations",
+  "chat_messages"
 ];
 
 async function checkTable(client, table) {

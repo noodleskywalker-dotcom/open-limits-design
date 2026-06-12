@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getFurnitureItemBySlug, getRelatedFurnitureItems } from "@/lib/cms/queries";
+import FurnitureProductPanel from "@/components/furniture/FurnitureProductPanel";
+import { getCompanyProfile, getFurnitureItemBySlug, getRelatedFurnitureItems } from "@/lib/cms/queries";
+import { getFurnitureCategory } from "@/lib/furniture-categories";
 import { resolveImageUrl } from "@/lib/cms/types";
 
 export default async function FurnitureDetailPage({
@@ -9,7 +11,7 @@ export default async function FurnitureDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const item = await getFurnitureItemBySlug(slug);
+  const [item, company] = await Promise.all([getFurnitureItemBySlug(slug), getCompanyProfile()]);
 
   if (!item) {
     notFound();
@@ -17,6 +19,8 @@ export default async function FurnitureDetailPage({
 
   const related = await getRelatedFurnitureItems(item);
   const heroImage = resolveImageUrl(item.featured_image ?? item.gallery?.[0]);
+  const categoryName = getFurnitureCategory(item.title);
+  const phone = company.phone ?? "+974 7788 9033";
 
   const specs: { label: string; value: string }[] = [];
   if (item.dimensions) specs.push({ label: "Dimensions", value: item.dimensions });
@@ -30,39 +34,31 @@ export default async function FurnitureDetailPage({
 
   return (
     <main className="page">
-      <section className="section detail-hero">
-        <div>
+      <section className="section furniture-detail">
+        <div className="furniture-detail-media">
+          {heroImage ? (
+            <div className="furniture-image-wrap large">
+              <img alt={item.title} className="furniture-image" src={heroImage} />
+            </div>
+          ) : (
+            <div className="image-placeholder card tall">{item.title}</div>
+          )}
+        </div>
+        <div className="furniture-detail-info">
           <p className="eyebrow">
-            {item.category?.name ?? "Furniture"}
+            {categoryName}
             {item.collection ? ` · ${item.collection}` : ""}
           </p>
           <h1>{item.title}</h1>
           <p className="lead">{item.description}</p>
-          {specs.length ? (
-            <div className="spec-list">
-              {specs.map((spec) => (
-                <div key={spec.label}>
-                  <strong>{spec.label}</strong>
-                  <p>{spec.value}</p>
-                </div>
-              ))}
-            </div>
-          ) : null}
-          {item.material_records?.length ? (
-            <div className="material-chips">
-              {item.material_records.map((material) => (
-                <span className="material-chip" key={material.id}>
-                  {material.name}
-                </span>
-              ))}
-            </div>
-          ) : null}
+          <FurnitureProductPanel
+            materials={item.material_records ?? []}
+            phone={phone}
+            specs={specs}
+            title={item.title}
+            upholstery={item.upholstery ?? null}
+          />
         </div>
-        {heroImage ? (
-          <img className="project-cover card" src={heroImage} alt={item.title} />
-        ) : (
-          <div className="image-placeholder card tall">{item.title}</div>
-        )}
       </section>
 
       <section className="section">
@@ -75,7 +71,13 @@ export default async function FurnitureDetailPage({
         {item.gallery?.length ? (
           <div className="gallery-grid">
             {item.gallery.map((image) => (
-              <img key={image.id} src={image.public_url} alt={image.alt_text ?? item.title} />
+              <div className="furniture-image-wrap" key={image.id}>
+                <img
+                  alt={image.alt_text ?? item.title}
+                  className="furniture-image"
+                  src={image.public_url}
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -88,19 +90,21 @@ export default async function FurnitureDetailPage({
           <div className="section-heading">
             <div>
               <p className="eyebrow">Related</p>
-              <h2>More from {item.category?.name ?? "this collection"}.</h2>
+              <h2>More from {categoryName}.</h2>
             </div>
           </div>
           <div className="grid">
             {related.map((relatedItem) => {
               const image = resolveImageUrl(relatedItem.featured_image ?? relatedItem.gallery?.[0]);
               return (
-                <Link className="card" href={`/furniture/${relatedItem.slug}`} key={relatedItem.id}>
-                  {image ? (
-                    <img className="project-cover" src={image} alt={relatedItem.title} />
-                  ) : (
-                    <div className="image-placeholder">{relatedItem.title}</div>
-                  )}
+                <Link className="card furniture-card" href={`/furniture/${relatedItem.slug}`} key={relatedItem.id}>
+                  <div className="furniture-image-wrap">
+                    {image ? (
+                      <img alt={relatedItem.title} className="furniture-image" src={image} />
+                    ) : (
+                      <div className="image-placeholder">{relatedItem.title}</div>
+                    )}
+                  </div>
                   <div className="card-body">
                     <h3>{relatedItem.title}</h3>
                   </div>

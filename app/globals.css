@@ -219,7 +219,7 @@ p {
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   margin: 0 auto;
   max-width: 1400px;
-  min-height: calc(100vh - 80px);
+  min-height: auto;
   padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 4rem);
 }
 
@@ -240,9 +240,11 @@ p {
 }
 
 .hero-visual img {
-  height: 100%;
-  min-height: 60vh;
+  height: 50vh;
+  max-height: 520px;
+  min-height: 280px;
   object-fit: cover;
+  object-position: center;
   width: 100%;
 }
 
@@ -252,9 +254,10 @@ p {
     radial-gradient(circle at 30% 20%, rgb(200 162 74 / 18%), transparent 50%),
     linear-gradient(165deg, #15151a, #0b0b0d);
   display: flex;
-  height: 100%;
+  height: 50vh;
   justify-content: center;
-  min-height: 60vh;
+  max-height: 520px;
+  min-height: 280px;
 }
 
 .hero-visual-placeholder span {
@@ -1188,11 +1191,270 @@ a.card:hover {
   filter: grayscale(0.4) invert(0) contrast(1) hue-rotate(0deg);
 }
 
+/* ---------- cinematic intro ---------- */
+.home-intro {
+  align-items: center;
+  animation: introFadeIn 0.8s ease;
+  background: #000;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 100;
+}
+
+.home-intro-fade {
+  animation: introFadeOut 0.8s ease forwards;
+}
+
+.home-intro-inner {
+  animation: introRise 1s ease;
+  text-align: center;
+}
+
+.home-intro-portrait {
+  border: 1px solid var(--gold-dark);
+  border-radius: 999px;
+  height: 180px;
+  margin: 0 auto 1.5rem;
+  object-fit: cover;
+  width: 180px;
+}
+
+.home-intro-eyebrow {
+  color: var(--gold);
+  font-size: 0.72rem;
+  letter-spacing: 0.35em;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+
+.home-intro-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 0.5rem;
+}
+
+.home-intro-tagline {
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@keyframes introFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes introFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+@keyframes introRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- discipline boxes ---------- */
+.discipline-section {
+  border-block: 1px solid var(--border);
+  padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 4rem);
+}
+
+.discipline-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+.discipline-box {
+  animation: introRise 0.7s ease both;
+  background: linear-gradient(165deg, var(--surface-strong), var(--surface));
+  border: 1px solid var(--border);
+  min-height: 220px;
+  padding: 1.5rem;
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.discipline-box:hover {
+  border-color: var(--gold-dark);
+  transform: translateY(-4px);
+}
+
+.discipline-index {
+  color: var(--gold);
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+
+.discipline-box h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- furniture images ---------- */
+.furniture-card .furniture-image-wrap,
+.furniture-detail-media .furniture-image-wrap {
+  background: #141418;
+}
+
+.furniture-image-wrap {
+  align-items: center;
+  aspect-ratio: 4 / 3;
+  background: #141418;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.furniture-image-wrap.large {
+  aspect-ratio: auto;
+  min-height: 420px;
+}
+
+.furniture-image {
+  height: 100%;
+  image-rendering: auto;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+}
+
+.furniture-detail {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.product-dropdowns {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: 1.5rem;
+}
+
+.product-dropdown {
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+}
+
+.product-dropdown-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  width: 100%;
+}
+
+.product-dropdown p {
+  border-top: 1px solid var(--border);
+  margin: 0;
+  padding: 0.85rem 1rem;
+}
+
+.material-swatches {
+  margin-bottom: 1.5rem;
+}
+
+.swatch-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.swatch-item {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.swatch-image {
+  aspect-ratio: 1;
+  background: #141418;
+  border: 1px solid var(--border);
+  object-fit: contain;
+  width: 100%;
+}
+
+.swatch-missing {
+  align-items: center;
+  aspect-ratio: 1;
+  background: #141418;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  display: flex;
+  font-size: 0.72rem;
+  justify-content: center;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.product-actions {
+  flex-wrap: wrap;
+}
+
+/* ---------- contact form ---------- */
+.contact-form .form-grid,
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.contact-form label,
+.form-grid label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.contact-form label.full-width,
+.form-grid label.full-width {
+  grid-column: 1 / -1;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea,
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  color: var(--ink);
+  padding: 0.75rem;
+}
+
+.form-success {
+  color: var(--success);
+  margin-top: 1rem;
+}
+
+.form-error {
+  color: var(--danger);
+  margin-top: 1rem;
+}
+
+.location-actions {
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 920px) {
   .hero,
   .ceo-section,
   .detail-hero,
+  .furniture-detail,
+  .discipline-grid,
   .booking-shell,
   .admin-shell,
   .form-grid,

@@ -409,6 +409,7 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
       description: company.description,
       address: company.address,
       phone: company.phone,
+      phone2: company.phone2,
       email: company.email,
       hero_headline: company.hero_headline,
       hero_subheadline: company.hero_subheadline,
@@ -916,6 +917,15 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
                       setCompany((c) => ({ ...(c ?? { id: 1 }), phone: event.target.value }) as CompanyProfile)
                     }
                     value={company?.phone ?? ""}
+                  />
+                </label>
+                <label className="field">
+                  <span>Phone 2</span>
+                  <input
+                    onChange={(event) =>
+                      setCompany((c) => ({ ...(c ?? { id: 1 }), phone2: event.target.value }) as CompanyProfile)
+                    }
+                    value={company?.phone2 ?? ""}
                   />
                 </label>
                 <label className="field">

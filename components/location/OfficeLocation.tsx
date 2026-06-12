@@ -6,10 +6,12 @@ export default function OfficeLocation({ company }: { company: CompanyProfile })
   const address = company.address ?? FALLBACK_ADDRESS;
   const mapQuery = company.map_query ?? address;
   const phone = company.phone ?? "+974 7788 9033";
+  const phone2 = company.phone2 ?? "+974 5081 6176";
   const email = company.email ?? "info@openlimitsdesign.com";
 
   const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
+  const whatsappUrl = `https://wa.me/${phone.replace(/\s+/g, "").replace(/^\+/, "")}`;
 
   return (
     <section className="location-section" id="location">
@@ -27,14 +29,32 @@ export default function OfficeLocation({ company }: { company: CompanyProfile })
               <span>Phone</span>
               {phone}
             </a>
+            <a className="location-contact" href={`tel:${phone2.replace(/\s+/g, "")}`}>
+              <span>Phone 2</span>
+              {phone2}
+            </a>
             <a className="location-contact" href={`mailto:${email}`}>
               <span>Email</span>
               {email}
             </a>
           </div>
-          <a className="button" href={directionsUrl} rel="noopener noreferrer" target="_blank">
-            Get Directions
-          </a>
+          <div className="location-actions button-row">
+            <a className="button ghost" href={`tel:${phone.replace(/\s+/g, "")}`}>
+              Call
+            </a>
+            <a className="button ghost" href={whatsappUrl} rel="noopener noreferrer" target="_blank">
+              WhatsApp
+            </a>
+            <a className="button ghost" href={`mailto:${email}`}>
+              Email
+            </a>
+            <a className="button" href={directionsUrl} rel="noopener noreferrer" target="_blank">
+              Get Directions
+            </a>
+            <a className="button ghost" href="/book-meeting-with-ceo">
+              Book Consultation
+            </a>
+          </div>
         </div>
         <div className="location-map">
           <iframe

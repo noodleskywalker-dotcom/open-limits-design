@@ -58,6 +58,7 @@ const SERVICES = [
 const OFFICE = {
   address: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar",
   phone: "+974 7788 9033",
+  phone2: "+974 5081 6176",
   email: "info@openlimitsdesign.com",
   map_query: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar"
 };
@@ -124,7 +125,7 @@ async function reorderServices() {
 async function seedOfficeInfo() {
   const { data: current, error } = await supabase
     .from("company_profile")
-    .select("address, phone, email")
+    .select("address, phone, phone2, email")
     .eq("id", 1)
     .maybeSingle();
   if (error) {
@@ -135,6 +136,7 @@ async function seedOfficeInfo() {
   const patch = {};
   if (!current?.address) patch.address = OFFICE.address;
   if (!current?.phone) patch.phone = OFFICE.phone;
+  if (!current?.phone2) patch.phone2 = OFFICE.phone2;
   if (!current?.email) patch.email = OFFICE.email;
 
   if (!Object.keys(patch).length) {

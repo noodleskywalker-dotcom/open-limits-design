@@ -1,4 +1,6 @@
 import Link from "next/link";
+import HomeIntro from "@/components/home/HomeIntro";
+import DisciplineBoxes from "@/components/home/DisciplineBoxes";
 import OfficeLocation from "@/components/location/OfficeLocation";
 import {
   getCompanyProfile,
@@ -27,6 +29,12 @@ export default async function HomePage() {
 
   return (
     <main>
+      <HomeIntro
+        ceoImageUrl={ceoImage}
+        ceoName={company.ceo_name ?? "Mohammed"}
+        companyName={company.name}
+      />
+
       <section className="hero">
         <div className="hero-copy">
           <p className="eyebrow">{company.tagline ?? "Architecture · Interior Design · Furniture"}</p>
@@ -43,7 +51,7 @@ export default async function HomePage() {
         </div>
         <div className="hero-visual">
           {heroImage ? (
-            <img src={heroImage.public_url} alt={heroImage.alt_text ?? "Open Limits Design"} />
+            <img alt={heroImage.alt_text ?? "Open Limits Design"} src={heroImage.public_url} />
           ) : (
             <div className="hero-visual-placeholder">
               <span>OPEN LIMITS</span>
@@ -52,12 +60,14 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <DisciplineBoxes />
+
       <div className="page">
         <section className="section" id="about">
           <div className="ceo-section">
             <div className="ceo-image-wrap">
               {ceoImage ? (
-                <img src={ceoImage} alt={company.ceo_name ?? "CEO"} />
+                <img alt={company.ceo_name ?? "CEO"} src={ceoImage} />
               ) : (
                 <div className="image-placeholder tall">CEO portrait — set it in Admin → Homepage</div>
               )}
@@ -70,8 +80,8 @@ export default async function HomePage() {
                   "Leading Open Limits with vision and expertise in luxury design and contracting."}
               </p>
               {company.about_text ? <p>{company.about_text}</p> : null}
-              <Link className="button ghost" href="/book-meeting-with-ceo">
-                Meet the CEO
+              <Link className="button ghost" href="/about">
+                About us
               </Link>
             </div>
           </div>
@@ -92,7 +102,7 @@ export default async function HomePage() {
               const image = resolveImageUrl(service.image, service.image_url);
               return (
                 <article className="card" key={service.id}>
-                  {image ? <img className="project-cover" src={image} alt={service.title} /> : null}
+                  {image ? <img alt={service.title} className="project-cover" src={image} /> : null}
                   <div className="card-body">
                     <h3>{service.title}</h3>
                     <p>{service.description}</p>
@@ -120,7 +130,7 @@ export default async function HomePage() {
                 return (
                   <Link className="card" href={`/projects/${project.slug}`} key={project.id}>
                     {cover ? (
-                      <img className="project-cover" src={cover} alt={project.title} />
+                      <img alt={project.title} className="project-cover" src={cover} />
                     ) : (
                       <div className="image-placeholder">{project.title}</div>
                     )}
@@ -152,12 +162,14 @@ export default async function HomePage() {
               {furniture.slice(0, 3).map((item) => {
                 const image = resolveImageUrl(item.featured_image ?? item.gallery?.[0]);
                 return (
-                  <Link className="card" href={`/furniture/${item.slug}`} key={item.id}>
-                    {image ? (
-                      <img className="project-cover" src={image} alt={item.title} />
-                    ) : (
-                      <div className="image-placeholder">{item.title}</div>
-                    )}
+                  <Link className="card furniture-card" href={`/furniture/${item.slug}`} key={item.id}>
+                    <div className="furniture-image-wrap">
+                      {image ? (
+                        <img alt={item.title} className="furniture-image" src={image} />
+                      ) : (
+                        <div className="image-placeholder">{item.title}</div>
+                      )}
+                    </div>
                     <div className="card-body">
                       <p className="meta">{item.category?.name ?? "Furniture"}</p>
                       <h3>{item.title}</h3>
@@ -188,7 +200,7 @@ export default async function HomePage() {
                 return (
                   <article className="card" key={member.id}>
                     {photo ? (
-                      <img src={photo} alt={member.name} />
+                      <img alt={member.name} src={photo} />
                     ) : (
                       <div className="image-placeholder">{member.name}</div>
                     )}

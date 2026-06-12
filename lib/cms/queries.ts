@@ -7,6 +7,7 @@ import {
   fallbackServices,
   fallbackTeam
 } from "./fallback";
+import { filterFurnitureProducts, getFurnitureCategory } from "@/lib/furniture-categories";
 import type {
   CompanyProfile,
   FurnitureCategory,
@@ -225,21 +226,11 @@ export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureIte
 }
 
 export async function getRelatedFurnitureItems(item: FurnitureItem, limit = 3): Promise<FurnitureItem[]> {
-  const supabase = getSupabaseServerClient();
-  if (!supabase) return [];
-
-  const { data, error } = await supabase
-    .from("furniture_items")
-    .select(furnitureSelect)
-    .eq("category_id", item.category_id)
-    .eq("published", true)
-    .neq("id", item.id)
-    .order("sort_order", { ascending: true })
-    .limit(limit);
-
-  if (error || !data) return [];
-
-  return (data as unknown as FurnitureItemRow[]).map(normalizeFurnitureItem);
+  const all = await getFurnitureItems();
+  const sameCategory = filterFurnitureProducts(all, getFurnitureCategory(item.title)).filter(
+    (candidate) => candidate.id !== item.id
+  );
+  return sameCategory.slice(0, limit);
 }
 
 export async function getMaterials(includeUnpublished = false): Promise<Material[]> {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ContactForm from "@/components/contact/ContactForm";
 import OfficeLocation from "@/components/location/OfficeLocation";
 import { getCompanyProfile, getServices } from "@/lib/cms/queries";
 
@@ -17,9 +18,7 @@ export default async function ContactPage() {
               <h1>Let’s talk about your project.</h1>
               <p>{company.description}</p>
               {services.length ? (
-                <p className="meta">
-                  {services.map((service) => service.title).join(" · ")}
-                </p>
+                <p className="meta">{services.map((service) => service.title).join(" · ")}</p>
               ) : null}
             </div>
           </div>
@@ -30,9 +29,11 @@ export default async function ContactPage() {
                 <h3>Studio details</h3>
                 <p>{company.address ?? "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar"}</p>
                 <p>{company.phone ?? "+974 7788 9033"}</p>
+                <p>{company.phone2 ?? "+974 5081 6176"}</p>
                 <p>{company.email ?? "info@openlimitsdesign.com"}</p>
               </div>
             </div>
+            <ContactForm />
             <div className="card cta-card">
               <div className="card-body">
                 <h3>Prefer a meeting?</h3>

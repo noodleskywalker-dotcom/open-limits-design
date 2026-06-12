@@ -90,6 +90,7 @@ export type CompanyProfile = {
   description: string | null;
   address: string | null;
   phone: string | null;
+  phone2: string | null;
   email: string | null;
   hero_headline: string | null;
   hero_subheadline: string | null;
@@ -144,6 +145,7 @@ export type FurnitureItem = {
   finishes: string | null;
   features: string | null;
   availability: string | null;
+  upholstery: string | null;
   collection: string | null;
   category_id: string;
   featured_image_id: string | null;

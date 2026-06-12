@@ -51,8 +51,8 @@ export async function sendSms(to: string | null | undefined, body: string): Prom
   }
 }
 
-export function bookingConfirmedMessage(date: string, time: string) {
-  return `Your meeting with OPEN LIMITS DESIGN has been confirmed for ${date} at ${time}.`;
+export function bookingConfirmedMessage(date: string) {
+  return `Your meeting with OPEN LIMITS DESIGN has been accepted on the date - ${date}`;
 }
 
 export function bookingRejectedMessage() {

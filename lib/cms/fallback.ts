@@ -16,6 +16,7 @@ export const fallbackCompanyProfile: CompanyProfile = {
     "A luxury design studio for architecture, interiors, custom furniture, and turnkey project delivery.",
   address: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar",
   phone: "+974 7788 9033",
+  phone2: "+974 5081 6176",
   email: "info@openlimitsdesign.com",
   hero_headline: "Design Without Limits",
   hero_subheadline:

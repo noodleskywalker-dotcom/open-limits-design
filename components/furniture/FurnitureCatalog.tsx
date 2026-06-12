@@ -2,76 +2,65 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { FurnitureCategory, FurnitureItem } from "@/lib/cms/types";
+import {
+  FURNITURE_CATEGORIES,
+  filterFurnitureProducts,
+  getFurnitureCategory,
+  type FurnitureCategoryName
+} from "@/lib/furniture-categories";
+import type { FurnitureItem } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
 
-export default function FurnitureCatalog({
-  categories,
-  items
-}: {
-  categories: FurnitureCategory[];
-  items: FurnitureItem[];
-}) {
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+export default function FurnitureCatalog({ items }: { items: FurnitureItem[] }) {
+  const [activeCategory, setActiveCategory] = useState<FurnitureCategoryName>("All");
 
-  const visibleItems = useMemo(() => {
-    if (activeCategory === "all") return items;
-    return items.filter((item) => item.category_id === activeCategory);
-  }, [activeCategory, items]);
-
-  const activeName =
-    activeCategory === "all"
-      ? "All"
-      : categories.find((category) => category.id === activeCategory)?.name ?? "All";
+  const visibleItems = useMemo(
+    () => filterFurnitureProducts(items, activeCategory),
+    [activeCategory, items]
+  );
 
   return (
     <div>
       <div className="category-list" role="tablist" aria-label="Furniture categories">
-        <button
-          className={`category-pill ${activeCategory === "all" ? "active" : ""}`}
-          onClick={() => setActiveCategory("all")}
-          role="tab"
-          aria-selected={activeCategory === "all"}
-          type="button"
-        >
-          All
-        </button>
-        {categories.map((category) => (
+        {FURNITURE_CATEGORIES.map((category) => (
           <button
-            className={`category-pill ${activeCategory === category.id ? "active" : ""}`}
-            key={category.id}
-            onClick={() => setActiveCategory(category.id)}
+            aria-selected={activeCategory === category}
+            className={`category-pill ${activeCategory === category ? "active" : ""}`}
+            key={category}
+            onClick={() => setActiveCategory(category)}
             role="tab"
-            aria-selected={activeCategory === category.id}
             type="button"
           >
-            {category.name}
+            {category}
           </button>
         ))}
       </div>
 
       <p className="meta catalog-count">
-        {visibleItems.length} item{visibleItems.length === 1 ? "" : "s"} in {activeName}
+        {visibleItems.length} item{visibleItems.length === 1 ? "" : "s"} in {activeCategory}
       </p>
 
       {visibleItems.length ? (
         <div className="grid">
           {visibleItems.map((item) => {
             const image = resolveImageUrl(item.featured_image ?? item.gallery?.[0]);
+            const categoryName = getFurnitureCategory(item.title);
             return (
-              <Link className="card" href={`/furniture/${item.slug}`} key={item.id}>
-                {image ? (
-                  <img
-                    className="project-cover"
-                    src={image}
-                    alt={item.featured_image?.alt_text ?? item.title}
-                  />
-                ) : (
-                  <div className="image-placeholder">{item.title}</div>
-                )}
+              <Link className="card furniture-card" href={`/furniture/${item.slug}`} key={item.id}>
+                <div className="furniture-image-wrap">
+                  {image ? (
+                    <img
+                      alt={item.featured_image?.alt_text ?? item.title}
+                      className="furniture-image"
+                      src={image}
+                    />
+                  ) : (
+                    <div className="image-placeholder">{item.title}</div>
+                  )}
+                </div>
                 <div className="card-body">
                   <p className="meta">
-                    {item.category?.name ?? "Furniture"}
+                    {categoryName}
                     {item.collection ? ` · ${item.collection}` : ""}
                   </p>
                   <h3>{item.title}</h3>
@@ -82,9 +71,7 @@ export default function FurnitureCatalog({
           })}
         </div>
       ) : (
-        <div className="empty-state">
-          No published items in {activeName} yet. Add items from the admin dashboard.
-        </div>
+        <div className="empty-state">No products found in this category.</div>
       )}
     </div>
   );

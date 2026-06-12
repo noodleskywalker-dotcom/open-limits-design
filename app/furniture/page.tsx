@@ -1,10 +1,10 @@
 import FurnitureCatalog from "@/components/furniture/FurnitureCatalog";
-import { getFurnitureCategories, getFurnitureItems } from "@/lib/cms/queries";
+import { getFurnitureItems } from "@/lib/cms/queries";
 
 export const metadata = { title: "Furniture — Open Limits Design" };
 
 export default async function FurniturePage() {
-  const [categories, items] = await Promise.all([getFurnitureCategories(), getFurnitureItems()]);
+  const items = await getFurnitureItems();
 
   return (
     <main className="page">
@@ -14,12 +14,12 @@ export default async function FurniturePage() {
             <p className="eyebrow">Furniture</p>
             <h1>The collection.</h1>
             <p>
-              Filter by category. Items, images, dimensions, and materials are all managed from
-              Admin → Furniture.
+              Filter by category. Product names drive category matching — sofas, majlis, chairs,
+              tables, lighting, and more.
             </p>
           </div>
         </div>
-        <FurnitureCatalog categories={categories} items={items} />
+        <FurnitureCatalog items={items} />
       </section>
     </main>
   );
