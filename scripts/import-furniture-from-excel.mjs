@@ -31,10 +31,18 @@ function loadEnvFile(filePath) {
 
 loadEnvFile(path.join(process.cwd(), ".env.local"));
 
-const filePath = process.argv[2] ?? path.join(process.cwd(), "ALI ALMOHANDI-FURNITURE.xlsx");
-if (!fs.existsSync(filePath)) {
-  console.error(`Excel file not found: ${filePath}`);
-  console.error("Place ALI ALMOHANDI-FURNITURE.xlsx in the project root or pass its path.");
+const filePath =
+  process.argv[2] ??
+  ["AHMED SALAH data.xlsx", "AHMED-SALAH-data.xlsx", "ALI ALMOHANDI-FURNITURE.xlsx"]
+    .map((name) => path.join(process.cwd(), name))
+    .find((candidate) => fs.existsSync(candidate));
+
+if (!filePath) {
+  console.error("Excel file not found.");
+  console.error("Place one of these in the project root:");
+  console.error("  - AHMED SALAH data.xlsx");
+  console.error("  - ALI ALMOHANDI-FURNITURE.xlsx");
+  console.error("Or pass the path: node scripts/import-furniture-from-excel.mjs path/to/file.xlsx");
   process.exit(1);
 }
 

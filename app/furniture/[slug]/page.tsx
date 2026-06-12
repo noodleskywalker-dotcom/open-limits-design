@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FurnitureProductPanel from "@/components/furniture/FurnitureProductPanel";
+import FurnitureShowroomHighlight from "@/components/furniture/FurnitureShowroomHighlight";
 import { getCompanyProfile, getFurnitureItemBySlug, getRelatedFurnitureItems } from "@/lib/cms/queries";
 import { getFurnitureCategory } from "@/lib/furniture-categories";
 import { resolveImageUrl } from "@/lib/cms/types";
 
 export default async function FurnitureDetailPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { slug } = await params;
+  const { from } = await searchParams;
   const [item, company] = await Promise.all([getFurnitureItemBySlug(slug), getCompanyProfile()]);
 
   if (!item) {
@@ -33,7 +37,8 @@ export default async function FurnitureDetailPage({
   if (item.availability) specs.push({ label: "Availability", value: item.availability });
 
   return (
-    <main className="page">
+    <main className={`page ${from === "showroom" ? "from-showroom" : ""}`}>
+      {from === "showroom" ? <FurnitureShowroomHighlight title={item.title} /> : null}
       <section className="section furniture-detail">
         <div className="furniture-detail-media">
           {heroImage ? (

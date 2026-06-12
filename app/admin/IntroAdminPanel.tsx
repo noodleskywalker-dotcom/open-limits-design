@@ -8,25 +8,61 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [slides, setSlides] = useState<IntroSlide[]>([]);
   const [logoImageId, setLogoImageId] = useState("");
+  const [settings, setSettings] = useState({
+    enabled: true,
+    autoplayMs: "3200",
+    introTitle: "",
+    introSubtitle: ""
+  });
   const [form, setForm] = useState({ mediaId: "", title: "", subtitle: "", sortOrder: "0" });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     if (!supabase) return;
-    const [slidesRes, companyRes] = await Promise.all([
+    const [slidesRes, companyRes, settingsRes] = await Promise.all([
       supabase.from("intro_slides").select("*, media:media_assets(*)").order("sort_order"),
-      supabase.from("company_profile").select("logo_image_id").eq("id", 1).maybeSingle()
+      supabase.from("company_profile").select("logo_image_id").eq("id", 1).maybeSingle(),
+      supabase.from("site_settings").select("key, value").in("key", [
+        "intro_enabled",
+        "intro_autoplay_ms",
+        "intro_title",
+        "intro_subtitle"
+      ])
     ]);
     if (slidesRes.error) throw slidesRes.error;
     setSlides((slidesRes.data ?? []) as IntroSlide[]);
     setLogoImageId(companyRes.data?.logo_image_id ?? "");
+    const map = Object.fromEntries((settingsRes.data ?? []).map((row) => [row.key, row.value]));
+    setSettings({
+      enabled: map.intro_enabled !== "false",
+      autoplayMs: map.intro_autoplay_ms ?? "3200",
+      introTitle: map.intro_title ?? "",
+      introSubtitle: map.intro_subtitle ?? ""
+    });
   }, [supabase]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load().catch((e: Error) => setError(e.message));
   }, [load]);
+
+  async function saveSettings(event: FormEvent) {
+    event.preventDefault();
+    if (!supabase) return;
+    const rows = [
+      { key: "intro_enabled", value: String(settings.enabled) },
+      { key: "intro_autoplay_ms", value: settings.autoplayMs },
+      { key: "intro_title", value: settings.introTitle || "" },
+      { key: "intro_subtitle", value: settings.introSubtitle || "" }
+    ];
+    const { error: upErr } = await supabase.from("site_settings").upsert(rows, { onConflict: "key" });
+    if (upErr) {
+      setError(upErr.message);
+      return;
+    }
+    setMessage("Intro settings saved.");
+  }
 
   async function saveLogo(event: FormEvent) {
     event.preventDefault();
@@ -71,6 +107,52 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
     <div>
       {message ? <p className="status success">{message}</p> : null}
       {error ? <p className="status error">{error}</p> : null}
+
+      <form className="form-grid form-card" onSubmit={saveSettings}>
+        <div className="field full">
+          <h3>Intro experience</h3>
+          <p>Animation timing and default intro copy. CEO portrait is set in Homepage tab.</p>
+        </div>
+        <label className="field">
+          <span>Show intro on first visit</span>
+          <select
+            onChange={(e) => setSettings({ ...settings, enabled: e.target.value === "true" })}
+            value={String(settings.enabled)}
+          >
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Slide duration (ms)</span>
+          <input
+            min={1500}
+            onChange={(e) => setSettings({ ...settings, autoplayMs: e.target.value })}
+            step={100}
+            type="number"
+            value={settings.autoplayMs}
+          />
+        </label>
+        <label className="field">
+          <span>Default intro title</span>
+          <input
+            onChange={(e) => setSettings({ ...settings, introTitle: e.target.value })}
+            placeholder="Open Limits Design"
+            value={settings.introTitle}
+          />
+        </label>
+        <label className="field">
+          <span>Default intro subtitle</span>
+          <input
+            onChange={(e) => setSettings({ ...settings, introSubtitle: e.target.value })}
+            placeholder="Luxury Design Studio"
+            value={settings.introSubtitle}
+          />
+        </label>
+        <button className="button" type="submit">
+          Save intro settings
+        </button>
+      </form>
 
       <form className="form-grid form-card" onSubmit={saveLogo}>
         <div className="field full">

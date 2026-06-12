@@ -1,15 +1,16 @@
 import LuxuryIntro from "@/components/home/LuxuryIntro";
 import ShowroomEntry from "@/components/showroom/ShowroomEntry";
-import { getCompanyProfile, getIntroSlides, getShowroomSections } from "@/lib/cms/queries";
+import { getCompanyProfile, getIntroSettings, getIntroSlides, getShowroomSections } from "@/lib/cms/queries";
 import { resolveImageUrl } from "@/lib/cms/types";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [profile, introSlides, showroomSections] = await Promise.all([
+  const [profile, introSlides, showroomSections, introSettings] = await Promise.all([
     getCompanyProfile(),
     getIntroSlides(),
     getShowroomSections(),
+    getIntroSettings()
   ]);
 
   return (
@@ -20,6 +21,7 @@ export default async function HomePage() {
         companyName={profile.name}
         logoImageUrl={resolveImageUrl(profile.logo_image)}
         slides={introSlides}
+        settings={introSettings}
         tagline={profile.tagline ?? profile.hero_subheadline ?? "Luxury Design Studio"}
       />
       <main>

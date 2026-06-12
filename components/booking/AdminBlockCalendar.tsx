@@ -1,18 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { BlockedTime, Booking } from "@/lib/cms/types";
 import { BOOKING_SLOTS } from "@/lib/cms/types";
+import {
+  blockMatchesDate,
+  blocksForDate,
+  bookingsForDate,
+  slotRangeFromSelection,
+  slotStatesForDate,
+  slotsInRange
+} from "@/lib/booking-utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-type BlockDraft = {
+export type BlockDraft = {
   title: string;
   date: string;
   wholeDay: boolean;
   startTime: string;
   endTime: string;
-  repeatType: "none" | "daily" | "weekly";
+  repeatType: "none" | "daily" | "weekly" | "monthly";
 };
 
 type Props = {
@@ -30,18 +38,30 @@ function monthLabel(date: Date) {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
+function formatDateLabel(date: string) {
+  return new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
 export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemoveBlock }: Props) {
   const [viewDate, setViewDate] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [draft, setDraft] = useState<BlockDraft>({
     title: "",
     date: "",
-    wholeDay: false,
+    wholeDay: true,
     startTime: "09:00",
     endTime: "12:00",
     repeatType: "none"
   });
   const [slotSelection, setSlotSelection] = useState<string[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const dragAnchor = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,26 +78,31 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
     return cells;
   }, [viewDate, month]);
 
-  function dayMeta(date: string) {
-    const dayBookings = bookings.filter(
-      (b) => b.booking_date === date && (b.status === "pending" || b.status === "confirmed")
-    );
-    const dayBlocks = blocked.filter(
-      (b) =>
-        b.repeat_type === "daily" ||
-        b.date === date ||
-        (b.repeat_type === "weekly" &&
-          b.date &&
-          new Date(`${b.date}T00:00:00Z`).getUTCDay() === new Date(`${date}T00:00:00Z`).getUTCDay())
-    );
-    return { dayBookings, dayBlocks, blocked: dayBlocks.length > 0, booked: dayBookings.length > 0 };
-  }
+  const dayMeta = useCallback(
+    (date: string) => {
+      const dayBookings = bookingsForDate(bookings, date);
+      const dayBlocks = blocksForDate(blocked, date);
+      const slots = slotStatesForDate(date, blocked, bookings);
+      const availableCount = Object.values(slots).filter((s) => s === "available").length;
+      return {
+        dayBookings,
+        dayBlocks,
+        slots,
+        blocked: dayBlocks.length > 0,
+        booked: dayBookings.length > 0,
+        availableCount
+      };
+    },
+    [bookings, blocked]
+  );
 
-  function openBlockModal(date?: string) {
+  const selectedMeta = selectedDate ? dayMeta(selectedDate) : null;
+
+  function openBlockModal(date?: string, wholeDay = true) {
     setDraft({
       title: "",
-      date: date ?? "",
-      wholeDay: Boolean(date),
+      date: date ?? selectedDate ?? "",
+      wholeDay,
       startTime: "09:00",
       endTime: "12:00",
       repeatType: "none"
@@ -87,31 +112,48 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
     setModalOpen(true);
   }
 
-  function toggleSlot(slot: string) {
-    setDraft((d) => ({ ...d, wholeDay: false, date: d.date }));
-    setSlotSelection((current) => {
-      if (current.includes(slot)) return current.filter((s) => s !== slot);
-      const next = [...current, slot].sort();
-      if (next.length >= 2) {
-        const startIdx = BOOKING_SLOTS.indexOf(next[0] as (typeof BOOKING_SLOTS)[number]);
-        const endIdx = BOOKING_SLOTS.indexOf(next[next.length - 1] as (typeof BOOKING_SLOTS)[number]);
-        if (startIdx >= 0 && endIdx >= 0) {
-          setDraft((d) => ({
-            ...d,
-            startTime: BOOKING_SLOTS[startIdx],
-            endTime: BOOKING_SLOTS[Math.min(endIdx + 1, BOOKING_SLOTS.length - 1)] ?? "17:00"
-          }));
-        }
-      } else if (next.length === 1) {
-        setDraft((d) => ({ ...d, startTime: next[0], endTime: next[0] === "16:00" ? "17:00" : BOOKING_SLOTS[BOOKING_SLOTS.indexOf(next[0] as (typeof BOOKING_SLOTS)[number]) + 1] ?? "17:00" }));
-      }
-      return next;
-    });
+  function selectDay(date: string) {
+    setSelectedDate(date);
+  }
+
+  function applySlotRange(from: string, to: string) {
+    const startIdx = BOOKING_SLOTS.indexOf(from as (typeof BOOKING_SLOTS)[number]);
+    const endIdx = BOOKING_SLOTS.indexOf(to as (typeof BOOKING_SLOTS)[number]);
+    if (startIdx < 0 || endIdx < 0) return;
+
+    const [lo, hi] = startIdx <= endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
+    const range = BOOKING_SLOTS.slice(lo, hi + 1);
+    setSlotSelection(range);
+    const times = slotRangeFromSelection(range);
+    if (times) {
+      setDraft((d) => ({ ...d, wholeDay: false, startTime: times.startTime, endTime: times.endTime }));
+    }
+  }
+
+  function onSlotPointerDown(slot: string) {
+    setDraft((d) => ({ ...d, wholeDay: false }));
+    dragAnchor.current = slot;
+    setDragging(true);
+    applySlotRange(slot, slot);
+  }
+
+  function onSlotPointerEnter(slot: string) {
+    if (!dragging || !dragAnchor.current) return;
+    applySlotRange(dragAnchor.current, slot);
+  }
+
+  function endDrag() {
+    setDragging(false);
+    dragAnchor.current = null;
   }
 
   async function saveBlock() {
     if (!draft.date && draft.repeatType !== "daily") {
       setError("Select a date.");
+      return;
+    }
+    if (!draft.wholeDay && !slotSelection.length) {
+      setError("Select at least one time slot.");
       return;
     }
     setBusy(true);
@@ -127,11 +169,11 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
   }
 
   return (
-    <div className="admin-block-calendar">
+    <div className="admin-block-calendar" onMouseLeave={endDrag} onMouseUp={endDrag}>
       <div className="admin-block-toolbar">
         <div>
           <h3>Calendar</h3>
-          <p>Bookings, blocked times, and availability at a glance.</p>
+          <p>Gold = booked · Red = blocked · Green = available. Click a day for details.</p>
         </div>
         <button className="button" onClick={() => openBlockModal()} type="button">
           Block time
@@ -140,6 +182,7 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
 
       <div className="booking-month-bar">
         <button
+          aria-label="Previous month"
           onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
           type="button"
         >
@@ -147,6 +190,7 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
         </button>
         <strong>{monthLabel(viewDate)}</strong>
         <button
+          aria-label="Next month"
           onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
           type="button"
         >
@@ -157,67 +201,130 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
       <div className="admin-calendar-legend">
         <span className="legend-booked">Booked</span>
         <span className="legend-blocked">Blocked</span>
-        <span className="legend-open">Open</span>
+        <span className="legend-open">Available</span>
       </div>
 
-      <div className="booking-grid admin-calendar-grid">
-        {WEEKDAYS.map((day) => (
-          <span className="booking-grid-head" key={day}>
-            {day}
-          </span>
-        ))}
-        {calendarCells.map((date, index) => {
-          if (!date) return <span className="booking-day empty" key={`e-${index}`} />;
-          const meta = dayMeta(date);
-          const className = [
-            "booking-day",
-            "admin-calendar-day",
-            date === today ? "today" : "",
-            meta.blocked ? "blocked-day" : "",
-            meta.booked ? "booked-day" : "",
-            draft.date === date ? "selected" : ""
-          ]
-            .filter(Boolean)
-            .join(" ");
-          return (
-            <button
-              className={className}
-              key={date}
-              onClick={() => openBlockModal(date)}
-              title={`${date}${meta.dayBookings.length ? ` · ${meta.dayBookings.length} booking(s)` : ""}`}
-              type="button"
-            >
-              <span>{Number(date.slice(-2))}</span>
-              {meta.dayBookings.length ? <em className="day-dot booked" /> : null}
-              {meta.dayBlocks.length ? <em className="day-dot blocked" /> : null}
-            </button>
-          );
-        })}
-      </div>
+      <div className="admin-calendar-layout">
+        <div className="booking-grid admin-calendar-grid">
+          {WEEKDAYS.map((day) => (
+            <span className="booking-grid-head" key={day}>
+              {day}
+            </span>
+          ))}
+          {calendarCells.map((date, index) => {
+            if (!date) return <span className="booking-day empty" key={`e-${index}`} />;
+            const meta = dayMeta(date);
+            const className = [
+              "booking-day",
+              "admin-calendar-day",
+              date === today ? "today" : "",
+              meta.blocked && meta.booked ? "mixed-day" : "",
+              meta.blocked ? "blocked-day" : "",
+              meta.booked ? "booked-day" : "",
+              !meta.blocked && !meta.booked && meta.availableCount > 0 ? "open-day" : "",
+              selectedDate === date ? "selected" : ""
+            ]
+              .filter(Boolean)
+              .join(" ");
+            return (
+              <button
+                className={className}
+                key={date}
+                onClick={() => selectDay(date)}
+                title={`${date} · ${meta.availableCount} open slots`}
+                type="button"
+              >
+                <span>{Number(date.slice(-2))}</span>
+                <div className="day-dots">
+                  {meta.dayBookings.length ? <em className="day-dot booked" /> : null}
+                  {meta.dayBlocks.length ? <em className="day-dot blocked" /> : null}
+                  {meta.availableCount > 0 && !meta.dayBookings.length && !meta.dayBlocks.length ? (
+                    <em className="day-dot open" />
+                  ) : null}
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
-      <div className="row-list">
-        {blocked.map((block) => (
-          <div className="row-item" key={block.id}>
-            <div>
-              <strong>{block.title ?? "Blocked"}</strong>
-              <p>
-                {block.date ?? "Daily"}
-                {block.start_time
-                  ? ` · ${block.start_time.slice(0, 5)}–${block.end_time?.slice(0, 5) ?? ""}`
-                  : " · whole day"}
-                {block.repeat_type !== "none" ? ` · ${block.repeat_type}` : ""}
-              </p>
-            </div>
-            <button className="button ghost" onClick={() => onRemoveBlock(block.id)} type="button">
-              Remove
-            </button>
-          </div>
-        ))}
+        <aside className="admin-day-panel">
+          {selectedDate && selectedMeta ? (
+            <>
+              <div className="admin-day-panel-header">
+                <div>
+                  <h4>{formatDateLabel(selectedDate)}</h4>
+                  <p className="meta">
+                    {selectedMeta.dayBookings.length} booking(s) · {selectedMeta.dayBlocks.length} block rule(s)
+                  </p>
+                </div>
+                <button className="button ghost" onClick={() => openBlockModal(selectedDate)} type="button">
+                  Block this day
+                </button>
+              </div>
+
+              <div className="admin-slot-timeline">
+                {BOOKING_SLOTS.map((slot) => {
+                  const state = selectedMeta.slots[slot];
+                  return (
+                    <div className={`admin-slot-chip ${state}`} key={slot}>
+                      <span>{slot}</span>
+                      <small>{state}</small>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {selectedMeta.dayBookings.length ? (
+                <div className="admin-day-section">
+                  <h5>Bookings</h5>
+                  {selectedMeta.dayBookings.map((booking) => (
+                    <div className="admin-day-item booked" key={booking.id}>
+                      <strong>
+                        {booking.start_time.slice(0, 5)} — {booking.client_name}
+                      </strong>
+                      <p>
+                        {booking.client_email} · <span className={`badge ${booking.status}`}>{booking.status}</span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {selectedMeta.dayBlocks.length ? (
+                <div className="admin-day-section">
+                  <h5>Blocked times</h5>
+                  {selectedMeta.dayBlocks.map((block) => (
+                    <div className="admin-day-item blocked" key={block.id}>
+                      <div>
+                        <strong>{block.title ?? "Blocked"}</strong>
+                        <p>
+                          {block.start_time
+                            ? `${block.start_time.slice(0, 5)}–${block.end_time?.slice(0, 5) ?? ""}`
+                            : "Whole day"}
+                          {block.repeat_type !== "none" ? ` · ${block.repeat_type}` : ""}
+                        </p>
+                      </div>
+                      <button className="button ghost" onClick={() => onRemoveBlock(block.id)} type="button">
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {!selectedMeta.dayBookings.length && !selectedMeta.dayBlocks.length ? (
+                <p className="meta">All slots available on this day.</p>
+              ) : null}
+            </>
+          ) : (
+            <div className="empty-state">Select a day to view bookings, blocks, and slot availability.</div>
+          )}
+        </aside>
       </div>
 
       {modalOpen ? (
         <div className="admin-modal-backdrop" role="presentation">
-          <div aria-modal="true" className="admin-modal" role="dialog">
+          <div aria-modal="true" className="admin-modal admin-modal-wide" role="dialog">
             <div className="admin-modal-header">
               <h3>Block time</h3>
               <button aria-label="Close" onClick={() => setModalOpen(false)} type="button">
@@ -254,6 +361,7 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
                   <option value="none">Does not repeat</option>
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly (same weekday)</option>
+                  <option value="monthly">Monthly (same day of month)</option>
                 </select>
               </label>
               <label className="field">
@@ -269,18 +377,33 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
             </div>
 
             {!draft.wholeDay ? (
-              <div className="booking-slot-grid admin-block-slots">
-                {BOOKING_SLOTS.map((slot) => (
-                  <button
-                    className={`booking-slot ${slotSelection.includes(slot) ? "selected" : ""}`}
-                    key={slot}
-                    onClick={() => toggleSlot(slot)}
-                    type="button"
-                  >
-                    {slot}
-                  </button>
-                ))}
-              </div>
+              <>
+                <p className="meta">Click and drag across slots to select a time range.</p>
+                <div className="booking-slot-grid admin-block-slots">
+                  {BOOKING_SLOTS.map((slot) => {
+                    const daySlots = draft.date ? slotStatesForDate(draft.date, blocked, bookings) : null;
+                    const dayState = daySlots?.[slot] ?? "available";
+                    const inSelection = slotSelection.includes(slot);
+                    return (
+                      <button
+                        className={`booking-slot slot-${dayState} ${inSelection ? "selected" : ""}`}
+                        key={slot}
+                        onMouseDown={() => onSlotPointerDown(slot)}
+                        onMouseEnter={() => onSlotPointerEnter(slot)}
+                        type="button"
+                      >
+                        {slot}
+                      </button>
+                    );
+                  })}
+                </div>
+                {slotSelection.length ? (
+                  <p className="meta">
+                    Selected: {slotSelection[0]} – {draft.endTime} ({slotSelection.length} slot
+                    {slotSelection.length === 1 ? "" : "s"})
+                  </p>
+                ) : null}
+              </>
             ) : null}
 
             {error ? <p className="status error">{error}</p> : null}
@@ -299,3 +422,6 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
     </div>
   );
 }
+
+// Re-export for BookingsAdminPanel typing
+export { blockMatchesDate, slotsInRange };

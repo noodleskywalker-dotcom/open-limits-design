@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { blockMatchesDate, slotStatesForDate, timeToSlot } from "@/lib/booking-utils";
 import { BOOKING_SLOTS } from "@/lib/cms/types";
 
 export const dynamic = "force-dynamic";
 
 type SlotState = "available" | "taken" | "blocked";
-
-function timeToSlot(time: string | null): string | null {
-  return time ? time.slice(0, 5) : null;
-}
 
 /**
  * GET /api/bookings?month=YYYY-MM
@@ -55,7 +52,6 @@ export async function GET(request: NextRequest) {
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const date = `${month}-${String(day).padStart(2, "0")}`;
-    const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
     const slots: Record<string, SlotState> = {};
 
     for (const slot of BOOKING_SLOTS) {
@@ -63,14 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     for (const block of blockedResult.data ?? []) {
-      const matchesDate =
-        block.repeat_type === "daily" ||
-        (block.repeat_type === "weekly" &&
-          block.date &&
-          new Date(`${block.date}T00:00:00Z`).getUTCDay() === weekday) ||
-        block.date === date;
-
-      if (!matchesDate) continue;
+      if (!blockMatchesDate(block, date)) continue;
 
       const blockStart = timeToSlot(block.start_time);
       const blockEnd = timeToSlot(block.end_time);
@@ -155,6 +144,16 @@ export async function POST(request: NextRequest) {
       { error: "That time slot was just taken. Please pick another slot." },
       { status: 409 }
     );
+  }
+
+  const { data: blockedRows, error: blockedError } = await supabase.from("blocked_times").select("*");
+  if (blockedError) {
+    return NextResponse.json({ error: blockedError.message }, { status: 500 });
+  }
+
+  const daySlots = slotStatesForDate(bookingDate, blockedRows ?? [], []);
+  if (daySlots[startTime] === "blocked") {
+    return NextResponse.json({ error: "That time slot is blocked." }, { status: 409 });
   }
 
   const endHour = String(Number(startTime.slice(0, 2)) + 1).padStart(2, "0");

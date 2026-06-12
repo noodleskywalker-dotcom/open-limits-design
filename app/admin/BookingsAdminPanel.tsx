@@ -3,16 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BlockedTime, Booking } from "@/lib/cms/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import AdminBlockCalendar from "@/components/booking/AdminBlockCalendar";
-
-type BlockDraft = {
-  title: string;
-  date: string;
-  wholeDay: boolean;
-  startTime: string;
-  endTime: string;
-  repeatType: "none" | "daily" | "weekly";
-};
+import AdminBlockCalendar, { type BlockDraft } from "@/components/booking/AdminBlockCalendar";
 
 export default function BookingsAdminPanel() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);

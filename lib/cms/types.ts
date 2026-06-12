@@ -104,6 +104,13 @@ export type CompanyProfile = {
   logo_image?: MediaAsset | null;
 };
 
+export type IntroSettings = {
+  enabled: boolean;
+  autoplayMs: number;
+  introTitle: string | null;
+  introSubtitle: string | null;
+};
+
 export type IntroSlide = {
   id: string;
   media_id: string;
@@ -231,7 +238,7 @@ export type BlockedTime = {
   date: string | null;
   start_time: string | null;
   end_time: string | null;
-  repeat_type: "none" | "daily" | "weekly";
+  repeat_type: "none" | "daily" | "weekly" | "monthly";
   created_at: string;
 };
 

@@ -18,7 +18,7 @@ export default function ShowroomAdminPanel({ media }: { media: MediaAsset[] }) {
   const [images, setImages] = useState<ShowroomImage[]>([]);
   const [activeSectionId, setActiveSectionId] = useState("");
   const [activeImageId, setActiveImageId] = useState("");
-  const [sectionForm, setSectionForm] = useState({ imageId: "", description: "" });
+  const [sectionForm, setSectionForm] = useState({ imageId: "", title: "", description: "" });
   const [roomForm, setRoomForm] = useState({ mediaId: "", title: "", description: "" });
   const [hotspotForm, setHotspotForm] = useState<HotspotForm>({
     label: "",
@@ -38,7 +38,15 @@ export default function ShowroomAdminPanel({ media }: { media: MediaAsset[] }) {
       .order("sort_order");
     if (sectionErr) throw sectionErr;
     setSections((sectionData ?? []) as ShowroomSection[]);
-    if (!activeSectionId && sectionData?.[0]) setActiveSectionId(sectionData[0].id);
+    if (!activeSectionId && sectionData?.[0]) {
+      const first = sectionData[0];
+      setActiveSectionId(first.id);
+      setSectionForm({
+        imageId: first.image_id ?? "",
+        title: first.title,
+        description: first.description ?? ""
+      });
+    }
   }, [supabase, activeSectionId]);
 
   const loadImages = useCallback(async () => {
@@ -63,7 +71,20 @@ export default function ShowroomAdminPanel({ media }: { media: MediaAsset[] }) {
     loadImages().catch((e: Error) => setError(e.message));
   }, [activeSectionId, loadImages]);
 
+  const activeSection = sections.find((s) => s.id === activeSectionId);
   const activeImage = images.find((img) => img.id === activeImageId) ?? images[0];
+
+  function selectSection(id: string) {
+    setActiveSectionId(id);
+    const section = sections.find((s) => s.id === id);
+    if (section) {
+      setSectionForm({
+        imageId: section.image_id ?? "",
+        title: section.title,
+        description: section.description ?? ""
+      });
+    }
+  }
 
   async function saveSectionImage(event: FormEvent) {
     event.preventDefault();
@@ -72,6 +93,7 @@ export default function ShowroomAdminPanel({ media }: { media: MediaAsset[] }) {
       .from("showroom_sections")
       .update({
         image_id: sectionForm.imageId || null,
+        title: sectionForm.title || "Section",
         description: sectionForm.description || null
       })
       .eq("id", activeSectionId);
@@ -147,7 +169,7 @@ export default function ShowroomAdminPanel({ media }: { media: MediaAsset[] }) {
       <div className="admin-toolbar">
         <label className="field">
           <span>Showroom section</span>
-          <select onChange={(e) => setActiveSectionId(e.target.value)} value={activeSectionId}>
+          <select onChange={(e) => selectSection(e.target.value)} value={activeSectionId}>
             {sections.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.title}
@@ -162,6 +184,14 @@ export default function ShowroomAdminPanel({ media }: { media: MediaAsset[] }) {
           <h3>Entry box (homepage)</h3>
           <p>Background image for the four main showroom boxes on the homepage.</p>
         </div>
+        <label className="field">
+          <span>Title</span>
+          <input
+            onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })}
+            required
+            value={sectionForm.title}
+          />
+        </label>
         <label className="field">
           <span>Box image</span>
           <select

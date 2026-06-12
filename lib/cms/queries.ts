@@ -16,6 +16,7 @@ import type {
   FurnitureItem,
   HomepageHeroImage,
   IntroSlide,
+  IntroSettings,
   Material,
   MediaAsset,
   Project,
@@ -330,4 +331,31 @@ export async function getShowroomImages(sectionId: string): Promise<ShowroomImag
     }
   }
   return [];
+}
+
+const INTRO_SETTING_DEFAULTS: IntroSettings = {
+  enabled: true,
+  autoplayMs: 3200,
+  introTitle: null,
+  introSubtitle: null
+};
+
+export async function getIntroSettings(): Promise<IntroSettings> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return INTRO_SETTING_DEFAULTS;
+
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("key, value")
+    .in("key", ["intro_enabled", "intro_autoplay_ms", "intro_title", "intro_subtitle"]);
+
+  if (error || !data) return INTRO_SETTING_DEFAULTS;
+
+  const map = Object.fromEntries(data.map((row) => [row.key, row.value]));
+  return {
+    enabled: map.intro_enabled !== "false",
+    autoplayMs: Math.max(1500, Number(map.intro_autoplay_ms) || INTRO_SETTING_DEFAULTS.autoplayMs),
+    introTitle: map.intro_title ?? null,
+    introSubtitle: map.intro_subtitle ?? null
+  };
 }

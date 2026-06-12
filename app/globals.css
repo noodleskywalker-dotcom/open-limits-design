@@ -774,10 +774,29 @@ a.card:hover {
   color: #0b0b0d;
 }
 
+.booking-slot.available,
+.booking-slot.slot-available {
+  background: rgba(95, 174, 135, 0.12);
+  border-color: rgba(95, 174, 135, 0.45);
+  color: var(--success);
+}
+
 .booking-slot.taken,
-.booking-slot.blocked {
+.booking-slot.slot-taken {
+  background: rgba(200, 162, 74, 0.15);
+  border-color: rgba(200, 162, 74, 0.55);
+  color: var(--gold-soft);
   cursor: not-allowed;
-  opacity: 0.3;
+  opacity: 0.85;
+}
+
+.booking-slot.blocked,
+.booking-slot.slot-blocked {
+  background: rgba(212, 104, 92, 0.15);
+  border-color: rgba(212, 104, 92, 0.55);
+  color: var(--danger);
+  cursor: not-allowed;
+  opacity: 0.85;
   text-decoration: line-through;
 }
 
@@ -1776,6 +1795,148 @@ a.card:hover {
   margin: 1rem 0;
 }
 
+.admin-calendar-layout {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+}
+
+.admin-day-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  min-height: 320px;
+  padding: 1rem;
+}
+
+.admin-day-panel-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.admin-day-panel-header h4 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-slot-timeline {
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.admin-slot-chip {
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.35rem;
+  text-align: center;
+}
+
+.admin-slot-chip small {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-slot-chip.available {
+  background: rgba(95, 174, 135, 0.12);
+  border-color: rgba(95, 174, 135, 0.45);
+  color: var(--success);
+}
+
+.admin-slot-chip.taken {
+  background: rgba(200, 162, 74, 0.12);
+  border-color: rgba(200, 162, 74, 0.45);
+  color: var(--gold-soft);
+}
+
+.admin-slot-chip.blocked {
+  background: rgba(212, 104, 92, 0.12);
+  border-color: rgba(212, 104, 92, 0.45);
+  color: var(--danger);
+}
+
+.admin-day-section {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+}
+
+.admin-day-section h5 {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.admin-day-item {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.admin-day-item.booked {
+  border-color: rgba(200, 162, 74, 0.45);
+}
+
+.admin-day-item.blocked {
+  border-color: rgba(212, 104, 92, 0.45);
+}
+
+.admin-calendar-day.open-day {
+  background: rgba(95, 174, 135, 0.08);
+  border-color: rgba(95, 174, 135, 0.35);
+}
+
+.admin-calendar-day.mixed-day {
+  background: linear-gradient(135deg, rgba(200, 162, 74, 0.1), rgba(212, 104, 92, 0.1));
+}
+
+.admin-calendar-day.selected {
+  box-shadow: inset 0 0 0 2px var(--gold-soft);
+}
+
+.day-dot.open {
+  background: var(--success);
+}
+
+.admin-modal-wide {
+  max-width: 640px;
+}
+
+.legend-open::before {
+  background: var(--success);
+}
+
+.furniture-showroom-highlight {
+  align-items: center;
+  animation: introRise 0.5s ease;
+  background: linear-gradient(90deg, rgba(200, 162, 74, 0.18), rgba(200, 162, 74, 0.05));
+  border: 1px solid var(--gold-dark);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 0 auto 1rem;
+  max-width: 1200px;
+  padding: 0.85rem 1rem;
+}
+
+.from-showroom .furniture-detail {
+  outline: 1px solid rgba(200, 162, 74, 0.35);
+  outline-offset: 8px;
+}
+
 /* ---------- furniture images ---------- */
 .furniture-card .furniture-image-wrap,
 .furniture-detail-media .furniture-image-wrap {
@@ -1938,6 +2099,7 @@ a.card:hover {
   .showroom-entry-grid,
   .booking-shell,
   .admin-shell,
+  .admin-calendar-layout,
   .form-grid,
   .location-inner {
     grid-template-columns: 1fr;

@@ -1,7 +1,7 @@
 export function hotspotHref(type: string, target: string): string {
   switch (type) {
     case "furniture":
-      return `/furniture/${target}`;
+      return `/furniture/${target}?from=showroom`;
     case "material":
       return `/materials#${target}`;
     case "project":

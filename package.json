@@ -11,6 +11,8 @@
     "supabase:verify": "node scripts/verify-supabase.mjs",
     "supabase:audit": "node scripts/audit-supabase-schema.mjs",
     "supabase:apply-fix": "node scripts/apply-migration.mjs supabase/migrations/fix_media_relationships.sql",
+    "supabase:apply-phase2": "node scripts/apply-migration.mjs supabase/migrations/phase2_bookings_index_and_monthly.sql",
+    "supabase:verify-bookings": "node scripts/verify-booking-index.mjs",
     "supabase:test-uploads": "node scripts/test-image-uploads.mjs",
     "db:seed": "node scripts/seed-cms.mjs",
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",

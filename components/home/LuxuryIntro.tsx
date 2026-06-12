@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { IntroSlide } from "@/lib/cms/types";
+import type { IntroSettings, IntroSlide } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
 
 const INTRO_KEY = "old-intro-seen";
@@ -13,6 +13,7 @@ type LuxuryIntroProps = {
   companyName: string;
   ceoName: string;
   tagline: string;
+  settings: IntroSettings;
 };
 
 export default function LuxuryIntro({
@@ -21,7 +22,8 @@ export default function LuxuryIntro({
   logoImageUrl,
   companyName,
   ceoName,
-  tagline
+  tagline,
+  settings
 }: LuxuryIntroProps) {
   const [visible, setVisible] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -31,9 +33,17 @@ export default function LuxuryIntro({
     const built: { image: string; title: string; subtitle: string }[] = [];
 
     if (logoImageUrl) {
-      built.push({ image: logoImageUrl, title: companyName, subtitle: "Luxury Design Studio" });
+      built.push({
+        image: logoImageUrl,
+        title: settings.introTitle ?? companyName,
+        subtitle: settings.introSubtitle ?? "Luxury Design Studio"
+      });
     } else {
-      built.push({ image: "", title: companyName, subtitle: "OPEN LIMITS DESIGN" });
+      built.push({
+        image: "",
+        title: settings.introTitle ?? companyName,
+        subtitle: settings.introSubtitle ?? "OPEN LIMITS DESIGN"
+      });
     }
 
     if (ceoImageUrl) {
@@ -51,23 +61,23 @@ export default function LuxuryIntro({
       }
     }
 
-    return built.length ? built : [{ image: "", title: companyName, subtitle: tagline }];
-  }, [slides, ceoImageUrl, logoImageUrl, companyName, ceoName, tagline]);
+    return built.length ? built : [{ image: "", title: settings.introTitle ?? companyName, subtitle: tagline }];
+  }, [slides, ceoImageUrl, logoImageUrl, companyName, ceoName, tagline, settings]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (sessionStorage.getItem(INTRO_KEY) === "1") return;
+    if (!settings.enabled || sessionStorage.getItem(INTRO_KEY) === "1") return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- first-visit intro must read sessionStorage client-side
     setVisible(true);
-  }, []);
+  }, [settings.enabled]);
 
   useEffect(() => {
     if (!visible || allSlides.length <= 1) return;
     const timer = window.setInterval(() => {
       setSlideIndex((current) => (current + 1) % allSlides.length);
-    }, 3200);
+    }, settings.autoplayMs);
     return () => window.clearInterval(timer);
-  }, [visible, allSlides.length]);
+  }, [visible, allSlides.length, settings.autoplayMs]);
 
   const enter = useCallback(() => {
     setExiting(true);
