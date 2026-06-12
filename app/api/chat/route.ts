@@ -1,88 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildSiteKnowledge, siteKnowledgeToPrompt } from "@/lib/ai/chat-context";
+import { buildFallbackReply } from "@/lib/ai/chat-fallback";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 type ChatMessage = { role: "user" | "assistant" | "system"; content: string };
-
-async function buildSiteContext(): Promise<string> {
-  const supabase = getSupabaseServerClient();
-  if (!supabase) {
-    return "Open Limits Design is a luxury architecture, interior design, and furniture studio in Lusail, Qatar.";
-  }
-
-  const [services, categories, company] = await Promise.all([
-    supabase.from("services").select("title, description").eq("is_active", true).order("sort_order"),
-    supabase.from("furniture_categories").select("name").eq("published", true).order("sort_order"),
-    supabase
-      .from("company_profile")
-      .select("name, tagline, description, phone, phone2, email, address")
-      .eq("id", 1)
-      .maybeSingle()
-  ]);
-
-  const parts: string[] = [];
-  if (company.data) {
-    parts.push(
-      `Company: ${company.data.name}. ${company.data.tagline ?? ""} ${company.data.description ?? ""}`.trim()
-    );
-    if (company.data.email) parts.push(`Contact email: ${company.data.email}`);
-    if (company.data.phone) parts.push(`Contact phone: ${company.data.phone}`);
-    if (company.data.phone2) parts.push(`Secondary phone: ${company.data.phone2}`);
-    if (company.data.address) parts.push(`Address: ${company.data.address}`);
-    parts.push("Locations served: Qatar and select international projects.");
-  }
-  if (services.data?.length) {
-    parts.push(`Services: ${services.data.map((s) => s.title).join(", ")}.`);
-  }
-  if (categories.data?.length) {
-    parts.push(`Furniture categories: ${categories.data.map((c) => c.name).join(", ")}.`);
-  }
-  parts.push("Pricing depends on project type, size, materials, design complexity, location, timeline, and furniture/fit-out requirements — no fixed pricing.");
-  parts.push("Clients can book a meeting with the CEO at /book-meeting-with-ceo.");
-  return parts.join("\n");
-}
-
-function fallbackReply(question: string, context: string): string {
-  const q = question.toLowerCase();
-
-  if (/futuristic|avant.?garde|modern|contemporary/.test(q)) {
-    return "Yes — Open Limits Design creates contemporary and forward-thinking architecture and interiors. We tailor each concept to your vision, from minimalist luxury to bold statement spaces. Book a consultation to explore a futuristic direction for your project.";
-  }
-  if (/custom furniture|bespoke furniture|made.?to.?order/.test(q)) {
-    return "Absolutely. We design and supply custom furniture — majlis seating, bedrooms, dining collections, and one-off commissions. Browse our Furniture catalog or book a meeting to discuss dimensions, materials, and finishes for your piece.";
-  }
-  if (/price|cost|quote|budget|how much/.test(q)) {
-    return "Pricing depends on project type, size, materials, design complexity, location, timeline, and furniture or fit-out requirements. We do not publish fixed prices. What type of project is it, and what is the approximate size? You can also book a meeting with our CEO for a tailored proposal.";
-  }
-  if (/outside qatar|international|abroad|other countr/.test(q)) {
-    return "We are based in Lusail, Qatar and primarily serve clients across Qatar. For select international projects we can discuss remote design and supply arrangements — share your location and project scope and we will advise on feasibility.";
-  }
-  if (/book|meeting|appointment|schedule|calendar/.test(q)) {
-    return "You can book a meeting with our CEO on the website. Open Book a Meeting, pick an available date and time, and submit your details. We confirm every request personally.";
-  }
-  if (/service|architecture|interior|fit.?out|shell|facade|window|construction|bim|revit|engineering|project management/.test(q)) {
-    const services = context.match(/Services: ([^\n]+)/)?.[1];
-    return `Open Limits Design offers: ${services ?? "architecture, interior design, construction, furniture supply, BIM/Revit, fit-out, engineering, and project management"}. Visit the Services page or book a meeting to discuss your scope.`;
-  }
-  if (/furniture|sofa|majlis|chair|table|bed|cabinet|light|decor/.test(q)) {
-    const categories = context.match(/Furniture categories: ([^\n]+)/)?.[1];
-    return `Our furniture catalog includes: ${categories ?? "sofas, majlis, chairs, tables, bedrooms, and exterior collections"}. Browse the Furniture page for dimensions, materials, and photos.`;
-  }
-  if (/contact|phone|email|address|reach|location/.test(q)) {
-    const email = context.match(/Contact email: ([^\n]+)/)?.[1];
-    const phone = context.match(/Contact phone: ([^\n]+)/)?.[1];
-    if (email || phone) {
-      return `Reach Open Limits Design${email ? ` at ${email}` : ""}${phone ? ` or call ${phone}` : ""}. Visit the Contact page or book a meeting online.`;
-    }
-    return "Use the Contact page to reach us, or book a meeting with our CEO from the booking page.";
-  }
-  if (/material|wood|marble|leather|fabric|oak|walnut|brass/.test(q)) {
-    return "We work with premium materials including oak, walnut, marble, leather, linen, steel, and brushed brass. See the Materials page for our material library.";
-  }
-  return "I can help with our services, furniture catalog, materials, pricing process, and booking a meeting with our CEO. What would you like to know about Open Limits Design?";
-}
 
 function extractLeadFields(messages: ChatMessage[]) {
   const text = messages
@@ -132,12 +55,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No user message provided" }, { status: 400 });
   }
 
-  console.log("[chat] user message:", lastUser.content);
-
-  const context = await buildSiteContext();
+  const knowledge = await buildSiteKnowledge();
+  const context = siteKnowledgeToPrompt(knowledge);
   const apiKey = process.env.OPENAI_API_KEY;
-  const openAiLoaded = Boolean(apiKey);
-  console.log("[chat] OpenAI key loaded:", openAiLoaded);
 
   if (apiKey) {
     try {
@@ -149,15 +69,16 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          max_tokens: 450,
+          max_tokens: 500,
           messages: [
             {
               role: "system",
               content:
-                "You are the helpful assistant for Open Limits Design, a luxury architecture, interior design, and furniture studio in Qatar. " +
-                "Only describe services and furniture from the site context. Never invent services. " +
-                "Do not give fixed pricing — explain that pricing depends on scope, size, materials, complexity, location, timeline, and fit-out needs. " +
-                "Encourage booking a CEO meeting when relevant. Collect name, phone, email, project type, location, and preferred date/time when the visitor is interested.\n\nSITE CONTEXT:\n" +
+                "You are the Open Limits Design website assistant — conversational, concise, and helpful. " +
+                "Use ONLY facts from SITE CONTEXT (live CMS data). Include specific counts, category names, and project titles when relevant. " +
+                "When pointing visitors somewhere, mention these paths: /furniture, /materials, /projects, /services, /book-meeting-with-ceo, /contact. " +
+                "Never invent products or projects not listed. Do not give fixed pricing — explain scope-based quotes. " +
+                "Encourage booking a CEO meeting when appropriate.\n\nSITE CONTEXT:\n" +
                 context
             },
             ...messages
@@ -165,15 +86,16 @@ export async function POST(request: NextRequest) {
         })
       });
 
-      console.log("[chat] OpenAI status code:", response.status);
-
       if (response.ok) {
         const data = await response.json();
-        const reply = data.choices?.[0]?.message?.content;
+        const reply = data.choices?.[0]?.message?.content?.trim();
         if (reply) {
           await storeLead(messages);
-          console.log("[chat] final response (openai):", reply.slice(0, 120));
-          return NextResponse.json({ reply, source: "openai" });
+          return NextResponse.json({
+            reply,
+            links: inferLinksFromReply(reply),
+            source: "openai"
+          });
         }
       } else {
         const detail = await response.text();
@@ -182,13 +104,23 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error("[chat] OpenAI request failed:", error instanceof Error ? error.message : error);
     }
-  } else {
-    console.log("[chat] OPENAI_API_KEY missing — using fallback responses.");
   }
 
-  const reply = fallbackReply(lastUser.content, context);
+  const { reply, links } = buildFallbackReply(lastUser.content, knowledge);
   await storeLead(messages);
-  console.log("[chat] final response (fallback):", reply.slice(0, 120));
 
-  return NextResponse.json({ reply, source: "fallback" });
+  return NextResponse.json({ reply, links, source: "fallback" });
+}
+
+function inferLinksFromReply(reply: string) {
+  const candidates: { label: string; href: string; pattern: RegExp }[] = [
+    { label: "View Furniture Catalog", href: "/furniture", pattern: /\/furniture\b/i },
+    { label: "Browse Materials", href: "/materials", pattern: /\/materials\b/i },
+    { label: "View Projects", href: "/projects", pattern: /\/projects\b/i },
+    { label: "Book a Meeting", href: "/book-meeting-with-ceo", pattern: /\/book-meeting-with-ceo\b/i },
+    { label: "View Services", href: "/services", pattern: /\/services\b/i },
+    { label: "Contact Us", href: "/contact", pattern: /\/contact\b/i }
+  ];
+
+  return candidates.filter((item) => item.pattern.test(reply)).map(({ label, href }) => ({ label, href }));
 }

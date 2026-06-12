@@ -888,6 +888,86 @@ a.card:hover {
   color: #0b0b0d;
 }
 
+.ai-message-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 92%;
+}
+
+.ai-message-wrap.user {
+  align-self: flex-end;
+}
+
+.ai-message-wrap.assistant {
+  align-self: flex-start;
+}
+
+.ai-message-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ai-link-chip {
+  background: rgba(200, 162, 74, 0.12);
+  border: 1px solid rgba(200, 162, 74, 0.45);
+  border-radius: 999px;
+  color: var(--gold-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.28rem 0.65rem;
+  text-decoration: none;
+}
+
+.ai-link-chip:hover {
+  background: rgba(200, 162, 74, 0.22);
+}
+
+.ai-quick-actions {
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem 0;
+}
+
+.ai-quick-action {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  padding: 0.35rem 0.6rem;
+}
+
+.ai-quick-action:hover:not(:disabled) {
+  border-color: var(--gold-dark);
+  color: var(--gold-soft);
+}
+
+.ai-quick-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ai-typing {
+  align-self: flex-start;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: italic;
+  margin: 0;
+  padding: 0 0.2rem;
+}
+
+.ai-message a {
+  color: var(--gold-soft);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .ai-input {
   border-top: 1px solid var(--border);
   display: flex;
