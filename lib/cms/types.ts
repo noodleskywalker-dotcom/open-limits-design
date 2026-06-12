@@ -3,6 +3,7 @@ export const MEDIA_CATEGORIES = [
   "Projects",
   "Interior Design",
   "Furniture",
+  "Materials",
   "Team",
   "CEO",
   "Company"
@@ -24,18 +25,48 @@ export type MediaAsset = {
   created_at: string;
 };
 
+// Legacy live-schema note: services/team use is_active, projects use is_published.
+export type Service = {
+  id: string;
+  slug: string | null;
+  title: string;
+  description: string;
+  icon: string | null;
+  image_url: string | null;
+  image_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+  image?: MediaAsset | null;
+};
+
+export type TeamMember = {
+  id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  email: string | null;
+  photo_url: string | null;
+  photo_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+  photo?: MediaAsset | null;
+};
+
 export type Project = {
   id: string;
   slug: string;
   title: string;
-  description: string;
+  description: string | null;
   location: string | null;
+  category: string | null;
   completion_date: string | null;
+  cover_image_url: string | null;
   featured_image_id: string | null;
+  is_featured: boolean;
+  is_published: boolean;
   sort_order: number;
-  published: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
   featured_image?: MediaAsset | null;
   gallery?: MediaAsset[];
   comparisons?: ProjectComparison[];
@@ -52,27 +83,6 @@ export type ProjectComparison = {
   after_image?: MediaAsset | null;
 };
 
-export type TeamMember = {
-  id: string;
-  name: string;
-  role: string;
-  bio: string | null;
-  email: string | null;
-  photo_id: string | null;
-  sort_order: number;
-  published: boolean;
-  photo?: MediaAsset | null;
-};
-
-export type Service = {
-  id: string;
-  title: string;
-  description: string;
-  icon: string | null;
-  sort_order: number;
-  published: boolean;
-};
-
 export type CompanyProfile = {
   id: number;
   name: string;
@@ -84,6 +94,9 @@ export type CompanyProfile = {
   hero_headline: string | null;
   hero_subheadline: string | null;
   ceo_image_id: string | null;
+  ceo_name: string | null;
+  ceo_bio: string | null;
+  about_text: string | null;
   ceo_image?: MediaAsset | null;
 };
 
@@ -101,8 +114,20 @@ export type FurnitureCategory = {
   description: string | null;
   sort_order: number;
   published: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type Material = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  image_id: string | null;
+  sort_order: number;
+  published: boolean;
+  image?: MediaAsset | null;
 };
 
 export type FurnitureItem = {
@@ -111,14 +136,66 @@ export type FurnitureItem = {
   title: string;
   description: string;
   dimensions: string | null;
+  width: string | null;
+  depth: string | null;
+  height: string | null;
   materials: string | null;
+  finishes: string | null;
+  features: string | null;
+  availability: string | null;
+  collection: string | null;
   category_id: string;
   featured_image_id: string | null;
   sort_order: number;
   published: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
   category?: FurnitureCategory | null;
   featured_image?: MediaAsset | null;
   gallery?: MediaAsset[];
+  material_records?: Material[];
 };
+
+export type BookingStatus = "pending" | "confirmed" | "rejected";
+
+export type Booking = {
+  id: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  notes: string | null;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  status: BookingStatus;
+  created_at: string;
+};
+
+export type BlockedTime = {
+  id: string;
+  title: string | null;
+  date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  repeat_type: "none" | "daily" | "weekly";
+  created_at: string;
+};
+
+export const BOOKING_SLOTS = [
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00"
+] as const;
+
+/** Resolve a display URL from a CMS media record with a legacy URL fallback. */
+export function resolveImageUrl(
+  media: MediaAsset | null | undefined,
+  legacyUrl?: string | null
+): string | null {
+  return media?.public_url ?? legacyUrl ?? null;
+}

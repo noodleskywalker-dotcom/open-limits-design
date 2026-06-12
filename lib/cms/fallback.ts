@@ -2,54 +2,65 @@ import type {
   CompanyProfile,
   FurnitureCategory,
   FurnitureItem,
-  MediaAsset,
+  Material,
   Project,
   Service,
   TeamMember
 } from "./types";
 
-export const fallbackMedia: MediaAsset[] = [];
-
 export const fallbackCompanyProfile: CompanyProfile = {
   id: 1,
   name: "Open Limits Design",
-  tagline: "Architecture, interiors, furniture, and project delivery.",
+  tagline: "Architecture · Interior Design · Furniture",
   description:
-    "A design studio for high-end architecture, interior design, furniture, and company projects.",
+    "A luxury design studio for architecture, interiors, custom furniture, and turnkey project delivery.",
   address: null,
   phone: null,
   email: null,
-  hero_headline: "Design without limits",
+  hero_headline: "Design Without Limits",
   hero_subheadline:
-    "Manage images, projects, team profiles, services, and company content from one Supabase-powered dashboard.",
+    "Luxury architecture, interiors, and bespoke furniture — crafted in Qatar, delivered worldwide.",
   ceo_image_id: null,
+  ceo_name: "Mohammed",
+  ceo_bio:
+    "Leading Open Limits with vision and expertise in luxury design and contracting.",
+  about_text: null,
   ceo_image: null
 };
 
 export const fallbackServices: Service[] = [
   {
     id: "architecture",
+    slug: "architecture",
     title: "Architecture",
     description: "Concept, design development, and delivery for residential and commercial spaces.",
-    icon: "A",
+    icon: null,
+    image_url: null,
+    image_id: null,
     sort_order: 1,
-    published: true
+    is_active: true
   },
   {
     id: "interior-design",
+    slug: "interior-design",
     title: "Interior Design",
     description: "Material palettes, spatial planning, FF&E, and turnkey interior experiences.",
-    icon: "I",
+    icon: null,
+    image_url: null,
+    image_id: null,
     sort_order: 2,
-    published: true
+    is_active: true
   },
   {
-    id: "furniture",
-    title: "Furniture",
+    id: "furniture-design",
+    slug: "furniture-design",
+    title: "Furniture Design",
     description: "Custom furniture direction and curated pieces for complete environments.",
-    icon: "F",
+    icon: null,
+    image_url: null,
+    image_id: null,
     sort_order: 3,
-    published: true
+    is_active: true
   }
 ];
 
@@ -58,66 +69,14 @@ export const fallbackProjects: Project[] = [];
 export const fallbackTeam: TeamMember[] = [];
 
 export const fallbackFurnitureCategories: FurnitureCategory[] = [
-  {
-    id: "sofas",
-    slug: "sofas",
-    name: "Sofas",
-    description: "Sofas, sectionals, and lounge seating.",
-    sort_order: 1,
-    published: true,
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: "majlis",
-    slug: "majlis",
-    name: "Majlis",
-    description: "Majlis seating and custom gathering spaces.",
-    sort_order: 2,
-    published: true,
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: "chairs",
-    slug: "chairs",
-    name: "Chairs",
-    description: "Accent, dining, lounge, and task chairs.",
-    sort_order: 3,
-    published: true,
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: "tables",
-    slug: "tables",
-    name: "Tables",
-    description: "Coffee tables, dining tables, consoles, and side tables.",
-    sort_order: 4,
-    published: true,
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: "bedrooms",
-    slug: "bedrooms",
-    name: "Bedrooms",
-    description: "Beds, nightstands, wardrobes, and bedroom furniture.",
-    sort_order: 5,
-    published: true,
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: "exterior",
-    slug: "exterior",
-    name: "Exterior",
-    description: "Outdoor and exterior furniture collections.",
-    sort_order: 6,
-    published: true,
-    created_at: "",
-    updated_at: ""
-  }
+  { id: "sofas", slug: "sofas", name: "Sofas", description: null, sort_order: 1, published: true },
+  { id: "majlis", slug: "majlis", name: "Majlis", description: null, sort_order: 2, published: true },
+  { id: "chairs", slug: "chairs", name: "Chairs", description: null, sort_order: 3, published: true },
+  { id: "tables", slug: "tables", name: "Tables", description: null, sort_order: 4, published: true },
+  { id: "bedrooms", slug: "bedrooms", name: "Bedrooms", description: null, sort_order: 9, published: true },
+  { id: "exterior", slug: "exterior", name: "Exterior", description: null, sort_order: 10, published: true }
 ];
 
 export const fallbackFurnitureItems: FurnitureItem[] = [];
+
+export const fallbackMaterials: Material[] = [];

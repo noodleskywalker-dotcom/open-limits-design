@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+let cachedClient: SupabaseClient | null = null;
 
 export function getSupabaseBrowserClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -8,5 +10,9 @@ export function getSupabaseBrowserClient() {
     return null;
   }
 
-  return createClient(url, anonKey);
+  if (!cachedClient) {
+    cachedClient = createClient(url, anonKey);
+  }
+
+  return cachedClient;
 }
