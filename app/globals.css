@@ -1296,6 +1296,486 @@ a.card:hover {
   margin-bottom: 0.75rem;
 }
 
+/* ---------- luxury intro modal ---------- */
+.luxury-intro {
+  align-items: center;
+  animation: introFadeIn 0.8s ease;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 200;
+}
+
+.luxury-intro-exit {
+  animation: introFadeOut 0.7s ease forwards;
+}
+
+.luxury-intro-backdrop {
+  background: radial-gradient(circle at 50% 20%, #1a1510 0%, #050505 55%, #000 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.luxury-intro-content {
+  animation: introRise 0.9s ease;
+  max-width: 720px;
+  padding: 2rem;
+  position: relative;
+  text-align: center;
+  width: min(92vw, 720px);
+  z-index: 1;
+}
+
+.luxury-intro-slide {
+  animation: introRise 0.6s ease;
+}
+
+.luxury-intro-image {
+  border: 1px solid var(--gold-dark);
+  border-radius: 1rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  margin: 0 auto 1.5rem;
+  max-height: min(42vh, 360px);
+  object-fit: cover;
+  width: min(100%, 420px);
+}
+
+.luxury-intro-logo-text {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+}
+
+.logo-animated {
+  animation: logoShimmer 2.4s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-soft), var(--gold-dark));
+  background-clip: text;
+  background-size: 200% auto;
+  color: transparent;
+  display: block;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 300;
+  letter-spacing: 0.28em;
+}
+
+.logo-animated.delay {
+  animation-delay: 0.35s;
+}
+
+.luxury-intro-copy h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin-bottom: 0.5rem;
+}
+
+.luxury-intro-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1.25rem 0;
+}
+
+.luxury-intro-dots button {
+  background: var(--border);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 8px;
+  padding: 0;
+  width: 8px;
+}
+
+.luxury-intro-dots button.active {
+  background: var(--gold);
+  width: 24px;
+}
+
+.luxury-intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+@keyframes logoShimmer {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+/* ---------- showroom entry boxes ---------- */
+.showroom-entry {
+  min-height: calc(100vh - 72px);
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.showroom-entry-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 auto;
+  max-width: 1400px;
+  min-height: calc(100vh - 8rem);
+}
+
+.showroom-entry-box {
+  animation: introRise 0.7s ease both;
+  border: 1px solid var(--border);
+  display: grid;
+  min-height: clamp(220px, 38vh, 420px);
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.showroom-entry-box:hover {
+  border-color: var(--gold);
+  transform: translateY(-6px) scale(1.01);
+}
+
+.showroom-entry-bg {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  transition: transform 0.5s ease;
+  width: 100%;
+}
+
+.showroom-entry-box:hover .showroom-entry-bg {
+  transform: scale(1.06);
+}
+
+.showroom-entry-overlay {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.75) 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.showroom-entry-body {
+  align-self: end;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.showroom-entry-body h3 {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  margin-bottom: 0.5rem;
+}
+
+.showroom-entry-cta {
+  color: var(--gold-soft);
+  display: inline-block;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  margin-top: 0.75rem;
+  text-transform: uppercase;
+}
+
+/* ---------- interactive showroom ---------- */
+.showroom-page .showroom-back {
+  color: var(--gold);
+  display: inline-block;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.showroom-viewer {
+  padding: 0 clamp(1rem, 4vw, 4rem) 3rem;
+}
+
+.showroom-viewer-tabs,
+.showroom-admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.showroom-viewer-tabs button,
+.showroom-admin-tabs button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+}
+
+.showroom-viewer-tabs button.active,
+.showroom-admin-tabs button.active {
+  border-color: var(--gold);
+  color: var(--gold-soft);
+}
+
+.showroom-scene {
+  aspect-ratio: 16 / 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin: 1rem 0;
+  max-height: 72vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.showroom-scene.editable {
+  cursor: crosshair;
+}
+
+.showroom-scene-image {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.showroom-hotspot {
+  background: rgba(200, 162, 74, 0.12);
+  border: 1px solid rgba(200, 162, 74, 0.65);
+  border-radius: 0.35rem;
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s, border-color 0.2s;
+  z-index: 2;
+}
+
+.showroom-hotspot:hover,
+.showroom-hotspot:focus-visible {
+  background: rgba(200, 162, 74, 0.28);
+  border-color: var(--gold-soft);
+}
+
+.showroom-hotspot.preview {
+  pointer-events: none;
+}
+
+.showroom-hotspot.preview.draft {
+  border-style: dashed;
+}
+
+.showroom-hotspot-pulse {
+  animation: hotspotPulse 2s ease infinite;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  display: block;
+  height: 12px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+}
+
+.showroom-hotspot-label {
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid var(--gold-dark);
+  border-radius: 0.25rem;
+  bottom: calc(100% + 6px);
+  color: var(--gold-soft);
+  font-size: 0.72rem;
+  left: 50%;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  padding: 0.2rem 0.45rem;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.showroom-hotspot:hover .showroom-hotspot-label,
+.showroom-hotspot:focus-visible .showroom-hotspot-label {
+  opacity: 1;
+}
+
+.showroom-hotspot-panel {
+  align-items: center;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+@keyframes hotspotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 162, 74, 0.45); }
+  50% { box-shadow: 0 0 0 10px rgba(200, 162, 74, 0); }
+}
+
+/* ---------- admin block calendar ---------- */
+.admin-block-calendar {
+  margin-bottom: 2rem;
+}
+
+.admin-calendar-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.admin-calendar-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-calendar-grid {
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.admin-calendar-weekday {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.admin-calendar-day {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  font-size: 0.85rem;
+  gap: 0.15rem;
+  min-height: 64px;
+  padding: 0.35rem;
+  place-content: start center;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.admin-calendar-day:hover:not(:disabled) {
+  border-color: var(--gold-dark);
+}
+
+.admin-calendar-day.empty {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+
+.admin-calendar-day.blocked-day {
+  background: rgba(212, 104, 92, 0.12);
+  border-color: rgba(212, 104, 92, 0.45);
+}
+
+.admin-calendar-day.booked-day {
+  background: rgba(200, 162, 74, 0.1);
+  border-color: rgba(200, 162, 74, 0.45);
+}
+
+.admin-calendar-day.today {
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.admin-calendar-day.past {
+  opacity: 0.45;
+}
+
+.day-dots {
+  display: flex;
+  gap: 0.2rem;
+  justify-content: center;
+}
+
+.day-dot {
+  border-radius: 999px;
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+}
+
+.day-dot.blocked {
+  background: var(--danger);
+}
+
+.day-dot.booked {
+  background: var(--gold);
+}
+
+.admin-calendar-legend {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  gap: 1rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.admin-calendar-legend span::before {
+  border-radius: 999px;
+  content: "";
+  display: inline-block;
+  height: 8px;
+  margin-right: 0.35rem;
+  width: 8px;
+}
+
+.legend-blocked::before {
+  background: var(--danger);
+}
+
+.legend-booked::before {
+  background: var(--gold);
+}
+
+.admin-modal-backdrop {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 300;
+}
+
+.admin-modal {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  max-height: 90vh;
+  max-width: 560px;
+  overflow: auto;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.admin-modal-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.admin-modal-header button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.admin-block-slots {
+  margin: 1rem 0;
+}
+
 /* ---------- furniture images ---------- */
 .furniture-card .furniture-image-wrap,
 .furniture-detail-media .furniture-image-wrap {
@@ -1455,6 +1935,7 @@ a.card:hover {
   .detail-hero,
   .furniture-detail,
   .discipline-grid,
+  .showroom-entry-grid,
   .booking-shell,
   .admin-shell,
   .form-grid,

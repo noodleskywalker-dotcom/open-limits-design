@@ -17,11 +17,15 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import AdminLogin from "./AdminLogin";
 import BookingsAdminPanel from "./BookingsAdminPanel";
 import FurnitureAdminPanel from "./FurnitureAdminPanel";
+import IntroAdminPanel from "./IntroAdminPanel";
 import MaterialsAdminPanel from "./MaterialsAdminPanel";
+import ShowroomAdminPanel from "./ShowroomAdminPanel";
 
 export type AdminTab =
   | "media"
   | "homepage"
+  | "intro"
+  | "showroom"
   | "services"
   | "team"
   | "projects"
@@ -32,6 +36,8 @@ export type AdminTab =
 const TABS: { id: AdminTab; label: string }[] = [
   { id: "media", label: "Media" },
   { id: "homepage", label: "Homepage" },
+  { id: "intro", label: "Intro" },
+  { id: "showroom", label: "Showroom" },
   { id: "services", label: "Services" },
   { id: "team", label: "Team" },
   { id: "projects", label: "Projects" },
@@ -1451,6 +1457,10 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
                 </div>
               </div>
             ) : null}
+
+            {tab === "intro" ? <IntroAdminPanel media={media} /> : null}
+
+            {tab === "showroom" ? <ShowroomAdminPanel media={media} /> : null}
 
             {tab === "furniture" ? <FurnitureAdminPanel media={media} /> : null}
 

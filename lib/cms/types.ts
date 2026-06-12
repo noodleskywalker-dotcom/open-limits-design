@@ -99,7 +99,58 @@ export type CompanyProfile = {
   ceo_bio: string | null;
   about_text: string | null;
   map_query: string | null;
+  logo_image_id: string | null;
   ceo_image?: MediaAsset | null;
+  logo_image?: MediaAsset | null;
+};
+
+export type IntroSlide = {
+  id: string;
+  media_id: string;
+  title: string | null;
+  subtitle: string | null;
+  sort_order: number;
+  published: boolean;
+  media?: MediaAsset | null;
+};
+
+export type ShowroomSection = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  image_id: string | null;
+  link_url: string | null;
+  sort_order: number;
+  published: boolean;
+  image?: MediaAsset | null;
+};
+
+export type ShowroomHotspotLinkType = "furniture" | "material" | "project" | "custom";
+
+export type ShowroomHotspot = {
+  id: string;
+  showroom_image_id: string;
+  label: string;
+  x_percent: number;
+  y_percent: number;
+  width_percent: number;
+  height_percent: number;
+  link_type: ShowroomHotspotLinkType;
+  link_target: string;
+  sort_order: number;
+};
+
+export type ShowroomImage = {
+  id: string;
+  section_id: string;
+  media_id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  published: boolean;
+  media?: MediaAsset | null;
+  hotspots?: ShowroomHotspot[];
 };
 
 export type HomepageHeroImage = {

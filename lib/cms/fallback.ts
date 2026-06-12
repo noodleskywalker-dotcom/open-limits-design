@@ -2,9 +2,11 @@ import type {
   CompanyProfile,
   FurnitureCategory,
   FurnitureItem,
+  IntroSlide,
   Material,
   Project,
   Service,
+  ShowroomSection,
   TeamMember
 } from "./types";
 
@@ -27,8 +29,59 @@ export const fallbackCompanyProfile: CompanyProfile = {
     "Leading Open Limits with vision and expertise in luxury design and contracting.",
   about_text: null,
   map_query: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar",
-  ceo_image: null
+  logo_image_id: null,
+  ceo_image: null,
+  logo_image: null
 };
+
+export const fallbackShowroomSections: ShowroomSection[] = [
+  {
+    id: "architecture",
+    slug: "architecture",
+    title: "Architecture",
+    description: "Concept to delivery for residential and commercial spaces.",
+    image_id: null,
+    link_url: "/showroom/architecture",
+    sort_order: 1,
+    published: true,
+    image: null
+  },
+  {
+    id: "projects",
+    slug: "projects",
+    title: "Projects",
+    description: "A curated portfolio of completed work across Qatar.",
+    image_id: null,
+    link_url: "/showroom/projects",
+    sort_order: 2,
+    published: true,
+    image: null
+  },
+  {
+    id: "furniture",
+    slug: "furniture",
+    title: "Furniture",
+    description: "Bespoke collections, majlis, bedrooms, and custom pieces.",
+    image_id: null,
+    link_url: "/showroom/furniture",
+    sort_order: 3,
+    published: true,
+    image: null
+  },
+  {
+    id: "interior",
+    slug: "interior",
+    title: "Interior",
+    description: "Material palettes, spatial planning, and turnkey interiors.",
+    image_id: null,
+    link_url: "/showroom/interior",
+    sort_order: 4,
+    published: true,
+    image: null
+  }
+] ;
+
+export const fallbackIntroSlides: IntroSlide[] = [];
 
 export const fallbackServices: Service[] = [
   {

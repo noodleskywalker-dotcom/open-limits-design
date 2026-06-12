@@ -2,9 +2,11 @@ import {
   fallbackCompanyProfile,
   fallbackFurnitureCategories,
   fallbackFurnitureItems,
+  fallbackIntroSlides,
   fallbackMaterials,
   fallbackProjects,
   fallbackServices,
+  fallbackShowroomSections,
   fallbackTeam
 } from "./fallback";
 import { filterFurnitureProducts, getFurnitureCategory } from "@/lib/furniture-categories";
@@ -13,11 +15,14 @@ import type {
   FurnitureCategory,
   FurnitureItem,
   HomepageHeroImage,
+  IntroSlide,
   Material,
   MediaAsset,
   Project,
   ProjectComparison,
   Service,
+  ShowroomImage,
+  ShowroomSection,
   TeamMember
 } from "./types";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -95,15 +100,18 @@ export async function getCompanyProfile(): Promise<CompanyProfile> {
   const supabase = getSupabaseServerClient();
   if (!supabase) return fallbackCompanyProfile;
 
-  const { data, error } = await supabase
-    .from("company_profile")
-    .select("*, ceo_image:media_assets(*)")
-    .eq("id", 1)
-    .maybeSingle();
+  for (const select of [
+    "*, ceo_image:media_assets!company_profile_ceo_image_id_fkey(*), logo_image:media_assets!company_profile_logo_image_id_fkey(*)",
+    "*, ceo_image:media_assets(*)",
+    "*"
+  ]) {
+    const { data, error } = await supabase.from("company_profile").select(select).eq("id", 1).maybeSingle();
+    if (!error && data && typeof data === "object") {
+      return { ...fallbackCompanyProfile, ...(data as CompanyProfile) };
+    }
+  }
 
-  if (error || !data) return fallbackCompanyProfile;
-
-  return { ...fallbackCompanyProfile, ...data } as CompanyProfile;
+  return fallbackCompanyProfile;
 }
 
 export async function getHomepageHeroImages(): Promise<HomepageHeroImage[]> {
@@ -254,4 +262,72 @@ export async function getMaterials(includeUnpublished = false): Promise<Material
   if (error || !data) return fallbackMaterials;
 
   return data as Material[];
+}
+
+export async function getIntroSlides(): Promise<IntroSlide[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return fallbackIntroSlides;
+
+  for (const select of [
+    "*, media:media_assets!intro_slides_media_id_fkey(*)",
+    "*, media:media_assets(*)",
+    "*"
+  ]) {
+    const { data, error } = await supabase
+      .from("intro_slides")
+      .select(select)
+      .eq("published", true)
+      .order("sort_order", { ascending: true });
+    if (!error && data) return data as unknown as IntroSlide[];
+  }
+  return fallbackIntroSlides;
+}
+
+export async function getShowroomSections(): Promise<ShowroomSection[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return fallbackShowroomSections;
+
+  for (const select of [
+    "*, image:media_assets!showroom_sections_image_id_fkey(*)",
+    "*, image:media_assets(*)",
+    "*"
+  ]) {
+    const { data, error } = await supabase
+      .from("showroom_sections")
+      .select(select)
+      .eq("published", true)
+      .order("sort_order", { ascending: true });
+    if (!error && data) return data as unknown as ShowroomSection[];
+  }
+  return fallbackShowroomSections;
+}
+
+export async function getShowroomSectionBySlug(slug: string): Promise<ShowroomSection | null> {
+  const sections = await getShowroomSections();
+  return sections.find((s) => s.slug === slug) ?? null;
+}
+
+export async function getShowroomImages(sectionId: string): Promise<ShowroomImage[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return [];
+
+  for (const select of [
+    "*, media:media_assets!showroom_images_media_id_fkey(*), hotspots:showroom_hotspots(*)",
+    "*, media:media_assets(*), hotspots:showroom_hotspots(*)",
+    "*"
+  ]) {
+    const { data, error } = await supabase
+      .from("showroom_images")
+      .select(select)
+      .eq("section_id", sectionId)
+      .eq("published", true)
+      .order("sort_order", { ascending: true });
+    if (!error && data) {
+      return (data as unknown as ShowroomImage[]).map((row) => ({
+        ...row,
+        hotspots: (row.hotspots ?? []).sort((a, b) => a.sort_order - b.sort_order)
+      }));
+    }
+  }
+  return [];
 }
