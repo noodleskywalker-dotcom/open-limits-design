@@ -6,7 +6,7 @@ export default function OfficeLocation({ company }: { company: CompanyProfile })
   const address = company.address ?? FALLBACK_ADDRESS;
   const mapQuery = company.map_query ?? address;
   const phone = company.phone ?? "+974 7788 9033";
-  const phone2 = company.phone2 ?? "+974 5081 6176";
+  const phone2 = company.phone2 ?? null;
   const email = company.email ?? "info@openlimitsdesign.com";
 
   const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
@@ -30,10 +30,12 @@ export default function OfficeLocation({ company }: { company: CompanyProfile })
               <span>Phone</span>
               {phone}
             </a>
-            <a className="location-contact" href={`tel:${phone2.replace(/\s+/g, "")}`}>
-              <span>Phone 2</span>
-              {phone2}
-            </a>
+            {phone2 ? (
+              <a className="location-contact" href={`tel:${phone2.replace(/\s+/g, "")}`}>
+                <span>Phone 2</span>
+                {phone2}
+              </a>
+            ) : null}
             <a className="location-contact" href={`mailto:${email}`}>
               <span>Email</span>
               {email}
