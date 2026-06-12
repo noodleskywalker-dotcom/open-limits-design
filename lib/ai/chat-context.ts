@@ -1,19 +1,13 @@
-import {
-  fallbackCompanyProfile,
-  fallbackFurnitureCategories,
-  fallbackFurnitureItems,
-  fallbackMaterials,
-  fallbackProjects,
-  fallbackServices
-} from "@/lib/cms/fallback";
+import type { BookingAvailability } from "@/lib/ai/chat-types";
+import type { Booking, FurnitureCategory, FurnitureItem, Material, Project } from "@/lib/cms/types";
+import { BOOKING_SLOTS, resolveImageUrl } from "@/lib/cms/types";
+import { slotStatesForDate } from "@/lib/booking-utils";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { Booking } from "@/lib/cms/types";
-import { BOOKING_SLOTS } from "@/lib/cms/types";
-import { blockMatchesDate, slotStatesForDate } from "@/lib/booking-utils";
 
-export type ChatLink = { label: string; href: string };
+export type { ChatLink, ChatPreview, ChatReplyPayload } from "@/lib/ai/chat-types";
 
 export type SiteKnowledge = {
+  live: boolean;
   companyName: string;
   tagline: string;
   description: string;
@@ -21,23 +15,122 @@ export type SiteKnowledge = {
   phone: string;
   phone2: string;
   address: string;
-  services: { title: string; description: string; slug: string }[];
-  categories: { name: string; slug: string }[];
-  furnitureItems: { title: string; slug: string; category: string | null }[];
-  materials: { name: string; slug: string; category: string | null }[];
-  projects: { title: string; slug: string; location: string | null }[];
-  bookingSummary: string;
-  siteContent: string;
+  counts: {
+    categories: number;
+    furnitureItems: number;
+    materials: number;
+    projects: number;
+    services: number;
+    teamMembers: number;
+  };
+  services: { title: string; description: string; slug: string; imageUrl: string | null }[];
+  categories: { name: string; slug: string; itemCount: number }[];
+  furnitureItems: {
+    title: string;
+    slug: string;
+    category: string | null;
+    dimensions: string | null;
+    materials: string | null;
+    imageUrl: string | null;
+  }[];
+  materials: {
+    name: string;
+    slug: string;
+    category: string | null;
+    imageUrl: string | null;
+  }[];
+  projects: {
+    title: string;
+    slug: string;
+    location: string | null;
+    imageUrl: string | null;
+  }[];
+  teamMembers: { name: string; role: string }[];
+  homepageContent: { heroTitle: string | null; heroSubtitle: string | null; aboutText: string | null };
+  siteContent: { sectionKey: string; title: string | null; body: string | null }[];
+  booking: BookingAvailability;
 };
 
 function monthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-async function buildBookingSummary(): Promise<string> {
+function formatDimensions(item: FurnitureItem): string | null {
+  if (item.dimensions?.trim()) return item.dimensions.trim();
+  const parts = [item.width, item.depth, item.height].filter(Boolean);
+  return parts.length ? parts.join(" × ") : null;
+}
+
+function formatMaterials(item: FurnitureItem): string | null {
+  if (item.materials?.trim()) return item.materials.trim();
+  const linked = item.material_records?.map((m) => m.name).filter(Boolean);
+  return linked?.length ? linked.join(", ") : null;
+}
+
+type FurnitureItemRow = FurnitureItem & {
+  category?: FurnitureCategory | null;
+  featured_image?: { public_url: string } | null;
+  furniture_item_materials?: { material: Material | null }[];
+};
+
+function normalizeFurnitureRow(row: FurnitureItemRow): FurnitureItem {
+  return {
+    ...row,
+    material_records: (row.furniture_item_materials ?? [])
+      .map((entry) => entry.material)
+      .filter((material): material is Material => Boolean(material))
+  };
+}
+
+const furnitureSelect = `
+  *,
+  category:furniture_categories(*),
+  featured_image:media_assets!furniture_items_featured_image_id_fkey(*),
+  furniture_item_materials(material:materials(*))
+`;
+
+const projectSelect = `
+  *,
+  featured_image:media_assets!projects_featured_image_id_fkey(*)
+`;
+
+function emptyKnowledge(): SiteKnowledge {
+  return {
+    live: false,
+    companyName: "Open Limits Design",
+    tagline: "",
+    description: "",
+    email: "",
+    phone: "",
+    phone2: "",
+    address: "",
+    counts: { categories: 0, furnitureItems: 0, materials: 0, projects: 0, services: 0, teamMembers: 0 },
+    services: [],
+    categories: [],
+    furnitureItems: [],
+    materials: [],
+    projects: [],
+    teamMembers: [],
+    homepageContent: { heroTitle: null, heroSubtitle: null, aboutText: null },
+    siteContent: [],
+    booking: {
+      summary: "Connect Supabase to load live booking availability.",
+      openSlotCount: 0,
+      openDayCount: 0,
+      dates: []
+    }
+  };
+}
+
+async function buildBookingAvailability(): Promise<BookingAvailability> {
   const supabase = getSupabaseServerClient();
   if (!supabase) {
-    return "CEO meetings are available on weekdays. Open /book-meeting-with-ceo to pick a date and time.";
+    return {
+      summary: "CEO meetings are available on weekdays. Open the booking page to pick a date and time.",
+      openSlotCount: 0,
+      openDayCount: 0,
+      dates: []
+    };
   }
 
   const month = monthKey(new Date());
@@ -58,9 +151,15 @@ async function buildBookingSummary(): Promise<string> {
   ]);
 
   if (bookingsResult.error || blockedResult.error) {
-    return "Book a meeting at /book-meeting-with-ceo — we confirm every request personally.";
+    return {
+      summary: "Book a meeting — we confirm every request personally.",
+      openSlotCount: 0,
+      openDayCount: 0,
+      dates: []
+    };
   }
 
+  const dates: { date: string; slots: string[] }[] = [];
   let openDays = 0;
   let openSlots = 0;
 
@@ -76,137 +175,146 @@ async function buildBookingSummary(): Promise<string> {
     if (available.length) {
       openDays += 1;
       openSlots += available.length;
+      dates.push({ date, slots: [...available] });
     }
   }
 
   if (!openSlots) {
-    return `No open CEO meeting slots remain this month (${month}). Visit /book-meeting-with-ceo to check next month or leave your details.`;
+    return {
+      summary: `No open CEO meeting slots remain this month (${month}). Visit the booking page to check next month.`,
+      openSlotCount: 0,
+      openDayCount: 0,
+      dates: []
+    };
   }
 
-  return `This month (${month}) we have ${openSlots} open meeting slot(s) across ${openDays} day(s), typically ${BOOKING_SLOTS[0]}–${BOOKING_SLOTS[BOOKING_SLOTS.length - 1]}. Book at /book-meeting-with-ceo.`;
+  const datePreview = dates
+    .slice(0, 5)
+    .map((d) => `${d.date} (${d.slots.length} slot${d.slots.length === 1 ? "" : "s"})`)
+    .join(", ");
+
+  return {
+    summary: `This month (${month}): ${openSlots} open slot${openSlots === 1 ? "" : "s"} across ${openDays} day${openDays === 1 ? "" : "s"}. Next dates: ${datePreview}.`,
+    openSlotCount: openSlots,
+    openDayCount: openDays,
+    dates
+  };
 }
 
 export async function buildSiteKnowledge(): Promise<SiteKnowledge> {
   const supabase = getSupabaseServerClient();
-  const bookingSummary = await buildBookingSummary();
+  const booking = await buildBookingAvailability();
 
   if (!supabase) {
-    const company = fallbackCompanyProfile;
-    return {
-      companyName: company.name,
-      tagline: company.tagline ?? "",
-      description: company.description ?? "",
-      email: company.email ?? "",
-      phone: company.phone ?? "",
-      phone2: company.phone2 ?? "",
-      address: company.address ?? "",
-      services: fallbackServices.map((s) => ({
-        title: s.title,
-        description: s.description ?? "",
-        slug: s.slug ?? String(s.id)
-      })),
-      categories: fallbackFurnitureCategories.map((c) => ({ name: c.name, slug: c.slug })),
-      furnitureItems: fallbackFurnitureItems.map((item) => ({
-        title: item.title,
-        slug: item.slug,
-        category: null
-      })),
-      materials: fallbackMaterials.map((m) => ({
-        name: m.name,
-        slug: m.slug,
-        category: m.category ?? null
-      })),
-      projects: fallbackProjects.map((p) => ({
-        title: p.title,
-        slug: p.slug,
-        location: p.location ?? null
-      })),
-      bookingSummary,
-      siteContent: company.hero_subheadline ?? ""
-    };
+    return { ...emptyKnowledge(), booking };
   }
 
-  const [companyRes, servicesRes, categoriesRes, itemsRes, materialsRes, projectsRes, contentRes] =
-    await Promise.all([
-      supabase
-        .from("company_profile")
-        .select("name, tagline, description, phone, phone2, email, address, hero_subheadline, about_text")
-        .eq("id", 1)
-        .maybeSingle(),
-      supabase.from("services").select("title, description, slug").eq("is_active", true).order("sort_order"),
-      supabase.from("furniture_categories").select("name, slug").eq("published", true).order("sort_order"),
-      supabase.from("furniture_items").select("title, slug").eq("published", true).order("sort_order").limit(12),
-      supabase.from("materials").select("name, slug, category").eq("published", true).order("sort_order").limit(12),
-      supabase
-        .from("projects")
-        .select("title, slug, location")
-        .eq("is_published", true)
-        .order("sort_order")
-        .limit(8),
-      supabase.from("site_content").select("title, body").limit(6)
-    ]);
+  const [
+    companyRes,
+    servicesRes,
+    categoriesRes,
+    furnitureRes,
+    materialsRes,
+    projectsRes,
+    teamRes,
+    homepageRes,
+    siteContentRes
+  ] = await Promise.all([
+    supabase
+      .from("company_profile")
+      .select("name, tagline, description, phone, phone2, email, address, hero_headline, hero_subheadline, about_text")
+      .eq("id", 1)
+      .maybeSingle(),
+    supabase.from("services").select("title, description, slug, image_url, image:media_assets(*)").eq("is_active", true).order("sort_order"),
+    supabase.from("furniture_categories").select("*").eq("published", true).order("sort_order"),
+    supabase.from("furniture_items").select(furnitureSelect).eq("published", true).order("sort_order"),
+    supabase.from("materials").select("*, image:media_assets(*)").eq("published", true).order("sort_order"),
+    supabase.from("projects").select(projectSelect).eq("is_published", true).order("sort_order"),
+    supabase.from("team_members").select("name, role").eq("is_active", true).order("sort_order"),
+    supabase.from("homepage_content").select("hero_title, hero_subtitle, about_text").eq("id", 1).maybeSingle(),
+    supabase.from("site_content").select("section_key, title, body").order("section_key")
+  ]);
 
-  const company = companyRes.data ?? fallbackCompanyProfile;
-  const services =
-    servicesRes.data?.length
-      ? servicesRes.data
-      : fallbackServices.map((s) => ({ title: s.title, description: s.description ?? "", slug: s.slug }));
+  const company = companyRes.data;
+  const services = (servicesRes.data ?? []) as unknown as {
+    title: string;
+    description: string | null;
+    slug: string | null;
+    image_url: string | null;
+    image?: { public_url: string } | null;
+  }[];
+  const categories = (categoriesRes.data ?? []) as FurnitureCategory[];
+  const furnitureItems = ((furnitureRes.data ?? []) as FurnitureItemRow[]).map(normalizeFurnitureRow);
+  const materials = (materialsRes.data ?? []) as (Material & { image?: { public_url: string } | null })[];
+  const projects = (projectsRes.data ?? []) as (Project & { featured_image?: { public_url: string } | null })[];
+  const teamMembers = (teamRes.data ?? []) as { name: string; role: string }[];
 
-  const categories =
-    categoriesRes.data?.length
-      ? categoriesRes.data
-      : fallbackFurnitureCategories.map((c) => ({ name: c.name, slug: c.slug }));
-
-  const furnitureItems = (itemsRes.data ?? []).map((row) => ({
-    title: row.title as string,
-    slug: row.slug as string,
-    category: null as string | null
-  }));
-
-  const materials =
-    materialsRes.data?.length
-      ? materialsRes.data.map((m) => ({
-          name: m.name as string,
-          slug: m.slug as string,
-          category: (m.category as string | null) ?? null
-        }))
-      : fallbackMaterials.map((m) => ({ name: m.name, slug: m.slug, category: m.category ?? null }));
-
-  const projects =
-    projectsRes.data?.length
-      ? projectsRes.data.map((p) => ({
-          title: p.title as string,
-          slug: p.slug as string,
-          location: (p.location as string | null) ?? null
-        }))
-      : fallbackProjects.map((p) => ({ title: p.title, slug: p.slug, location: p.location ?? null }));
-
-  const siteContentParts: string[] = [];
-  if (company.hero_subheadline) siteContentParts.push(company.hero_subheadline);
-  if (company.about_text) siteContentParts.push(company.about_text);
-  for (const row of contentRes.data ?? []) {
-    if (row.title) siteContentParts.push(`${row.title}: ${row.body ?? ""}`.trim());
+  const categoryItemCounts = new Map<string, number>();
+  for (const item of furnitureItems) {
+    const catId = item.category_id;
+    categoryItemCounts.set(catId, (categoryItemCounts.get(catId) ?? 0) + 1);
   }
 
   return {
-    companyName: company.name ?? fallbackCompanyProfile.name,
-    tagline: company.tagline ?? fallbackCompanyProfile.tagline ?? "",
-    description: company.description ?? fallbackCompanyProfile.description ?? "",
-    email: company.email ?? fallbackCompanyProfile.email ?? "",
-    phone: company.phone ?? fallbackCompanyProfile.phone ?? "",
-    phone2: company.phone2 ?? fallbackCompanyProfile.phone2 ?? "",
-    address: company.address ?? fallbackCompanyProfile.address ?? "",
+    live: true,
+    companyName: company?.name ?? "Open Limits Design",
+    tagline: company?.tagline ?? "",
+    description: company?.description ?? "",
+    email: company?.email ?? "",
+    phone: company?.phone ?? "",
+    phone2: company?.phone2 ?? "",
+    address: company?.address ?? "",
+    counts: {
+      categories: categories.length,
+      furnitureItems: furnitureItems.length,
+      materials: materials.length,
+      projects: projects.length,
+      services: services.length,
+      teamMembers: teamMembers.length
+    },
     services: services.map((s) => ({
       title: s.title,
       description: s.description ?? "",
-      slug: s.slug ?? s.title.toLowerCase().replace(/\s+/g, "-")
+      slug: s.slug ?? s.title.toLowerCase().replace(/\s+/g, "-"),
+      imageUrl: resolveImageUrl(s.image as Parameters<typeof resolveImageUrl>[0], s.image_url)
     })),
-    categories: categories.map((c) => ({ name: c.name, slug: c.slug })),
-    furnitureItems,
-    materials,
-    projects,
-    bookingSummary,
-    siteContent: siteContentParts.join("\n")
+    categories: categories.map((c) => ({
+      name: c.name,
+      slug: c.slug,
+      itemCount: categoryItemCounts.get(c.id) ?? 0
+    })),
+    furnitureItems: furnitureItems.map((item) => ({
+      title: item.title,
+      slug: item.slug,
+      category: item.category?.name ?? null,
+      dimensions: formatDimensions(item),
+      materials: formatMaterials(item),
+      imageUrl: resolveImageUrl(item.featured_image, null)
+    })),
+    materials: materials.map((m) => ({
+      name: m.name,
+      slug: m.slug,
+      category: m.category ?? null,
+      imageUrl: resolveImageUrl(m.image as Parameters<typeof resolveImageUrl>[0], null)
+    })),
+    projects: projects.map((p) => ({
+      title: p.title,
+      slug: p.slug,
+      location: p.location ?? null,
+      imageUrl: resolveImageUrl(p.featured_image as Parameters<typeof resolveImageUrl>[0], p.cover_image_url)
+    })),
+    teamMembers: teamMembers.map((m) => ({ name: m.name, role: m.role })),
+    homepageContent: {
+      heroTitle: homepageRes.data?.hero_title ?? company?.hero_headline ?? null,
+      heroSubtitle: homepageRes.data?.hero_subtitle ?? company?.hero_subheadline ?? null,
+      aboutText: homepageRes.data?.about_text ?? company?.about_text ?? null
+    },
+    siteContent: (siteContentRes.data ?? []).map((row) => ({
+      sectionKey: row.section_key as string,
+      title: (row.title as string | null) ?? null,
+      body: (row.body as string | null) ?? null
+    })),
+    booking
   };
 }
 
@@ -218,21 +326,47 @@ export function siteKnowledgeToPrompt(knowledge: SiteKnowledge): string {
     `Phone: ${knowledge.phone}${knowledge.phone2 ? ` / ${knowledge.phone2}` : ""}`,
     `Address: ${knowledge.address}`,
     "",
-    `Services (${knowledge.services.length}):`,
+    `COUNTS — categories: ${knowledge.counts.categories}, furniture items: ${knowledge.counts.furnitureItems}, materials: ${knowledge.counts.materials}, projects: ${knowledge.counts.projects}, services: ${knowledge.counts.services}, team: ${knowledge.counts.teamMembers}`,
+    "",
+    `Services (${knowledge.counts.services}):`,
     ...knowledge.services.map((s) => `- ${s.title}: ${s.description}`),
     "",
-    `Furniture categories (${knowledge.categories.length}): ${knowledge.categories.map((c) => c.name).join(", ")}`,
-    `Published furniture items (${knowledge.furnitureItems.length}): ${knowledge.furnitureItems.map((i) => i.title).join(", ") || "none listed yet"}`,
+    `Furniture categories (${knowledge.counts.categories}):`,
+    ...knowledge.categories.map((c) => `- ${c.name} (${c.itemCount} item${c.itemCount === 1 ? "" : "s"})`),
     "",
-    `Materials (${knowledge.materials.length}): ${knowledge.materials.map((m) => m.name).join(", ") || "see /materials"}`,
+    `Furniture catalog (${knowledge.counts.furnitureItems} published):`,
+    ...knowledge.furnitureItems.map((item) => {
+      const parts = [item.category, item.dimensions, item.materials].filter(Boolean);
+      return `- ${item.title}${parts.length ? ` — ${parts.join(" · ")}` : ""} (/furniture/${item.slug})`;
+    }),
     "",
-    `Projects (${knowledge.projects.length}): ${knowledge.projects.map((p) => p.title).join(", ") || "portfolio growing"}`,
+    `Materials (${knowledge.counts.materials}):`,
+    ...knowledge.materials.map((m) => `- ${m.name}${m.category ? ` (${m.category})` : ""}`),
     "",
-    `Booking: ${knowledge.bookingSummary}`,
+    `Projects (${knowledge.counts.projects}):`,
+    ...knowledge.projects.map((p) => `- ${p.title}${p.location ? ` — ${p.location}` : ""} (/projects/${p.slug})`),
     "",
-    "Important links: /furniture, /materials, /projects, /services, /book-meeting-with-ceo, /contact",
+    knowledge.teamMembers.length
+      ? `Team (${knowledge.counts.teamMembers}):\n${knowledge.teamMembers.map((m) => `- ${m.name}, ${m.role}`).join("\n")}`
+      : "",
     "",
-    knowledge.siteContent ? `Site content:\n${knowledge.siteContent}` : ""
+    knowledge.homepageContent.heroTitle ? `Homepage hero: ${knowledge.homepageContent.heroTitle}` : "",
+    knowledge.homepageContent.heroSubtitle ?? "",
+    knowledge.homepageContent.aboutText ? `About: ${knowledge.homepageContent.aboutText}` : "",
+    "",
+    knowledge.siteContent.length
+      ? `Site content sections:\n${knowledge.siteContent.map((s) => `- ${s.sectionKey}: ${s.title ?? ""} ${s.body ?? ""}`.trim()).join("\n")}`
+      : "",
+    "",
+    `Booking: ${knowledge.booking.summary}`,
+    knowledge.booking.dates.length
+      ? `Available dates:\n${knowledge.booking.dates
+          .slice(0, 8)
+          .map((d) => `- ${d.date}: ${d.slots.join(", ")}`)
+          .join("\n")}`
+      : "",
+    "",
+    "Important links: /furniture, /materials, /projects, /services, /book-meeting-with-ceo, /contact, /location"
   ];
   return lines.filter(Boolean).join("\n");
 }

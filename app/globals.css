@@ -954,12 +954,121 @@ a.card:hover {
 }
 
 .ai-typing {
+  align-items: center;
   align-self: flex-start;
   color: var(--muted);
+  display: flex;
   font-size: 0.78rem;
-  font-style: italic;
+  gap: 0.35rem;
   margin: 0;
   padding: 0 0.2rem;
+}
+
+.ai-typing-label {
+  font-style: italic;
+}
+
+.ai-typing-dots {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+
+.ai-typing-dots span {
+  animation: ai-dot 1.2s infinite ease-in-out;
+  background: var(--gold-soft);
+  border-radius: 50%;
+  display: inline-block;
+  height: 0.35rem;
+  opacity: 0.35;
+  width: 0.35rem;
+}
+
+.ai-typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ai-typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ai-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-0.15rem);
+  }
+}
+
+.ai-previews {
+  display: grid;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.ai-preview-card {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 3.2rem 1fr;
+  overflow: hidden;
+  padding: 0.45rem;
+}
+
+.ai-preview-image,
+.ai-preview-placeholder {
+  border-radius: 0.35rem;
+  height: 3.2rem;
+  object-fit: cover;
+  width: 3.2rem;
+}
+
+.ai-preview-placeholder {
+  background: linear-gradient(135deg, rgb(200 162 74 / 18%), rgb(200 162 74 / 6%));
+}
+
+.ai-preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.ai-preview-body strong {
+  color: var(--gold-soft);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.ai-preview-subtitle,
+.ai-preview-meta {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.ai-preview-action {
+  align-self: flex-start;
+  background: rgba(200, 162, 74, 0.14);
+  border: 1px solid rgba(200, 162, 74, 0.45);
+  border-radius: 999px;
+  color: var(--gold-soft);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  margin-top: 0.15rem;
+  padding: 0.22rem 0.55rem;
+  text-decoration: none;
+}
+
+.ai-preview-action:hover {
+  background: rgba(200, 162, 74, 0.24);
 }
 
 .ai-message a {
