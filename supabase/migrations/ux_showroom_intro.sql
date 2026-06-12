@@ -85,7 +85,7 @@ values
   ('architecture', 'Architecture', 'Concept to delivery for residential and commercial spaces.', '/showroom/architecture', 1),
   ('projects', 'Projects', 'A curated portfolio of completed work across Qatar.', '/showroom/projects', 2),
   ('furniture', 'Furniture', 'Bespoke collections, majlis, bedrooms, and custom pieces.', '/showroom/furniture', 3),
-  ('interior', 'Interior', 'Material palettes, spatial planning, and turnkey interiors.', '/showroom/interior', 4)
+  ('interior', 'Interior Design', 'Material palettes, spatial planning, and turnkey interiors.', '/showroom/interior', 4)
 on conflict (slug) do nothing;
 
 -- RLS

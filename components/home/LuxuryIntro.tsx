@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { IntroSettings, IntroSlide } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
-
-const INTRO_KEY = "old-intro-seen";
 
 type LuxuryIntroProps = {
   slides: IntroSlide[];
@@ -14,6 +12,7 @@ type LuxuryIntroProps = {
   ceoName: string;
   tagline: string;
   settings: IntroSettings;
+  onEnter: () => void;
 };
 
 export default function LuxuryIntro({
@@ -23,109 +22,80 @@ export default function LuxuryIntro({
   companyName,
   ceoName,
   tagline,
-  settings
+  settings,
+  onEnter
 }: LuxuryIntroProps) {
-  const [visible, setVisible] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
   const [exiting, setExiting] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const allSlides = useMemo(() => {
-    const built: { image: string; title: string; subtitle: string }[] = [];
-
-    if (logoImageUrl) {
-      built.push({
-        image: logoImageUrl,
-        title: settings.introTitle ?? companyName,
-        subtitle: settings.introSubtitle ?? "Luxury Design Studio"
-      });
-    } else {
-      built.push({
-        image: "",
-        title: settings.introTitle ?? companyName,
-        subtitle: settings.introSubtitle ?? "OPEN LIMITS DESIGN"
-      });
-    }
-
-    if (ceoImageUrl) {
-      built.push({ image: ceoImageUrl, title: ceoName, subtitle: tagline });
-    }
-
+  const backgroundSlides = useMemo(() => {
+    const urls: string[] = [];
     for (const slide of slides) {
       const url = resolveImageUrl(slide.media);
-      if (url) {
-        built.push({
-          image: url,
-          title: slide.title ?? companyName,
-          subtitle: slide.subtitle ?? tagline
-        });
-      }
+      if (url) urls.push(url);
     }
-
-    return built.length ? built : [{ image: "", title: settings.introTitle ?? companyName, subtitle: tagline }];
-  }, [slides, ceoImageUrl, logoImageUrl, companyName, ceoName, tagline, settings]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!settings.enabled || sessionStorage.getItem(INTRO_KEY) === "1") return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- first-visit intro must read sessionStorage client-side
-    setVisible(true);
-  }, [settings.enabled]);
+    return urls;
+  }, [slides]);
 
   useEffect(() => {
-    if (!visible || allSlides.length <= 1) return;
-    const timer = window.setInterval(() => {
-      setSlideIndex((current) => (current + 1) % allSlides.length);
-    }, settings.autoplayMs);
-    return () => window.clearInterval(timer);
-  }, [visible, allSlides.length, settings.autoplayMs]);
-
-  const enter = useCallback(() => {
-    setExiting(true);
-    sessionStorage.setItem(INTRO_KEY, "1");
-    window.setTimeout(() => setVisible(false), 700);
+    const timer = window.setTimeout(() => setMounted(true), 50);
+    return () => window.clearTimeout(timer);
   }, []);
 
-  if (!visible) return null;
-
-  const current = allSlides[slideIndex];
+  function enter() {
+    setExiting(true);
+    window.setTimeout(onEnter, 700);
+  }
 
   return (
-    <div aria-modal="true" className={`luxury-intro ${exiting ? "luxury-intro-exit" : ""}`} role="dialog">
-      <div className="luxury-intro-backdrop" />
+    <div
+      aria-modal="true"
+      className={`luxury-intro ${mounted ? "luxury-intro-mounted" : ""} ${exiting ? "luxury-intro-exit" : ""}`}
+      role="dialog"
+    >
+      <div className="luxury-intro-backdrop">
+        {backgroundSlides.map((url, index) => (
+          <img
+            alt=""
+            aria-hidden="true"
+            className={`luxury-intro-bg ${index === 0 ? "active" : ""}`}
+            key={url}
+            src={url}
+          />
+        ))}
+      </div>
+
       <div className="luxury-intro-content">
-        <div className="luxury-intro-slide" key={slideIndex}>
-          {current.image ? (
-            <img alt={current.title} className="luxury-intro-image" src={current.image} />
+        <div className="luxury-intro-brand">
+          {logoImageUrl ? (
+            <img alt={companyName} className="luxury-intro-logo-image" src={logoImageUrl} />
           ) : (
             <div className="luxury-intro-logo-text">
               <span className="logo-animated">OPEN LIMITS</span>
               <span className="logo-animated delay">DESIGN</span>
             </div>
           )}
-          <div className="luxury-intro-copy">
-            <p className="eyebrow">{current.subtitle}</p>
-            <h1>{current.title}</h1>
-          </div>
         </div>
 
-        <div className="luxury-intro-dots">
-          {allSlides.map((_, index) => (
-            <button
-              aria-label={`Slide ${index + 1}`}
-              className={index === slideIndex ? "active" : ""}
-              key={index}
-              onClick={() => setSlideIndex(index)}
-              type="button"
-            />
-          ))}
+        <div className="luxury-intro-hero">
+          {ceoImageUrl ? (
+            <img alt={ceoName} className="luxury-intro-ceo" src={ceoImageUrl} />
+          ) : (
+            <div aria-hidden="true" className="luxury-intro-ceo luxury-intro-ceo-placeholder">
+              {ceoName.slice(0, 1)}
+            </div>
+          )}
+        </div>
+
+        <div className="luxury-intro-copy">
+          <p className="eyebrow">{settings.introSubtitle ?? "Luxury Design Studio"}</p>
+          <h1>{settings.introTitle ?? companyName}</h1>
+          <p className="luxury-intro-tagline">{tagline}</p>
         </div>
 
         <div className="luxury-intro-actions">
           <button className="button" onClick={enter} type="button">
-            Enter Website
-          </button>
-          <button className="button ghost" onClick={enter} type="button">
-            Skip Intro
+            Enter Showroom
           </button>
         </div>
       </div>

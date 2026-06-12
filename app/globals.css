@@ -1318,32 +1318,94 @@ a.card:hover {
 /* ---------- luxury intro modal ---------- */
 .luxury-intro {
   align-items: center;
-  animation: introFadeIn 0.8s ease;
   display: flex;
   inset: 0;
   justify-content: center;
+  opacity: 0;
   position: fixed;
+  transition: opacity 0.8s ease;
   z-index: 200;
 }
 
+.luxury-intro-mounted {
+  opacity: 1;
+}
+
 .luxury-intro-exit {
-  animation: introFadeOut 0.7s ease forwards;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
 }
 
 .luxury-intro-backdrop {
   background: radial-gradient(circle at 50% 20%, #1a1510 0%, #050505 55%, #000 100%);
   inset: 0;
+  overflow: hidden;
   position: absolute;
+}
+
+.luxury-intro-bg {
+  filter: blur(8px) brightness(0.35);
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 1.2s ease;
+  width: 100%;
+}
+
+.luxury-intro-bg.active {
+  opacity: 0.45;
 }
 
 .luxury-intro-content {
   animation: introRise 0.9s ease;
-  max-width: 720px;
-  padding: 2rem;
+  max-width: 760px;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   position: relative;
   text-align: center;
-  width: min(92vw, 720px);
+  width: min(92vw, 760px);
   z-index: 1;
+}
+
+.luxury-intro-brand {
+  margin-bottom: 1.75rem;
+}
+
+.luxury-intro-logo-image {
+  animation: logoShimmer 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(200, 162, 74, 0.25));
+  margin: 0 auto;
+  max-height: 72px;
+  object-fit: contain;
+  width: auto;
+}
+
+.luxury-intro-hero {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.luxury-intro-ceo {
+  animation: introRise 0.8s ease 0.15s both;
+  border: 2px solid var(--gold-dark);
+  border-radius: 999px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 6px rgba(200, 162, 74, 0.08);
+  height: clamp(160px, 28vw, 240px);
+  object-fit: cover;
+  width: clamp(160px, 28vw, 240px);
+}
+
+.luxury-intro-ceo-placeholder {
+  align-items: center;
+  background: var(--surface);
+  color: var(--gold-soft);
+  display: flex;
+  font-size: 3rem;
+  font-weight: 300;
+  justify-content: center;
 }
 
 .luxury-intro-slide {
@@ -1363,7 +1425,7 @@ a.card:hover {
 .luxury-intro-logo-text {
   display: grid;
   gap: 0.35rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
 .logo-animated {
@@ -1382,9 +1444,19 @@ a.card:hover {
   animation-delay: 0.35s;
 }
 
+.luxury-intro-copy {
+  animation: introRise 0.8s ease 0.25s both;
+}
+
 .luxury-intro-copy h1 {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   margin-bottom: 0.5rem;
+}
+
+.luxury-intro-tagline {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-top: 0.35rem;
 }
 
 .luxury-intro-dots {
@@ -1410,11 +1482,44 @@ a.card:hover {
 }
 
 .luxury-intro-actions {
+  animation: introRise 0.8s ease 0.35s both;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
+}
+
+.showroom-entry-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.showroom-entry-reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes introFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes introFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes introRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes logoShimmer {
@@ -1860,6 +1965,42 @@ a.card:hover {
   background: rgba(212, 104, 92, 0.12);
   border-color: rgba(212, 104, 92, 0.45);
   color: var(--danger);
+}
+
+.admin-slot-chip.clickable-block {
+  cursor: pointer;
+}
+
+.admin-slot-chip.clickable-block:hover {
+  background: rgba(212, 104, 92, 0.22);
+}
+
+.admin-slot-chip.selected {
+  box-shadow: inset 0 0 0 2px var(--gold-soft);
+}
+
+.admin-slot-timeline-interactive .admin-slot-chip {
+  cursor: crosshair;
+}
+
+.admin-day-item-clickable {
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-day-item-clickable:hover {
+  background: rgba(212, 104, 92, 0.08);
+}
+
+.admin-day-item-clickable.confirm-delete {
+  border-color: var(--danger);
+  box-shadow: inset 0 0 0 1px rgba(212, 104, 92, 0.45);
+}
+
+.admin-block-modal {
+  border-color: rgba(200, 162, 74, 0.35);
 }
 
 .admin-day-section {

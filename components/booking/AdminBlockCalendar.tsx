@@ -64,6 +64,7 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
   const dragAnchor = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState("");
 
   const month = monthKey(viewDate);
   const today = new Date().toISOString().slice(0, 10);
@@ -98,16 +99,17 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
 
   const selectedMeta = selectedDate ? dayMeta(selectedDate) : null;
 
-  function openBlockModal(date?: string, wholeDay = true) {
+  function openBlockModal(date?: string, wholeDay = true, preserveSelection = false) {
+    const times = preserveSelection && slotSelection.length ? slotRangeFromSelection(slotSelection) : null;
     setDraft({
       title: "",
       date: date ?? selectedDate ?? "",
       wholeDay,
-      startTime: "09:00",
-      endTime: "12:00",
+      startTime: times?.startTime ?? "09:00",
+      endTime: times?.endTime ?? "12:00",
       repeatType: "none"
     });
-    setSlotSelection([]);
+    if (!preserveSelection) setSlotSelection([]);
     setError("");
     setModalOpen(true);
   }
@@ -168,12 +170,37 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
     }
   }
 
+  async function handleBlockClick(block: BlockedTime) {
+    if (confirmDeleteId === block.id) {
+      setConfirmDeleteId("");
+      await onRemoveBlock(block.id);
+      return;
+    }
+    setConfirmDeleteId(block.id);
+    window.setTimeout(() => setConfirmDeleteId(""), 3000);
+  }
+
+  async function handleBlockedSlotClick(slot: string) {
+    if (!selectedDate || !selectedMeta) return;
+    const matchingBlock = selectedMeta.dayBlocks.find((block) => {
+      if (!block.start_time || !block.end_time) return true;
+      const range = slotsInRange(block.start_time.slice(0, 5), block.end_time.slice(0, 5));
+      return range.includes(slot);
+    });
+    if (matchingBlock) {
+      await handleBlockClick(matchingBlock);
+    }
+  }
+
   return (
     <div className="admin-block-calendar" onMouseLeave={endDrag} onMouseUp={endDrag}>
       <div className="admin-block-toolbar">
         <div>
           <h3>Calendar</h3>
-          <p>Gold = booked · Red = blocked · Green = available. Click a day for details.</p>
+          <p>
+            Gold = booked · Red = blocked · Green = available. Select a day, drag slots to block, or
+            click blocked items to delete.
+          </p>
         </div>
         <button className="button" onClick={() => openBlockModal()} type="button">
           Block time
@@ -257,22 +284,51 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
                     {selectedMeta.dayBookings.length} booking(s) · {selectedMeta.dayBlocks.length} block rule(s)
                   </p>
                 </div>
-                <button className="button ghost" onClick={() => openBlockModal(selectedDate)} type="button">
-                  Block this day
+                <button className="button ghost" onClick={() => openBlockModal(selectedDate, false, true)} type="button">
+                  Block slots
                 </button>
               </div>
 
-              <div className="admin-slot-timeline">
+              <p className="meta">Drag across slots to preview a range. Click red blocked slots to remove.</p>
+              <div className="admin-slot-timeline admin-slot-timeline-interactive">
                 {BOOKING_SLOTS.map((slot) => {
                   const state = selectedMeta.slots[slot];
+                  const inSelection = slotSelection.includes(slot) && !modalOpen;
                   return (
-                    <div className={`admin-slot-chip ${state}`} key={slot}>
+                    <button
+                      className={`admin-slot-chip ${state} ${inSelection ? "selected" : ""} ${state === "blocked" ? "clickable-block" : ""}`}
+                      key={slot}
+                      onClick={() => {
+                        if (state === "blocked") {
+                          handleBlockedSlotClick(slot);
+                        }
+                      }}
+                      onMouseDown={() => {
+                        if (state !== "blocked") onSlotPointerDown(slot);
+                      }}
+                      onMouseEnter={() => {
+                        if (state !== "blocked") onSlotPointerEnter(slot);
+                      }}
+                      type="button"
+                    >
                       <span>{slot}</span>
                       <small>{state}</small>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
+
+              {slotSelection.length && !modalOpen ? (
+                <div className="button-row">
+                  <button
+                    className="button"
+                    onClick={() => openBlockModal(selectedDate, false, true)}
+                    type="button"
+                  >
+                    Block {slotSelection[0]}–{draft.endTime}
+                  </button>
+                </div>
+              ) : null}
 
               {selectedMeta.dayBookings.length ? (
                 <div className="admin-day-section">
@@ -294,7 +350,13 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
                 <div className="admin-day-section">
                   <h5>Blocked times</h5>
                   {selectedMeta.dayBlocks.map((block) => (
-                    <div className="admin-day-item blocked" key={block.id}>
+                    <button
+                      className={`admin-day-item blocked admin-day-item-clickable ${confirmDeleteId === block.id ? "confirm-delete" : ""}`}
+                      key={block.id}
+                      onClick={() => handleBlockClick(block)}
+                      title="Click to delete blocked time"
+                      type="button"
+                    >
                       <div>
                         <strong>{block.title ?? "Blocked"}</strong>
                         <p>
@@ -303,11 +365,13 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
                             : "Whole day"}
                           {block.repeat_type !== "none" ? ` · ${block.repeat_type}` : ""}
                         </p>
+                        {confirmDeleteId === block.id ? (
+                          <p className="status error">Click again to confirm delete</p>
+                        ) : (
+                          <p className="meta">Click to remove</p>
+                        )}
                       </div>
-                      <button className="button ghost" onClick={() => onRemoveBlock(block.id)} type="button">
-                        Delete
-                      </button>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : null}
@@ -317,14 +381,14 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
               ) : null}
             </>
           ) : (
-            <div className="empty-state">Select a day to view bookings, blocks, and slot availability.</div>
+            <div className="empty-state">Select a day on the calendar to view bookings, blocks, and availability.</div>
           )}
         </aside>
       </div>
 
       {modalOpen ? (
         <div className="admin-modal-backdrop" role="presentation">
-          <div aria-modal="true" className="admin-modal admin-modal-wide" role="dialog">
+          <div aria-modal="true" className="admin-modal admin-modal-wide admin-block-modal" role="dialog">
             <div className="admin-modal-header">
               <h3>Block time</h3>
               <button aria-label="Close" onClick={() => setModalOpen(false)} type="button">
@@ -423,5 +487,4 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
   );
 }
 
-// Re-export for BookingsAdminPanel typing
 export { blockMatchesDate, slotsInRange };

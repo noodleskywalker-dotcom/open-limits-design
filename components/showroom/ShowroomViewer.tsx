@@ -1,23 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ShowroomHotspot, ShowroomImage } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
 import { hotspotHref } from "@/lib/cms/showroom-utils";
 
-function Hotspot({
-  hotspot,
-  onSelect
-}: {
-  hotspot: ShowroomHotspot;
-  onSelect: (h: ShowroomHotspot) => void;
-}) {
+function Hotspot({ hotspot }: { hotspot: ShowroomHotspot }) {
+  const router = useRouter();
+  const href = hotspotHref(hotspot.link_type, hotspot.link_target);
+
+  function openHotspot() {
+    if (hotspot.link_type === "custom" && href.startsWith("http")) {
+      window.location.href = href;
+      return;
+    }
+    router.push(href);
+  }
+
   return (
     <button
       aria-label={hotspot.label}
       className="showroom-hotspot"
-      onClick={() => onSelect(hotspot)}
+      onClick={openHotspot}
       style={{
         left: `${hotspot.x_percent}%`,
         top: `${hotspot.y_percent}%`,
@@ -34,7 +40,6 @@ function Hotspot({
 
 export default function ShowroomViewer({ images }: { images: ShowroomImage[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [selected, setSelected] = useState<ShowroomHotspot | null>(null);
 
   if (!images.length) {
     return (
@@ -54,10 +59,7 @@ export default function ShowroomViewer({ images }: { images: ShowroomImage[] }) 
           <button
             className={index === activeIndex ? "active" : ""}
             key={image.id}
-            onClick={() => {
-              setActiveIndex(index);
-              setSelected(null);
-            }}
+            onClick={() => setActiveIndex(index)}
             type="button"
           >
             {image.title}
@@ -74,23 +76,14 @@ export default function ShowroomViewer({ images }: { images: ShowroomImage[] }) 
           <div className="image-placeholder tall">{current.title}</div>
         )}
         {(current.hotspots ?? []).map((hotspot) => (
-          <Hotspot hotspot={hotspot} key={hotspot.id} onSelect={setSelected} />
+          <Hotspot hotspot={hotspot} key={hotspot.id} />
         ))}
       </div>
 
-      {selected ? (
-        <div className="showroom-hotspot-panel">
-          <strong>{selected.label}</strong>
-          <Link className="button" href={hotspotHref(selected.link_type, selected.link_target)}>
-            View details
-          </Link>
-          <button className="button ghost" onClick={() => setSelected(null)} type="button">
-            Close
-          </button>
-        </div>
-      ) : (
-        <p className="meta">Tap highlighted areas to explore furniture, materials, and projects.</p>
-      )}
+      <p className="meta">
+        Tap highlighted areas to explore furniture, materials, and projects.{" "}
+        <Link href="/furniture">Browse furniture catalog</Link>
+      </p>
     </div>
   );
 }

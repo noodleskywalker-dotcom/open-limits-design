@@ -71,7 +71,7 @@ export const fallbackShowroomSections: ShowroomSection[] = [
   {
     id: "interior",
     slug: "interior",
-    title: "Interior",
+    title: "Interior Design",
     description: "Material palettes, spatial planning, and turnkey interiors.",
     image_id: null,
     link_url: "/showroom/interior",
