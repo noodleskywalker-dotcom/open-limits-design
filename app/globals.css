@@ -2638,6 +2638,43 @@ a.card:hover {
   background: var(--success);
 }
 
+.furniture-page-hero {
+  padding-bottom: 0;
+}
+
+.furniture-hero-banner {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  min-height: clamp(220px, 32vw, 360px);
+  overflow: hidden;
+  position: relative;
+}
+
+.furniture-hero-bg {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.furniture-hero-overlay {
+  background: linear-gradient(90deg, rgba(8, 8, 10, 0.88) 0%, rgba(8, 8, 10, 0.35) 70%);
+  inset: 0;
+  position: absolute;
+}
+
+.furniture-hero-copy {
+  max-width: 34rem;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  position: relative;
+  z-index: 1;
+}
+
+.furniture-hero-copy h1 {
+  margin-bottom: 0.5rem;
+}
+
 .furniture-showroom-highlight {
   align-items: center;
   animation: introRise 0.5s ease;

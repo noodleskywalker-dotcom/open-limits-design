@@ -16,6 +16,7 @@ import {
   legacyShowroomImagesBySection
 } from "./legacy-images";
 import { filterFurnitureProducts, getFurnitureCategory } from "@/lib/furniture-categories";
+import { getFallbackFurnitureBySlug } from "@/lib/furniture/fallback-catalog";
 import type {
   CompanyProfile,
   FurnitureCategory,
@@ -226,14 +227,14 @@ export async function getFurnitureItems(includeUnpublished = false): Promise<Fur
   if (!includeUnpublished) query = query.eq("published", true);
 
   const { data, error } = await query;
-  if (error || !data) return fallbackFurnitureItems;
+  if (error || !data?.length) return fallbackFurnitureItems;
 
   return (data as unknown as FurnitureItemRow[]).map(normalizeFurnitureItem);
 }
 
 export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureItem | null> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return null;
+  if (!supabase) return getFallbackFurnitureBySlug(slug);
 
   const { data, error } = await supabase
     .from("furniture_items")
@@ -242,7 +243,7 @@ export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureIte
     .eq("published", true)
     .maybeSingle();
 
-  if (error || !data) return null;
+  if (error || !data) return getFallbackFurnitureBySlug(slug);
 
   return normalizeFurnitureItem(data as unknown as FurnitureItemRow);
 }

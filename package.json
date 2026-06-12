@@ -17,6 +17,7 @@
     "db:seed": "node scripts/seed-cms.mjs",
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
     "furniture:analyze": "node scripts/analyze-furniture-excel.mjs",
+    "furniture:extract-pdf": "node scripts/extract-furniture-from-pdf.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
     "legacy:import-website": "node scripts/import-legacy-website.mjs",
     "legacy:download-images": "node scripts/download-legacy-images.mjs"
@@ -24,10 +25,11 @@
   "dependencies": {
     "@supabase/supabase-js": "latest",
     "@tailwindcss/postcss": "^4.3.1",
+    "jszip": "^3.10.1",
     "next": "latest",
+    "pdf-parse": "^2.4.5",
     "react": "latest",
     "react-dom": "latest",
-    "jszip": "^3.10.1",
     "server-only": "^0.0.1",
     "tailwindcss": "^4.3.1",
     "xlsx": "^0.18.5"

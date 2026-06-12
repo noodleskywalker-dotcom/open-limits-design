@@ -8,17 +8,25 @@ export default async function FurniturePage() {
 
   return (
     <main className="page">
-      <section className="section">
-        <div className="section-heading">
-          <div>
+      <section className="section furniture-page-hero">
+        <div className="furniture-hero-banner">
+          <img
+            alt="Open Limits furniture showroom"
+            className="furniture-hero-bg"
+            src="/images/legacy/furniture-showroom-feature.jpeg"
+          />
+          <div className="furniture-hero-overlay" />
+          <div className="furniture-hero-copy">
             <p className="eyebrow">Furniture</p>
             <h1>The collection.</h1>
             <p>
-              Filter by category. Product names drive category matching — sofas, majlis, chairs,
-              tables, lighting, and more.
+              Bespoke majlis, dining, bedroom, and living pieces — crafted in Qatar and tailored to
+              each project.
             </p>
           </div>
         </div>
+      </section>
+      <section className="section">
         <FurnitureCatalog items={items} />
       </section>
     </main>

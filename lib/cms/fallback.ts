@@ -9,6 +9,7 @@ import type {
   ShowroomSection,
   TeamMember
 } from "./types";
+import { fallbackFurnitureCatalog } from "@/lib/furniture/fallback-catalog";
 import {
   LEGACY_LOGO_URL,
   legacyMaterials,
@@ -105,6 +106,6 @@ export const fallbackFurnitureCategories: FurnitureCategory[] = [
   { id: "exterior", slug: "exterior", name: "Exterior", description: null, sort_order: 10, published: true }
 ];
 
-export const fallbackFurnitureItems: FurnitureItem[] = [];
+export const fallbackFurnitureItems: FurnitureItem[] = fallbackFurnitureCatalog;
 
 export const fallbackMaterials: Material[] = legacyMaterials;
