@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { FurnitureCategory, FurnitureItem, Material, MediaAsset } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import FurnitureExcelImport from "./FurnitureExcelImport";
 
 type FurnitureCategoryForm = {
   id: string;
@@ -328,7 +328,19 @@ export default function FurnitureAdminPanel({ media }: { media: MediaAsset[] }) 
 
   return (
     <div>
-      <FurnitureExcelImport />
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Furniture catalog</p>
+          <h3>Import from PDF</h3>
+          <p>
+            Upload <strong>AHMED SALAH data.pdf</strong> on the dedicated import page to preview and import
+            extracted furniture data.
+          </p>
+        </div>
+        <Link className="button" href="/admin/furniture/import">
+          Open Import Catalog →
+        </Link>
+      </div>
       {message ? <p className="status success">{message}</p> : null}
       {error ? <p className="status error">{error}</p> : null}
 

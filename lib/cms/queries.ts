@@ -16,7 +16,6 @@ import {
   legacyShowroomImagesBySection
 } from "./legacy-images";
 import { filterFurnitureProducts, getFurnitureCategory } from "@/lib/furniture-categories";
-import { getFallbackFurnitureBySlug } from "@/lib/furniture/fallback-catalog";
 import type {
   CompanyProfile,
   FurnitureCategory,
@@ -218,7 +217,7 @@ export async function getFurnitureCategories(includeUnpublished = false): Promis
 
 export async function getFurnitureItems(includeUnpublished = false): Promise<FurnitureItem[]> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return fallbackFurnitureItems;
+  if (!supabase) return [];
 
   let query = supabase
     .from("furniture_items")
@@ -227,14 +226,14 @@ export async function getFurnitureItems(includeUnpublished = false): Promise<Fur
   if (!includeUnpublished) query = query.eq("published", true);
 
   const { data, error } = await query;
-  if (error || !data?.length) return fallbackFurnitureItems;
+  if (error || !data) return [];
 
   return (data as unknown as FurnitureItemRow[]).map(normalizeFurnitureItem);
 }
 
 export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureItem | null> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return getFallbackFurnitureBySlug(slug);
+  if (!supabase) return null;
 
   const { data, error } = await supabase
     .from("furniture_items")
@@ -243,7 +242,7 @@ export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureIte
     .eq("published", true)
     .maybeSingle();
 
-  if (error || !data) return getFallbackFurnitureBySlug(slug);
+  if (error || !data) return null;
 
   return normalizeFurnitureItem(data as unknown as FurnitureItemRow);
 }

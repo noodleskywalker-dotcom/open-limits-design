@@ -18,6 +18,7 @@
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
     "furniture:analyze": "node scripts/analyze-furniture-excel.mjs",
     "furniture:analyze-pdf": "node scripts/analyze-furniture-pdf.mjs",
+    "furniture:import-pdf": "node scripts/import-furniture-from-pdf.mjs",
     "furniture:extract-pdf": "node scripts/analyze-furniture-pdf.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
     "legacy:import-website": "node scripts/import-legacy-website.mjs",

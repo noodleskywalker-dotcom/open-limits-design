@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const supabase = getSupabaseAdminClient();
@@ -38,14 +39,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const { analyzeFurniturePdf, sanitizePdfReportForClient } = await import(
-      "@/lib/furniture/pdf-analyze.mjs"
-    );
-    const report = await analyzeFurniturePdf(buffer);
-    return NextResponse.json(sanitizePdfReportForClient(report));
+    const { importFurnitureFromPdf } = await import("@/lib/furniture/pdf-import.mjs");
+    const result = await importFurnitureFromPdf(buffer, supabase);
+    revalidatePath("/furniture");
+    revalidatePath("/furniture", "page");
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Analysis failed." },
+      { error: error instanceof Error ? error.message : "Import failed." },
       { status: 500 }
     );
   }

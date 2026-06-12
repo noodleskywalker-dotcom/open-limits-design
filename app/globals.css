@@ -1154,6 +1154,33 @@ a.card:hover {
   padding: 0.65rem;
 }
 
+.catalog-preview-table-wrap {
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+
+.catalog-preview-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 720px;
+  width: 100%;
+}
+
+.catalog-preview-table th,
+.catalog-preview-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.catalog-preview-table th {
+  color: var(--gold);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .excel-example-list {
   display: grid;
   gap: 0.35rem;

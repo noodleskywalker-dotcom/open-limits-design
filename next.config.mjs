@@ -7,6 +7,11 @@ const nextConfig = {
         hostname: "*.supabase.co"
       }
     ]
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "50mb"
+    }
   }
 };
 
