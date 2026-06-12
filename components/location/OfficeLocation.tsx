@@ -10,6 +10,7 @@ export default function OfficeLocation({ company }: { company: CompanyProfile })
   const email = company.email ?? "info@openlimitsdesign.com";
 
   const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
   const whatsappUrl = `https://wa.me/${phone.replace(/\s+/g, "").replace(/^\+/, "")}`;
 
@@ -48,7 +49,10 @@ export default function OfficeLocation({ company }: { company: CompanyProfile })
             <a className="button ghost" href={`mailto:${email}`}>
               Email
             </a>
-            <a className="button" href={directionsUrl} rel="noopener noreferrer" target="_blank">
+            <a className="button" href={mapsUrl} rel="noopener noreferrer" target="_blank">
+              Open in Google Maps
+            </a>
+            <a className="button ghost" href={directionsUrl} rel="noopener noreferrer" target="_blank">
               Get Directions
             </a>
             <a className="button ghost" href="/book-meeting-with-ceo">

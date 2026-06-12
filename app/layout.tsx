@@ -27,6 +27,7 @@ export default function RootLayout({
             <Link href="/furniture">Furniture</Link>
             <Link href="/materials">Materials</Link>
             <Link href="/services">Services</Link>
+            <Link href="/location">LOCATION</Link>
             <Link href="/team">Team</Link>
             <Link href="/contact">Contact</Link>
             <Link className="nav-cta" href="/book-meeting-with-ceo">
@@ -45,6 +46,7 @@ export default function RootLayout({
           <nav aria-label="Footer navigation">
             <Link href="/projects">Projects</Link>
             <Link href="/furniture">Furniture</Link>
+            <Link href="/location">LOCATION</Link>
             <Link href="/book-meeting-with-ceo">Book a Meeting</Link>
             <Link href="/admin">Admin</Link>
           </nav>

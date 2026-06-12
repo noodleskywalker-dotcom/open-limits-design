@@ -16,7 +16,8 @@
     "supabase:test-uploads": "node scripts/test-image-uploads.mjs",
     "db:seed": "node scripts/seed-cms.mjs",
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
-    "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs"
+    "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
+    "legacy:import-website": "node scripts/import-legacy-website.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
@@ -37,6 +38,7 @@
     "@types/react-dom": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "playwright": "^1.49.0",
     "postcss": "8.5.15",
     "typescript": "latest"
   }
