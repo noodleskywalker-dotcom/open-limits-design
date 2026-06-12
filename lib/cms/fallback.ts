@@ -14,9 +14,9 @@ export const fallbackCompanyProfile: CompanyProfile = {
   tagline: "Architecture · Interior Design · Furniture",
   description:
     "A luxury design studio for architecture, interiors, custom furniture, and turnkey project delivery.",
-  address: null,
-  phone: null,
-  email: null,
+  address: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar",
+  phone: "+974 7788 9033",
+  email: "info@openlimitsdesign.com",
   hero_headline: "Design Without Limits",
   hero_subheadline:
     "Luxury architecture, interiors, and bespoke furniture — crafted in Qatar, delivered worldwide.",
@@ -25,6 +25,7 @@ export const fallbackCompanyProfile: CompanyProfile = {
   ceo_bio:
     "Leading Open Limits with vision and expertise in luxury design and contracting.",
   about_text: null,
+  map_query: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar",
   ceo_image: null
 };
 

@@ -97,6 +97,7 @@ export type CompanyProfile = {
   ceo_name: string | null;
   ceo_bio: string | null;
   about_text: string | null;
+  map_query: string | null;
   ceo_image?: MediaAsset | null;
 };
 

@@ -415,7 +415,8 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
       ceo_image_id: company.ceo_image_id || null,
       ceo_name: company.ceo_name,
       ceo_bio: company.ceo_bio,
-      about_text: company.about_text
+      about_text: company.about_text,
+      map_query: company.map_query || null
     });
 
     const { error: deleteHeroError } = await supabase
@@ -924,6 +925,16 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
                       setCompany((c) => ({ ...(c ?? { id: 1 }), email: event.target.value }) as CompanyProfile)
                     }
                     value={company?.email ?? ""}
+                  />
+                </label>
+                <label className="field full">
+                  <span>Map location (Google Maps search text — leave blank to use the address)</span>
+                  <input
+                    onChange={(event) =>
+                      setCompany((c) => ({ ...(c ?? { id: 1 }), map_query: event.target.value }) as CompanyProfile)
+                    }
+                    placeholder="Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar"
+                    value={company?.map_query ?? ""}
                   />
                 </label>
                 <label className="field full">

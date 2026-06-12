@@ -1,4 +1,5 @@
 import Link from "next/link";
+import OfficeLocation from "@/components/location/OfficeLocation";
 import {
   getCompanyProfile,
   getFurnitureItems,
@@ -87,7 +88,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid">
-            {services.slice(0, 6).map((service) => {
+            {services.slice(0, 8).map((service) => {
               const image = resolveImageUrl(service.image, service.image_url);
               return (
                 <article className="card" key={service.id}>
@@ -218,6 +219,8 @@ export default async function HomePage() {
           </div>
         </section>
       </div>
+
+      <OfficeLocation company={company} />
     </main>
   );
 }

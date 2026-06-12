@@ -1079,6 +1079,115 @@ a.card:hover {
   color: var(--danger);
 }
 
+/* ---------- office location ---------- */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.location-section {
+  background:
+    radial-gradient(circle at 15% 20%, rgb(200 162 74 / 10%), transparent 45%),
+    linear-gradient(180deg, #0b0b0d, #101013);
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  padding: clamp(3rem, 7vw, 6rem) clamp(1rem, 4vw, 4rem);
+  width: 100%;
+}
+
+.location-inner {
+  align-items: center;
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+.location-info {
+  animation: fadeUp 0.9s ease both;
+}
+
+.location-info h2 {
+  letter-spacing: 0.08em;
+}
+
+.location-address {
+  border-left: 2px solid var(--gold);
+  margin: 1.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.location-address p {
+  color: var(--ink);
+  font-size: 1.02rem;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  margin: 0.2rem 0;
+}
+
+.location-contacts {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 0 2rem;
+}
+
+.location-contact {
+  color: var(--gold-soft);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: color 0.25s, transform 0.25s;
+  width: fit-content;
+}
+
+.location-contact:hover {
+  color: var(--gold);
+  transform: translateX(4px);
+}
+
+.location-contact span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.location-map {
+  animation: fadeUp 0.9s ease 0.15s both;
+  border: 1px solid var(--gold-dark);
+  border-radius: 0.75rem;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 45%);
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.location-map:hover {
+  border-color: var(--gold);
+  box-shadow: 0 24px 80px rgb(200 162 74 / 14%);
+}
+
+.location-map iframe {
+  border: 0;
+  display: block;
+  filter: grayscale(1) invert(0.92) contrast(0.9) hue-rotate(180deg);
+  height: clamp(320px, 45vw, 460px);
+  transition: filter 0.4s ease;
+  width: 100%;
+}
+
+.location-map:hover iframe {
+  filter: grayscale(0.4) invert(0) contrast(1) hue-rotate(0deg);
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 920px) {
   .hero,
@@ -1086,7 +1195,8 @@ a.card:hover {
   .detail-hero,
   .booking-shell,
   .admin-shell,
-  .form-grid {
+  .form-grid,
+  .location-inner {
     grid-template-columns: 1fr;
   }
 

@@ -35,20 +35,32 @@ const supabase = createClient(url, serviceKey, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 
+// The first eight are the highlighted core offering; they sort to the top.
 const SERVICES = [
   { slug: "architecture", title: "Architecture", description: "Concept, design development, and delivery for residential and commercial spaces.", sort_order: 1 },
   { slug: "interior-design", title: "Interior Design", description: "Material palettes, spatial planning, FF&E, and turnkey interior experiences.", sort_order: 2 },
-  { slug: "luxury-residential-design", title: "Luxury Residential Design", description: "Bespoke villas, penthouses, and private residences.", sort_order: 3 },
-  { slug: "commercial-design", title: "Commercial Design", description: "Offices, retail, and hospitality environments.", sort_order: 4 },
-  { slug: "furniture-design", title: "Furniture Design", description: "Custom furniture direction and curated pieces.", sort_order: 5 },
-  { slug: "project-management", title: "Project Management", description: "End-to-end delivery, scheduling, and supervision.", sort_order: 6 },
-  { slug: "shell-core", title: "Shell & Core", description: "Structural shell and core construction works.", sort_order: 7 },
-  { slug: "fit-out", title: "Fit Out", description: "Complete interior fit-out packages.", sort_order: 8 },
-  { slug: "windows", title: "Windows", description: "Premium window systems and installation.", sort_order: 9 },
-  { slug: "facade", title: "Facade", description: "Facade design, engineering, and cladding.", sort_order: 10 },
-  { slug: "freelance", title: "Freelance", description: "Specialist freelance design services.", sort_order: 11 },
-  { slug: "drill-types", title: "Drill Types", description: "Specialized drilling works.", sort_order: 12 }
+  { slug: "construction", title: "Construction", description: "Full construction works from groundbreaking to handover.", sort_order: 3 },
+  { slug: "furniture-supply", title: "Furniture Supply", description: "Sourcing, supply, and installation of bespoke and curated furniture.", sort_order: 4 },
+  { slug: "bim-revit", title: "BIM / Revit", description: "Building information modeling, Revit documentation, and coordination.", sort_order: 5 },
+  { slug: "fit-out", title: "Fit-Out", description: "Complete interior fit-out packages for residential and commercial spaces.", sort_order: 6 },
+  { slug: "engineering-services", title: "Engineering Services", description: "Structural, MEP, and specialist engineering services.", sort_order: 7 },
+  { slug: "project-management", title: "Project Management", description: "End-to-end delivery, scheduling, and supervision.", sort_order: 8 },
+  { slug: "luxury-residential-design", title: "Luxury Residential Design", description: "Bespoke villas, penthouses, and private residences.", sort_order: 9 },
+  { slug: "commercial-design", title: "Commercial Design", description: "Offices, retail, and hospitality environments.", sort_order: 10 },
+  { slug: "furniture-design", title: "Furniture Design", description: "Custom furniture direction and curated pieces.", sort_order: 11 },
+  { slug: "shell-core", title: "Shell & Core", description: "Structural shell and core construction works.", sort_order: 12 },
+  { slug: "windows", title: "Windows", description: "Premium window systems and installation.", sort_order: 13 },
+  { slug: "facade", title: "Facade", description: "Facade design, engineering, and cladding.", sort_order: 14 },
+  { slug: "freelance", title: "Freelance", description: "Specialist freelance design services.", sort_order: 15 },
+  { slug: "drill-types", title: "Drill Types", description: "Specialized drilling works.", sort_order: 16 }
 ];
+
+const OFFICE = {
+  address: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar",
+  phone: "+974 7788 9033",
+  email: "info@openlimitsdesign.com",
+  map_query: "Street 303, Zone 69, Building 254, Unit 303, Lusail, Qatar"
+};
 
 const FURNITURE_CATEGORIES = [
   { slug: "sofas", name: "Sofas", sort_order: 1 },
@@ -99,6 +111,54 @@ async function upsertBySlug(table, rows, extra = {}) {
   );
 }
 
+async function reorderServices() {
+  for (const service of SERVICES) {
+    await supabase
+      .from("services")
+      .update({ sort_order: service.sort_order })
+      .eq("slug", service.slug);
+  }
+  console.log("OK   services: sort order refreshed (core 8 first)");
+}
+
+async function seedOfficeInfo() {
+  const { data: current, error } = await supabase
+    .from("company_profile")
+    .select("address, phone, email")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) {
+    console.log(`SKIP office info: ${error.message}`);
+    return;
+  }
+
+  const patch = {};
+  if (!current?.address) patch.address = OFFICE.address;
+  if (!current?.phone) patch.phone = OFFICE.phone;
+  if (!current?.email) patch.email = OFFICE.email;
+
+  if (!Object.keys(patch).length) {
+    console.log("OK   office info: already set");
+  } else {
+    const { error: updateError } = await supabase.from("company_profile").update(patch).eq("id", 1);
+    console.log(
+      updateError ? `FAIL office info: ${updateError.message}` : "OK   office info: address/phone/email set"
+    );
+  }
+
+  // map_query column only exists after restore_open_limits.sql has been run.
+  const { error: mapError } = await supabase
+    .from("company_profile")
+    .update({ map_query: OFFICE.map_query })
+    .eq("id", 1)
+    .is("map_query", null);
+  if (mapError) {
+    console.log(`SKIP map_query: ${mapError.message} (run restore_open_limits.sql first)`);
+  } else {
+    console.log("OK   map_query: set");
+  }
+}
+
 async function dedupeTeamMembers() {
   const { data, error } = await supabase
     .from("team_members")
@@ -130,6 +190,8 @@ async function dedupeTeamMembers() {
 console.log("Seeding Open Limits Design CMS…\n");
 await dedupeTeamMembers();
 await upsertBySlug("services", SERVICES, { is_active: true });
+await reorderServices();
 await upsertBySlug("furniture_categories", FURNITURE_CATEGORIES, { published: true });
 await upsertBySlug("materials", MATERIALS, { published: true });
+await seedOfficeInfo();
 console.log("\nDone.");

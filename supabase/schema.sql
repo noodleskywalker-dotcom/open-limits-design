@@ -91,6 +91,7 @@ create table if not exists public.company_profile (
 alter table public.company_profile add column if not exists ceo_name text;
 alter table public.company_profile add column if not exists ceo_bio text;
 alter table public.company_profile add column if not exists about_text text;
+alter table public.company_profile add column if not exists map_query text;
 
 create table if not exists public.homepage_hero_images (
   id uuid primary key default gen_random_uuid(),
