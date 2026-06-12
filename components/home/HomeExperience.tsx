@@ -9,13 +9,13 @@ const INTRO_KEY = "old-intro-seen";
 
 function readIntroState(enabled: boolean) {
   if (typeof window === "undefined") {
-    return { introVisible: false, showroomReady: true };
+    return { showIntro: false, showroomReady: true };
   }
   const seen = localStorage.getItem(INTRO_KEY) === "1";
   if (!enabled || seen) {
-    return { introVisible: false, showroomReady: true };
+    return { showIntro: false, showroomReady: true };
   }
-  return { introVisible: true, showroomReady: false };
+  return { showIntro: true, showroomReady: false };
 }
 
 type HomeExperienceProps = {
@@ -39,31 +39,35 @@ export default function HomeExperience({
   settings,
   sections
 }: HomeExperienceProps) {
-  const [introVisible, setIntroVisible] = useState(() => readIntroState(settings.enabled).introVisible);
+  const [showIntro, setShowIntro] = useState(() => readIntroState(settings.enabled).showIntro);
   const [showroomReady, setShowroomReady] = useState(() => readIntroState(settings.enabled).showroomReady);
 
-  const enterShowroom = useCallback(() => {
+  const revealShowroom = useCallback(() => {
+    setShowroomReady(true);
+  }, []);
+
+  const completeIntro = useCallback(() => {
     localStorage.setItem(INTRO_KEY, "1");
-    setIntroVisible(false);
-    window.setTimeout(() => setShowroomReady(true), 700);
+    setShowIntro(false);
   }, []);
 
   return (
     <>
-      {introVisible ? (
+      {showIntro ? (
         <LuxuryIntro
           ceoImageUrl={ceoImageUrl}
           ceoName={ceoName}
           companyName={companyName}
           logoImageUrl={logoImageUrl}
-          onEnter={enterShowroom}
+          onEnter={completeIntro}
+          onRevealShowroom={revealShowroom}
           settings={settings}
           slides={slides}
           tagline={tagline}
         />
       ) : null}
       {showroomReady ? (
-        <main className={`showroom-entry-reveal ${introVisible ? "" : "visible"}`}>
+        <main className="showroom-entry-reveal visible">
           <ShowroomEntry sections={sections} />
         </main>
       ) : null}

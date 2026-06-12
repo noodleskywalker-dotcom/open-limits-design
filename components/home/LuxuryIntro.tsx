@@ -12,6 +12,7 @@ type LuxuryIntroProps = {
   ceoName: string;
   tagline: string;
   settings: IntroSettings;
+  onRevealShowroom: () => void;
   onEnter: () => void;
 };
 
@@ -23,6 +24,7 @@ export default function LuxuryIntro({
   ceoName,
   tagline,
   settings,
+  onRevealShowroom,
   onEnter
 }: LuxuryIntroProps) {
   const [exiting, setExiting] = useState(false);
@@ -44,6 +46,7 @@ export default function LuxuryIntro({
 
   function enter() {
     setExiting(true);
+    onRevealShowroom();
     window.setTimeout(onEnter, 700);
   }
 
