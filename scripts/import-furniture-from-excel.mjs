@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 /**
- * Imports furniture items from ALI ALMOHANDI-FURNITURE.xlsx into Supabase.
+ * Import furniture from Excel into Supabase.
+ * REQUIRES prior analysis approval and --confirm flag.
  *
  * Usage:
- *   1. Place the Excel file in the project root (or pass a path as the first argument).
- *   2. npm install xlsx
- *   3. node scripts/import-furniture-from-excel.mjs [path-to-xlsx]
- *
- * Expected columns (case-insensitive, flexible): Name/Title, Category,
- * Description, Dimensions, Width, Depth/Length, Height, Materials, Collection.
- * Embedded images cannot be extracted by this script — upload photos through
- * Admin → Media (Furniture category) and assign them to items afterwards.
+ *   node scripts/analyze-furniture-excel.mjs [file.xlsx]   # analyze first
+ *   node scripts/import-furniture-from-excel.mjs --dry-run [file.xlsx]
+ *   node scripts/import-furniture-from-excel.mjs --confirm [file.xlsx]
  */
 import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
 import path from "node:path";
+import {
+  analyzeFurnitureExcel,
+  formatAnalysisReport,
+  resolveExcelPath
+} from "../lib/furniture/excel-analyze.mjs";
 
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;
@@ -31,27 +32,35 @@ function loadEnvFile(filePath) {
 
 loadEnvFile(path.join(process.cwd(), ".env.local"));
 
-const filePath =
-  process.argv[2] ??
-  ["AHMED SALAH data.xlsx", "AHMED-SALAH-data.xlsx", "ALI ALMOHANDI-FURNITURE.xlsx"]
-    .map((name) => path.join(process.cwd(), name))
-    .find((candidate) => fs.existsSync(candidate));
+const args = process.argv.slice(2);
+const dryRun = args.includes("--dry-run");
+const confirm = args.includes("--confirm");
+const inputPath = args.find((arg) => !arg.startsWith("--")) ?? null;
 
+if (!dryRun && !confirm) {
+  console.error("Import blocked — run analysis first, then import with --confirm or preview with --dry-run.");
+  console.error("");
+  console.error("  node scripts/analyze-furniture-excel.mjs [file.xlsx]");
+  console.error("  node scripts/import-furniture-from-excel.mjs --dry-run [file.xlsx]");
+  console.error("  node scripts/import-furniture-from-excel.mjs --confirm [file.xlsx]");
+  process.exit(2);
+}
+
+const filePath = resolveExcelPath(inputPath);
 if (!filePath) {
   console.error("Excel file not found.");
-  console.error("Place one of these in the project root:");
-  console.error("  - AHMED SALAH data.xlsx");
-  console.error("  - ALI ALMOHANDI-FURNITURE.xlsx");
-  console.error("Or pass the path: node scripts/import-furniture-from-excel.mjs path/to/file.xlsx");
   process.exit(1);
 }
 
-let XLSX;
-try {
-  XLSX = (await import("xlsx")).default;
-} catch {
-  console.error("The xlsx package is not installed. Run: npm install xlsx");
-  process.exit(1);
+const report = await analyzeFurnitureExcel(filePath);
+console.log(formatAnalysisReport(report));
+console.log("");
+
+if (dryRun) {
+  console.log("DRY RUN — no database or storage changes made.");
+  console.log(`Would process ${report.furnitureItemCount} furniture item(s).`);
+  console.log(`Would upload ${report.embeddedImageCount} embedded image(s) when image mapping is implemented.`);
+  process.exit(0);
 }
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -72,21 +81,6 @@ const slugify = (value) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const pick = (row, ...keys) => {
-  for (const key of keys) {
-    const match = Object.keys(row).find((k) => k.toLowerCase().includes(key));
-    if (match && row[match] != null && String(row[match]).trim() !== "") {
-      return String(row[match]).trim();
-    }
-  }
-  return null;
-};
-
-const workbook = XLSX.readFile(filePath);
-const sheet = workbook.Sheets[workbook.SheetNames[0]];
-const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
-console.log(`Read ${rows.length} rows from ${path.basename(filePath)}`);
-
 const { data: categories, error: categoryError } = await supabase
   .from("furniture_categories")
   .select("id, slug, name");
@@ -95,69 +89,76 @@ if (categoryError) {
   process.exit(1);
 }
 
-function resolveCategoryId(name) {
+async function ensureCategory(name) {
   if (!name) return null;
-  const target = slugify(name);
-  const match = categories.find(
-    (c) => c.slug === target || c.name.toLowerCase() === name.toLowerCase()
-  );
-  return match?.id ?? null;
+  const slug = slugify(name);
+  let match = categories.find((c) => c.slug === slug || c.name.toLowerCase() === name.toLowerCase());
+  if (match) return match.id;
+
+  const { data, error } = await supabase
+    .from("furniture_categories")
+    .insert({ slug, name, published: true, sort_order: categories.length + 1 })
+    .select("id, slug, name")
+    .single();
+  if (error) throw new Error(error.message);
+  categories.push(data);
+  console.log(`created category: ${name}`);
+  return data.id;
 }
 
 const fallbackCategory = categories.find((c) => c.slug === "custom-furniture") ?? categories[0];
 let imported = 0;
 let skipped = 0;
 
-for (const row of rows) {
-  const title = pick(row, "name", "title", "item", "product");
-  if (!title) {
-    skipped += 1;
-    continue;
-  }
+for (const sheet of report.sheets) {
+  for (const item of sheet.items) {
+    const slug = item.slug || slugify(item.title);
+    const { data: existing } = await supabase.from("furniture_items").select("id").eq("slug", slug).maybeSingle();
+    if (existing) {
+      console.log(`skip (exists): ${item.title}`);
+      skipped += 1;
+      continue;
+    }
 
-  const slug = slugify(title);
-  const { data: existing } = await supabase
-    .from("furniture_items")
-    .select("id")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (existing) {
-    console.log(`skip (exists): ${title}`);
-    skipped += 1;
-    continue;
-  }
+    const categoryId = (await ensureCategory(item.category)) ?? fallbackCategory?.id;
+    if (!categoryId) {
+      console.log(`skip (no category): ${item.title}`);
+      skipped += 1;
+      continue;
+    }
 
-  const categoryId = resolveCategoryId(pick(row, "category", "type", "group")) ?? fallbackCategory?.id;
-  if (!categoryId) {
-    console.log(`skip (no category): ${title}`);
-    skipped += 1;
-    continue;
-  }
+    const dimensions =
+      item.dimensions ??
+      ([item.width, item.depth, item.height].filter(Boolean).join(" × ") || null);
 
-  const { error } = await supabase.from("furniture_items").insert({
-    slug,
-    title,
-    description: pick(row, "description", "details", "info") ?? title,
-    dimensions: pick(row, "dimension", "size"),
-    width: pick(row, "width"),
-    depth: pick(row, "depth", "length"),
-    height: pick(row, "height"),
-    materials: pick(row, "material"),
-    finishes: pick(row, "finish"),
-    features: pick(row, "feature"),
-    collection: pick(row, "collection", "bedroom", "set"),
-    category_id: categoryId,
-    published: true
-  });
+    const { error } = await supabase.from("furniture_items").insert({
+      slug,
+      title: item.title,
+      description: item.description ?? item.title,
+      dimensions,
+      width: item.width,
+      depth: item.depth,
+      height: item.height,
+      materials: item.materials,
+      finishes: item.finishes,
+      collection: item.collection,
+      category_id: categoryId,
+      published: true
+    });
 
-  if (error) {
-    console.log(`fail: ${title} — ${error.message}`);
-    skipped += 1;
-  } else {
-    console.log(`ok:   ${title}`);
-    imported += 1;
+    if (error) {
+      console.log(`fail: ${item.title} — ${error.message}`);
+      skipped += 1;
+    } else {
+      console.log(`ok:   ${item.title}`);
+      imported += 1;
+    }
   }
 }
 
 console.log(`\nImported ${imported}, skipped ${skipped}.`);
-console.log("Now upload product photos in Admin → Media and assign them to each item.");
+if (report.embeddedImageCount > 0) {
+  console.log(
+    `Note: ${report.embeddedImageCount} embedded image(s) detected — upload via Admin → Media or wait for image-mapping import enhancement.`
+  );
+}

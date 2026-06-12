@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
-import type { IntroSettings, IntroSlide, ShowroomSection } from "@/lib/cms/types";
+import type { IntroSettings, ShowroomSection } from "@/lib/cms/types";
 import LuxuryIntro from "@/components/home/LuxuryIntro";
 import ShowroomEntry from "@/components/showroom/ShowroomEntry";
 
@@ -35,22 +35,16 @@ function readIntroView(enabled: boolean): IntroView {
 }
 
 type HomeExperienceProps = {
-  slides: IntroSlide[];
-  ceoImageUrl: string | null;
   logoImageUrl: string | null;
   companyName: string;
-  ceoName: string;
   tagline: string;
   settings: IntroSettings;
   sections: ShowroomSection[];
 };
 
 export default function HomeExperience({
-  slides,
-  ceoImageUrl,
   logoImageUrl,
   companyName,
-  ceoName,
   tagline,
   settings,
   sections
@@ -85,14 +79,11 @@ export default function HomeExperience({
     <>
       {showIntro ? (
         <LuxuryIntro
-          ceoImageUrl={ceoImageUrl}
-          ceoName={ceoName}
           companyName={companyName}
           logoImageUrl={logoImageUrl}
           onEnter={completeIntro}
           onRevealShowroom={revealShowroom}
           settings={settings}
-          slides={slides}
           tagline={tagline}
         />
       ) : null}

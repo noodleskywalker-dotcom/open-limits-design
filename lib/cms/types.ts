@@ -109,6 +109,8 @@ export type IntroSettings = {
   autoplayMs: number;
   introTitle: string | null;
   introSubtitle: string | null;
+  blueprintImageUrl: string | null;
+  finalRenderImageUrl: string | null;
 };
 
 export type IntroSlide = {

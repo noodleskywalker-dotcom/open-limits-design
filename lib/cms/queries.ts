@@ -337,7 +337,9 @@ const INTRO_SETTING_DEFAULTS: IntroSettings = {
   enabled: true,
   autoplayMs: 3200,
   introTitle: null,
-  introSubtitle: null
+  introSubtitle: null,
+  blueprintImageUrl: null,
+  finalRenderImageUrl: null
 };
 
 export async function getIntroSettings(): Promise<IntroSettings> {
@@ -347,15 +349,34 @@ export async function getIntroSettings(): Promise<IntroSettings> {
   const { data, error } = await supabase
     .from("site_settings")
     .select("key, value")
-    .in("key", ["intro_enabled", "intro_autoplay_ms", "intro_title", "intro_subtitle"]);
+    .in("key", [
+      "intro_enabled",
+      "intro_autoplay_ms",
+      "intro_title",
+      "intro_subtitle",
+      "intro_blueprint_media_id",
+      "intro_final_media_id"
+    ]);
 
   if (error || !data) return INTRO_SETTING_DEFAULTS;
 
   const map = Object.fromEntries(data.map((row) => [row.key, row.value]));
+  const mediaIds = [map.intro_blueprint_media_id, map.intro_final_media_id].filter(Boolean) as string[];
+
+  let mediaMap = new Map<string, string>();
+  if (mediaIds.length) {
+    const { data: mediaRows } = await supabase.from("media_assets").select("id, public_url").in("id", mediaIds);
+    mediaMap = new Map((mediaRows ?? []).map((row) => [row.id as string, row.public_url as string]));
+  }
+
   return {
     enabled: map.intro_enabled !== "false",
     autoplayMs: Math.max(1500, Number(map.intro_autoplay_ms) || INTRO_SETTING_DEFAULTS.autoplayMs),
     introTitle: map.intro_title ?? null,
-    introSubtitle: map.intro_subtitle ?? null
+    introSubtitle: map.intro_subtitle ?? null,
+    blueprintImageUrl: map.intro_blueprint_media_id
+      ? (mediaMap.get(map.intro_blueprint_media_id) ?? null)
+      : null,
+    finalRenderImageUrl: map.intro_final_media_id ? (mediaMap.get(map.intro_final_media_id) ?? null) : null
   };
 }

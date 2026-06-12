@@ -16,6 +16,7 @@
     "supabase:test-uploads": "node scripts/test-image-uploads.mjs",
     "db:seed": "node scripts/seed-cms.mjs",
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
+    "furniture:analyze": "node scripts/analyze-furniture-excel.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
     "legacy:import-website": "node scripts/import-legacy-website.mjs"
   },
@@ -25,8 +26,10 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "jszip": "^3.10.1",
     "server-only": "^0.0.1",
-    "tailwindcss": "^4.3.1"
+    "tailwindcss": "^4.3.1",
+    "xlsx": "^0.18.5"
   },
   "overrides": {
     "postcss": "8.5.15"

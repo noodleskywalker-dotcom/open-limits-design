@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { FurnitureCategory, FurnitureItem, Material, MediaAsset } from "@/lib/cms/types";
 import { resolveImageUrl } from "@/lib/cms/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import FurnitureExcelImport from "./FurnitureExcelImport";
 
 type FurnitureCategoryForm = {
   id: string;
@@ -327,6 +328,7 @@ export default function FurnitureAdminPanel({ media }: { media: MediaAsset[] }) 
 
   return (
     <div>
+      <FurnitureExcelImport />
       {message ? <p className="status success">{message}</p> : null}
       {error ? <p className="status error">{error}</p> : null}
 

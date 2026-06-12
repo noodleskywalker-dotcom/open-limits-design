@@ -12,7 +12,9 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
     enabled: true,
     autoplayMs: "3200",
     introTitle: "",
-    introSubtitle: ""
+    introSubtitle: "",
+    blueprintMediaId: "",
+    finalMediaId: ""
   });
   const [form, setForm] = useState({ mediaId: "", title: "", subtitle: "", sortOrder: "0" });
   const [message, setMessage] = useState("");
@@ -27,7 +29,9 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
         "intro_enabled",
         "intro_autoplay_ms",
         "intro_title",
-        "intro_subtitle"
+        "intro_subtitle",
+        "intro_blueprint_media_id",
+        "intro_final_media_id"
       ])
     ]);
     if (slidesRes.error) throw slidesRes.error;
@@ -38,7 +42,9 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
       enabled: map.intro_enabled !== "false",
       autoplayMs: map.intro_autoplay_ms ?? "3200",
       introTitle: map.intro_title ?? "",
-      introSubtitle: map.intro_subtitle ?? ""
+      introSubtitle: map.intro_subtitle ?? "",
+      blueprintMediaId: map.intro_blueprint_media_id ?? "",
+      finalMediaId: map.intro_final_media_id ?? ""
     });
   }, [supabase]);
 
@@ -54,7 +60,9 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
       { key: "intro_enabled", value: String(settings.enabled) },
       { key: "intro_autoplay_ms", value: settings.autoplayMs },
       { key: "intro_title", value: settings.introTitle || "" },
-      { key: "intro_subtitle", value: settings.introSubtitle || "" }
+      { key: "intro_subtitle", value: settings.introSubtitle || "" },
+      { key: "intro_blueprint_media_id", value: settings.blueprintMediaId || "" },
+      { key: "intro_final_media_id", value: settings.finalMediaId || "" }
     ];
     const { error: upErr } = await supabase.from("site_settings").upsert(rows, { onConflict: "key" });
     if (upErr) {
@@ -111,7 +119,10 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
       <form className="form-grid form-card" onSubmit={saveSettings}>
         <div className="field full">
           <h3>Intro experience</h3>
-          <p>Animation timing and default intro copy. CEO portrait is set in Homepage tab.</p>
+          <p>
+            Blueprint-to-luxury intro animation on first visit. Upload blueprint and final render images in
+            Media, then assign below. Without images, an elegant SVG line animation is used.
+          </p>
         </div>
         <label className="field">
           <span>Show intro on first visit</span>
@@ -148,6 +159,34 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
             placeholder="Luxury Design Studio"
             value={settings.introSubtitle}
           />
+        </label>
+        <label className="field full">
+          <span>Blueprint image (draws on paper at intro start)</span>
+          <select
+            onChange={(e) => setSettings({ ...settings, blueprintMediaId: e.target.value })}
+            value={settings.blueprintMediaId}
+          >
+            <option value="">None — SVG line animation fallback</option>
+            {media.map((asset) => (
+              <option key={asset.id} value={asset.id}>
+                {asset.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field full">
+          <span>Final luxury render (revealed after blueprint transforms)</span>
+          <select
+            onChange={(e) => setSettings({ ...settings, finalMediaId: e.target.value })}
+            value={settings.finalMediaId}
+          >
+            <option value="">None — CSS interior glow fallback</option>
+            {media.map((asset) => (
+              <option key={asset.id} value={asset.id}>
+                {asset.title}
+              </option>
+            ))}
+          </select>
         </label>
         <button className="button" type="submit">
           Save intro settings

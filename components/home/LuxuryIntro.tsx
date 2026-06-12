@@ -1,20 +1,19 @@
 "use client";
 
-import { useMemo, useSyncExternalStore, useState } from "react";
-import type { IntroSettings, IntroSlide } from "@/lib/cms/types";
-import { resolveImageUrl } from "@/lib/cms/types";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import type { IntroSettings } from "@/lib/cms/types";
+import BlueprintSvgFallback from "@/components/home/BlueprintSvgFallback";
 
 type LuxuryIntroProps = {
-  slides: IntroSlide[];
-  ceoImageUrl: string | null;
   logoImageUrl: string | null;
   companyName: string;
-  ceoName: string;
   tagline: string;
   settings: IntroSettings;
   onRevealShowroom: () => void;
   onEnter: () => void;
 };
+
+type IntroPhase = "dark" | "draw" | "transform" | "reveal";
 
 function subscribeToHydration(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -31,59 +30,83 @@ function getServerMounted() {
 }
 
 export default function LuxuryIntro({
-  slides,
-  ceoImageUrl,
   logoImageUrl,
   companyName,
-  ceoName,
   tagline,
   settings,
   onRevealShowroom,
   onEnter
 }: LuxuryIntroProps) {
   const mounted = useSyncExternalStore(subscribeToHydration, getClientMounted, getServerMounted);
+  const [phase, setPhase] = useState<IntroPhase>("dark");
   const [exiting, setExiting] = useState(false);
 
-  const backgroundSlides = useMemo(() => {
-    const urls: string[] = [];
-    for (const slide of slides) {
-      const url = resolveImageUrl(slide.media);
-      if (url) urls.push(url);
-    }
-    return urls;
-  }, [slides]);
+  const blueprintUrl = settings.blueprintImageUrl;
+  const finalUrl = settings.finalRenderImageUrl;
+  const reducedMotion =
+    mounted && typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function enter() {
+  const displayPhase = !mounted ? "dark" : reducedMotion ? "reveal" : phase;
+
+  useEffect(() => {
+    if (!mounted || reducedMotion) return;
+
+    const timers = [
+      window.setTimeout(() => setPhase("draw"), 500),
+      window.setTimeout(() => setPhase("transform"), 3200),
+      window.setTimeout(() => setPhase("reveal"), 5200)
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [mounted, reducedMotion]);
+
+  function dismiss() {
     setExiting(true);
     onRevealShowroom();
-    window.setTimeout(onEnter, 700);
+    window.setTimeout(onEnter, 650);
   }
 
   if (!mounted) {
     return null;
   }
 
+  const title = settings.introTitle ?? companyName;
+  const subtitle = settings.introSubtitle ?? tagline;
+
   return (
     <div
       aria-modal="true"
-      className={`luxury-intro luxury-intro-mounted ${exiting ? "luxury-intro-exit" : ""}`}
+      aria-label="Open Limits Design intro"
+      className={`luxury-intro blueprint-intro luxury-intro-mounted ${exiting ? "luxury-intro-exit" : ""}`}
+      data-phase={displayPhase}
       role="dialog"
     >
-      <div className="luxury-intro-backdrop">
-        {backgroundSlides.map((url, index) => (
-          <img
-            alt=""
-            aria-hidden="true"
-            className={`luxury-intro-bg ${index === 0 ? "active" : ""}`}
-            key={url}
-            src={url}
-          />
-        ))}
+      <div aria-hidden className="blueprint-intro-backdrop" />
+
+      <div className="blueprint-stage">
+        <div className="blueprint-paper">
+          {blueprintUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="blueprint-cms-image blueprint-layer" src={blueprintUrl} />
+          ) : (
+            <BlueprintSvgFallback />
+          )}
+
+          {finalUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="blueprint-final-image blueprint-layer" src={finalUrl} />
+          ) : (
+            <div aria-hidden className="blueprint-final-fallback blueprint-layer">
+              <div className="blueprint-final-glow" />
+              <div className="blueprint-final-room" />
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="luxury-intro-content">
-        <div className="luxury-intro-brand">
+      <div className="blueprint-intro-ui">
+        <div className="blueprint-intro-brand">
           {logoImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img alt={companyName} className="luxury-intro-logo-image" src={logoImageUrl} />
           ) : (
             <div className="luxury-intro-logo-text">
@@ -93,25 +116,17 @@ export default function LuxuryIntro({
           )}
         </div>
 
-        <div className="luxury-intro-hero">
-          {ceoImageUrl ? (
-            <img alt={ceoName} className="luxury-intro-ceo" src={ceoImageUrl} />
-          ) : (
-            <div aria-hidden="true" className="luxury-intro-ceo luxury-intro-ceo-placeholder">
-              {ceoName.slice(0, 1)}
-            </div>
-          )}
-        </div>
-
-        <div className="luxury-intro-copy">
-          <p className="eyebrow">{settings.introSubtitle ?? "Luxury Design Studio"}</p>
-          <h1>{settings.introTitle ?? companyName}</h1>
-          <p className="luxury-intro-tagline">{tagline}</p>
+        <div className="blueprint-intro-copy">
+          <p className="eyebrow">{subtitle}</p>
+          <h1>{title}</h1>
         </div>
 
         <div className="luxury-intro-actions">
-          <button className="button" onClick={enter} type="button">
+          <button className="button" onClick={dismiss} type="button">
             Enter Showroom
+          </button>
+          <button className="button ghost" onClick={dismiss} type="button">
+            Skip Intro
           </button>
         </div>
       </div>
