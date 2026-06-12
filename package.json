@@ -17,7 +17,8 @@
     "db:seed": "node scripts/seed-cms.mjs",
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
     "furniture:analyze": "node scripts/analyze-furniture-excel.mjs",
-    "furniture:extract-pdf": "node scripts/extract-furniture-from-pdf.mjs",
+    "furniture:analyze-pdf": "node scripts/analyze-furniture-pdf.mjs",
+    "furniture:extract-pdf": "node scripts/analyze-furniture-pdf.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
     "legacy:import-website": "node scripts/import-legacy-website.mjs",
     "legacy:download-images": "node scripts/download-legacy-images.mjs"
@@ -28,6 +29,7 @@
     "jszip": "^3.10.1",
     "next": "latest",
     "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^6.0.227",
     "react": "latest",
     "react-dom": "latest",
     "server-only": "^0.0.1",
