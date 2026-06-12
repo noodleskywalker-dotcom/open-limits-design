@@ -118,7 +118,7 @@ export default function FurnitureAdminPanel({ media }: { media: MediaAsset[] }) 
       supabase
         .from("furniture_items")
         .select(
-          "*, category:furniture_categories(*), featured_image:media_assets(*), furniture_item_images(media_id, sort_order, media:media_assets(*)), furniture_item_materials(material_id)"
+          "*, category:furniture_categories(*), featured_image:media_assets!furniture_items_featured_image_id_fkey(*), furniture_item_images(media_id, sort_order, media:media_assets!furniture_item_images_media_id_fkey(*)), furniture_item_materials(material_id)"
         )
         .order("sort_order"),
       supabase.from("materials").select("*").order("sort_order")

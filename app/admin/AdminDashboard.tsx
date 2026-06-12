@@ -251,49 +251,79 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
   const loadAdminData = useCallback(async () => {
     if (!supabase) return;
 
-    const [mediaResult, companyResult, heroResult, projectResult, teamResult, serviceResult] =
-      await Promise.all([
-        supabase.from("media_assets").select("*").order("created_at", { ascending: false }),
-        supabase.from("company_profile").select("*, ceo_image:media_assets(*)").eq("id", 1).maybeSingle(),
-        supabase.from("homepage_hero_images").select("*, media:media_assets(*)").order("sort_order"),
-        supabase
-          .from("projects")
-          .select(
-            "*, featured_image:media_assets(*), project_images(media_id, sort_order, media:media_assets(*)), project_comparisons(*, before_image:media_assets!project_comparisons_before_image_id_fkey(*), after_image:media_assets!project_comparisons_after_image_id_fkey(*))"
-          )
-          .order("sort_order"),
-        supabase.from("team_members").select("*, photo:media_assets(*)").order("sort_order"),
-        supabase.from("services").select("*, image:media_assets(*)").order("sort_order")
-      ]);
-
+    const mediaResult = await supabase.from("media_assets").select("*").order("created_at", { ascending: false });
     if (mediaResult.error) throw mediaResult.error;
-
     setMedia((mediaResult.data ?? []) as MediaAsset[]);
-    setCompany((companyResult.data as CompanyProfile | null) ?? null);
-    setHeroImageIds(((heroResult.data ?? []) as { media_id: string }[]).map((item) => item.media_id));
-    setProjects(
-      (
-        (projectResult.data ?? []) as Array<
-          Project & {
-            project_images?: { media_id: string; sort_order: number; media: MediaAsset | null }[];
-            project_comparisons?: ProjectComparison[];
-          }
-        >
-      ).map((project) => ({
-        ...project,
-        gallery: (project.project_images ?? [])
-          .sort((a, b) => a.sort_order - b.sort_order)
-          .map((item) => item.media)
-          .filter((asset): asset is MediaAsset => Boolean(asset)),
-        comparisons: (project.project_comparisons ?? []).sort((a, b) => a.sort_order - b.sort_order)
-      }))
-    );
-    setTeam((teamResult.data ?? []) as TeamMember[]);
-    setServices((serviceResult.data ?? []) as Service[]);
 
-    const joinError = teamResult.error ?? serviceResult.error ?? projectResult.error;
-    if (joinError) {
-      throw new Error(joinError.message);
+    const companyResult = await supabase
+      .from("company_profile")
+      .select("*, ceo_image:media_assets!company_profile_ceo_image_id_fkey(*)")
+      .eq("id", 1)
+      .maybeSingle();
+    if (!companyResult.error) {
+      setCompany((companyResult.data as CompanyProfile | null) ?? null);
+    }
+
+    const heroResult = await supabase
+      .from("homepage_hero_images")
+      .select("*, media:media_assets!homepage_hero_images_media_id_fkey(*)")
+      .order("sort_order");
+    if (!heroResult.error) {
+      setHeroImageIds(((heroResult.data ?? []) as { media_id: string }[]).map((item) => item.media_id));
+    }
+
+    const projectSelects = [
+      "*, featured_image:media_assets!projects_featured_image_id_fkey(*), project_images(media_id, sort_order, media:media_assets!project_images_media_id_fkey(*)), project_comparisons(*, before_image:media_assets!project_comparisons_before_image_id_fkey(*), after_image:media_assets!project_comparisons_after_image_id_fkey(*))",
+      "*"
+    ];
+    for (const select of projectSelects) {
+      const projectResult = await supabase.from("projects").select(select).order("sort_order");
+      if (!projectResult.error && projectResult.data) {
+        setProjects(
+          (
+            projectResult.data as unknown as Array<
+              Project & {
+                project_images?: { media_id: string; sort_order: number; media: MediaAsset | null }[];
+                project_comparisons?: ProjectComparison[];
+              }
+            >
+          ).map((project) => ({
+            ...project,
+            gallery: (project.project_images ?? [])
+              .sort((a, b) => a.sort_order - b.sort_order)
+              .map((item) => item.media)
+              .filter((asset): asset is MediaAsset => Boolean(asset)),
+            comparisons: (project.project_comparisons ?? []).sort((a, b) => a.sort_order - b.sort_order)
+          }))
+        );
+        break;
+      }
+    }
+
+    const teamSelects = [
+      "*, photo:media_assets!team_members_photo_id_fkey(*)",
+      "*, photo:media_assets(*)",
+      "*"
+    ];
+    for (const select of teamSelects) {
+      const teamResult = await supabase.from("team_members").select(select).order("sort_order");
+      if (!teamResult.error && teamResult.data) {
+        setTeam(teamResult.data as unknown as TeamMember[]);
+        break;
+      }
+    }
+
+    const serviceSelects = [
+      "*, image:media_assets!services_image_id_fkey(*)",
+      "*, image:media_assets(*)",
+      "*"
+    ];
+    for (const select of serviceSelects) {
+      const serviceResult = await supabase.from("services").select(select).order("sort_order");
+      if (!serviceResult.error && serviceResult.data) {
+        setServices(serviceResult.data as unknown as Service[]);
+        break;
+      }
     }
   }, [supabase]);
 
@@ -509,18 +539,39 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
   async function saveTeam(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase) return;
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: teamForm.name,
       role: teamForm.role,
       bio: teamForm.bio || null,
       email: teamForm.email || null,
-      photo_id: teamForm.photoId || null,
       sort_order: Number(teamForm.sortOrder) || 0,
       is_active: teamForm.isActive
     };
-    const { error: saveError } = teamForm.id
-      ? await supabase.from("team_members").update(payload).eq("id", teamForm.id)
-      : await supabase.from("team_members").insert(payload);
+
+    if (teamForm.photoId) {
+      payload.photo_id = teamForm.photoId;
+      const asset = media.find((item) => item.id === teamForm.photoId);
+      if (asset) payload.photo_url = asset.public_url;
+    } else {
+      payload.photo_id = null;
+      payload.photo_url = null;
+    }
+
+    let saveError = null;
+    if (teamForm.id) {
+      ({ error: saveError } = await supabase.from("team_members").update(payload).eq("id", teamForm.id));
+    } else {
+      ({ error: saveError } = await supabase.from("team_members").insert(payload));
+    }
+
+    if (saveError?.message?.includes("photo_id")) {
+      const legacyPayload = { ...payload };
+      delete legacyPayload.photo_id;
+      saveError = teamForm.id
+        ? (await supabase.from("team_members").update(legacyPayload).eq("id", teamForm.id)).error
+        : (await supabase.from("team_members").insert(legacyPayload)).error;
+    }
+
     if (saveError) {
       setError(saveError.message);
       return;
@@ -581,7 +632,10 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
     setError("");
 
     try {
-      const payload = {
+      const featuredAsset = projectForm.featuredImageId
+        ? media.find((item) => item.id === projectForm.featuredImageId)
+        : null;
+      const payload: Record<string, unknown> = {
         title: projectForm.title,
         slug: projectForm.slug || slugify(projectForm.title),
         description: projectForm.description || null,
@@ -589,14 +643,23 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
         category: projectForm.category || null,
         completion_date: projectForm.completionDate || null,
         featured_image_id: projectForm.featuredImageId || null,
+        cover_image_url: featuredAsset?.public_url ?? null,
         sort_order: Number(projectForm.sortOrder) || 0,
         is_featured: projectForm.isFeatured,
         is_published: projectForm.isPublished
       };
 
-      const result = projectForm.id
+      let result = projectForm.id
         ? await supabase.from("projects").update(payload).eq("id", projectForm.id).select("id").single()
         : await supabase.from("projects").insert(payload).select("id").single();
+
+      if (result.error?.message?.includes("featured_image_id")) {
+        const legacyPayload = { ...payload };
+        delete legacyPayload.featured_image_id;
+        result = projectForm.id
+          ? await supabase.from("projects").update(legacyPayload).eq("id", projectForm.id).select("id").single()
+          : await supabase.from("projects").insert(legacyPayload).select("id").single();
+      }
 
       if (result.error) throw result.error;
       await replaceProjectGallery(supabase, result.data.id as string, projectForm.galleryIds);

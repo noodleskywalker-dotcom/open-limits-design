@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "supabase:verify": "node scripts/verify-supabase.mjs",
+    "supabase:audit": "node scripts/audit-supabase-schema.mjs",
+    "supabase:apply-fix": "node scripts/apply-migration.mjs supabase/migrations/fix_media_relationships.sql",
+    "supabase:test-uploads": "node scripts/test-image-uploads.mjs",
     "db:seed": "node scripts/seed-cms.mjs",
     "furniture:import": "node scripts/import-furniture-from-excel.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs"

@@ -39,10 +39,10 @@ type FurnitureItemRow = FurnitureItem & {
 
 const projectSelect = `
   *,
-  featured_image:media_assets(*),
+  featured_image:media_assets!projects_featured_image_id_fkey(*),
   project_images(
     sort_order,
-    media:media_assets(*)
+    media:media_assets!project_images_media_id_fkey(*)
   ),
   project_comparisons(
     *,
@@ -51,13 +51,15 @@ const projectSelect = `
   )
 `;
 
+const projectSelectLegacy = `*, project_images(sort_order, media_id)`;
+
 const furnitureSelect = `
   *,
   category:furniture_categories(*),
-  featured_image:media_assets(*),
+  featured_image:media_assets!furniture_items_featured_image_id_fkey(*),
   furniture_item_images(
     sort_order,
-    media:media_assets(*)
+    media:media_assets!furniture_item_images_media_id_fkey(*)
   ),
   furniture_item_materials(
     material:materials(*)
@@ -123,7 +125,7 @@ export async function getServices(includeInactive = false): Promise<Service[]> {
   if (!supabase) return fallbackServices;
 
   // Retry without the media join when the image_id column has not been migrated yet.
-  for (const select of ["*, image:media_assets(*)", "*"]) {
+  for (const select of ["*, image:media_assets!services_image_id_fkey(*)", "*, image:media_assets(*)", "*"]) {
     let query = supabase.from("services").select(select).order("sort_order", { ascending: true });
     if (!includeInactive) query = query.eq("is_active", true);
     const { data, error } = await query;
@@ -137,29 +139,34 @@ export async function getProjects(includeUnpublished = false): Promise<Project[]
   const supabase = getSupabaseServerClient();
   if (!supabase) return fallbackProjects;
 
-  let query = supabase.from("projects").select(projectSelect).order("sort_order", { ascending: true });
-  if (!includeUnpublished) query = query.eq("is_published", true);
+  for (const select of [projectSelect, projectSelectLegacy, "*"]) {
+    let query = supabase.from("projects").select(select).order("sort_order", { ascending: true });
+    if (!includeUnpublished) query = query.eq("is_published", true);
+    const { data, error } = await query;
+    if (!error && data) {
+      return (data as unknown as ProjectRow[]).map(normalizeProject);
+    }
+  }
 
-  const { data, error } = await query;
-  if (error || !data) return fallbackProjects;
-
-  return (data as unknown as ProjectRow[]).map(normalizeProject);
+  return fallbackProjects;
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   const supabase = getSupabaseServerClient();
   if (!supabase) return null;
 
-  const { data, error } = await supabase
-    .from("projects")
-    .select(projectSelect)
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .maybeSingle();
+  for (const select of [projectSelect, projectSelectLegacy, "*"]) {
+    const { data, error } = await supabase
+      .from("projects")
+      .select(select)
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .maybeSingle();
 
-  if (error || !data) return null;
+    if (!error && data) return normalizeProject(data as unknown as ProjectRow);
+  }
 
-  return normalizeProject(data as unknown as ProjectRow);
+  return null;
 }
 
 export async function getTeamMembers(includeInactive = false): Promise<TeamMember[]> {
@@ -167,7 +174,7 @@ export async function getTeamMembers(includeInactive = false): Promise<TeamMembe
   if (!supabase) return fallbackTeam;
 
   // Retry without the media join when the photo_id column has not been migrated yet.
-  for (const select of ["*, photo:media_assets(*)", "*"]) {
+  for (const select of ["*, photo:media_assets!team_members_photo_id_fkey(*)", "*, photo:media_assets(*)", "*"]) {
     let query = supabase.from("team_members").select(select).order("sort_order", { ascending: true });
     if (!includeInactive) query = query.eq("is_active", true);
     const { data, error } = await query;
