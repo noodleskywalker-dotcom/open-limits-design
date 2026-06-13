@@ -9,13 +9,15 @@ type PrototypePremiumV2DemoProps = {
   logoImageUrl: string | null;
   tagline: string;
   finalRenderUrl?: string | null;
+  debug?: boolean;
 };
 
 export default function PrototypePremiumV2Demo({
   companyName,
   logoImageUrl,
   tagline,
-  finalRenderUrl
+  finalRenderUrl,
+  debug = false
 }: PrototypePremiumV2DemoProps) {
   const [runId, setRunId] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
@@ -37,6 +39,7 @@ export default function PrototypePremiumV2Demo({
         <PremiumFilmIntro
           key={runId}
           companyName={companyName}
+          debug={debug}
           finalRenderUrl={finalRenderUrl}
           logoImageUrl={logoImageUrl}
           onEnter={() => {

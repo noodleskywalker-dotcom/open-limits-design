@@ -4913,12 +4913,18 @@ body[data-prototype] .ai-assistant {
   justify-content: center;
   min-height: 0;
   perspective: 1600px;
+  position: relative;
   width: 100%;
-  z-index: 1;
+  z-index: 6;
 }
 
-/** Scene root — MUST have explicit width; all sheet content is absolute and gives no intrinsic size. */
+/**
+ * Scene + camera MUST carry explicit width — all sheet/SVG layers are position:absolute
+ * and contribute zero intrinsic flex size. Without this, the stage collapses to ~3×2px:
+ * only pf2-effects (yellow beams, z-index 4) remains visible on black.
+ */
 .pf2-scene {
+  aspect-ratio: 800 / 520;
   flex-shrink: 0;
   max-width: min(94vw, 780px);
   position: relative;
@@ -4927,9 +4933,9 @@ body[data-prototype] .ai-assistant {
 
 .pf2-camera {
   max-height: min(72vh, 560px);
-  max-width: 100%;
+  max-width: min(94vw, 780px);
   transform-style: preserve-3d;
-  width: 100%;
+  width: min(94vw, 780px);
   will-change: transform;
 }
 
@@ -4940,7 +4946,6 @@ body[data-prototype] .ai-assistant {
     linear-gradient(180deg, #12161e 0%, #0a0c10 100%);
   border: 1px solid rgb(200 162 74 / 22%);
   box-shadow: 0 40px 100px rgb(0 0 0 / 75%);
-  contain: layout style paint;
   overflow: hidden;
   position: relative;
   transform-style: preserve-3d;
@@ -5554,7 +5559,7 @@ body[data-prototype] .ai-assistant {
   transform: translateY(40px) rotateX(52deg);
 }
 
-.pf2-intro-mobile.pf2-scene-rise .pf2-walls-3d,
+.pf2-intro-mobile .pf2-scene-rise .pf2-walls-3d,
 .pf2-scene-mobile.pf2-scene-rise .pf2-walls-3d {
   animation: pf2WallsRiseMobile 1.8s ease forwards;
 }
@@ -5589,4 +5594,68 @@ body[data-prototype] .ai-assistant {
   .pf2-enter-button {
     min-width: min(92vw, 300px);
   }
+}
+
+/* Temporary layout debug — append ?pf2debug=1 to the route URL */
+.pf2-intro[data-pf2-debug="true"] .pf2-stage-wrap {
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 30 !important;
+}
+
+.pf2-intro[data-pf2-debug="true"] .pf2-scene {
+  opacity: 1 !important;
+  outline: 2px solid #ff3b30 !important;
+  outline-offset: 3px;
+  visibility: visible !important;
+  z-index: 31 !important;
+}
+
+.pf2-intro[data-pf2-debug="true"] .pf2-stage-sheet {
+  opacity: 1 !important;
+  outline: 2px solid #007aff !important;
+  outline-offset: -2px;
+  visibility: visible !important;
+  z-index: 32 !important;
+}
+
+.pf2-intro[data-pf2-debug="true"] .pf2-svg-plan,
+.pf2-intro[data-pf2-debug="true"] .pf2-svg-draw {
+  opacity: 1 !important;
+  outline: 2px solid #34c759 !important;
+  outline-offset: -1px;
+  visibility: visible !important;
+  z-index: 33 !important;
+}
+
+.pf2-intro[data-pf2-debug="true"] .pf2-stroke,
+.pf2-intro[data-pf2-debug="true"] .pf2-stroke-pencil,
+.pf2-intro[data-pf2-debug="true"] .pf2-stroke-gold,
+.pf2-intro[data-pf2-debug="true"] .pf2-plan-lines {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.pf2-intro[data-pf2-debug="true"] .pf2-walls-3d,
+.pf2-intro[data-pf2-debug="true"] .pf2-materials,
+.pf2-intro[data-pf2-debug="true"] .pf2-interior,
+.pf2-intro[data-pf2-debug="true"] .pf2-exterior {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.pf2-intro[data-pf2-debug="true"]::after {
+  background: rgb(0 0 0 / 72%);
+  color: #34c759;
+  content: "PF2 DEBUG — red=scene · blue=sheet · green=svg";
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  inset: auto 0 0;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.75rem;
+  pointer-events: none;
+  position: fixed;
+  text-align: center;
+  text-transform: uppercase;
+  z-index: 400;
 }

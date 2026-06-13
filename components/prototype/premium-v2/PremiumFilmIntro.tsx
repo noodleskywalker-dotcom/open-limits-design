@@ -41,6 +41,7 @@ type PremiumFilmIntroProps = {
   logoImageUrl?: string | null;
   companyName?: string;
   subtitle?: string;
+  debug?: boolean;
 };
 
 export default function PremiumFilmIntro({
@@ -48,7 +49,8 @@ export default function PremiumFilmIntro({
   finalRenderUrl,
   logoImageUrl,
   companyName = "Open Limits Design",
-  subtitle = "Architecture · Interior Design · Furniture"
+  subtitle = "Architecture · Interior Design · Furniture",
+  debug = false
 }: PremiumFilmIntroProps) {
   const { mounted, isMobile, reducedMotion, phase } = usePremiumV2PhaseEngine();
   const [exiting, setExiting] = useState(false);
@@ -80,6 +82,7 @@ export default function PremiumFilmIntro({
       aria-label="Open Limits Design premium launch film"
       className={`pf2-intro ${exiting ? "pf2-intro-exit" : ""} ${isMobile ? "pf2-intro-mobile" : ""}`}
       data-phase={phase}
+      data-pf2-debug={debug ? "true" : undefined}
     >
       <PremiumFilmVignette phase={phase} />
       {!isMobile ? <div aria-hidden className="pf2-grain" /> : null}
@@ -95,7 +98,7 @@ export default function PremiumFilmIntro({
             animate={{ opacity: 1 }}
             className="pf2-stage-wrap"
             exit={{ opacity: 0, scale: 0.97 }}
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 1 }}
             key="scene"
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >

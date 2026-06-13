@@ -7,12 +7,22 @@ export const metadata = {
   robots: { index: false, follow: false }
 };
 
-export default async function PrototypeOpenLimitsPremiumV2Page() {
-  const [profile, introSettings] = await Promise.all([getCompanyProfile(), getIntroSettings()]);
+export default async function PrototypeOpenLimitsPremiumV2Page({
+  searchParams
+}: {
+  searchParams: Promise<{ pf2debug?: string; debug?: string }>;
+}) {
+  const [profile, introSettings, params] = await Promise.all([
+    getCompanyProfile(),
+    getIntroSettings(),
+    searchParams
+  ]);
+  const debug = params.pf2debug === "1" || params.debug === "1";
 
   return (
     <PrototypePremiumV2Demo
       companyName={profile.name}
+      debug={debug}
       finalRenderUrl={introSettings.finalRenderImageUrl}
       logoImageUrl={resolveImageUrl(profile.logo_image)}
       tagline={profile.tagline ?? profile.hero_subheadline ?? "Luxury Design Studio"}

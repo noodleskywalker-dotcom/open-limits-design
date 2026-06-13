@@ -7,20 +7,6 @@ import {
   type PremiumV2Phase
 } from "@/lib/prototype/premium-v2-constants";
 
-function subscribeToHydration(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("pageshow", onStoreChange);
-  return () => window.removeEventListener("pageshow", onStoreChange);
-}
-
-function getClientMounted() {
-  return true;
-}
-
-function getServerMounted() {
-  return false;
-}
-
 function subscribeMobile(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
   const mq = window.matchMedia("(max-width: 768px)");
@@ -34,12 +20,16 @@ function getMobileSnapshot() {
 }
 
 export function usePremiumV2PhaseEngine() {
-  const mounted = useSyncExternalStore(subscribeToHydration, getClientMounted, getServerMounted);
+  const [mounted, setMounted] = useState(false);
   const isMobile = useSyncExternalStore(subscribeMobile, getMobileSnapshot, () => false);
   const reducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<PremiumV2Phase>("pencil");
   const startRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!mounted || reducedMotion) {
