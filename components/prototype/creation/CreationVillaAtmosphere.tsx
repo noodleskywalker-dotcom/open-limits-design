@@ -1,10 +1,9 @@
 "use client";
 
-import type { CreationPhase } from "@/lib/prototype/creation/creation-constants";
-import { phaseProgress } from "@/lib/prototype/creation/creation-constants";
+import { beatProgress, type FilmBeat } from "@/lib/prototype/creation/creation-constants";
 
 type CreationVillaAtmosphereProps = {
-  phase: CreationPhase;
+  phase: FilmBeat;
   elapsed: number;
   isMobile: boolean;
 };
@@ -15,7 +14,7 @@ export default function CreationVillaAtmosphere({
   elapsed,
   isMobile
 }: CreationVillaAtmosphereProps) {
-  const villaT = phaseProgress(elapsed, "villa", "brand");
+  const archT = beatProgress(elapsed, "architecture", "identity");
 
   return (
     <div aria-hidden className="olcrt-layer olcrt-villa-atmo">
@@ -24,7 +23,7 @@ export default function CreationVillaAtmosphere({
       <div className="olcrt-villa-haze" />
       <div className="olcrt-villa-ground-glow" />
       {!isMobile ? <div className="olcrt-villa-rays" /> : null}
-      <div className="olcrt-vignette olcrt-vignette-warm" style={{ opacity: 0.35 + villaT * 0.25 }} />
+      <div className="olcrt-vignette olcrt-vignette-warm" style={{ opacity: 0.3 + archT * 0.35 }} />
     </div>
   );
 }

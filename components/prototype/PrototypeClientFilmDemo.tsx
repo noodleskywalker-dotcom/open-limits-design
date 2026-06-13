@@ -38,7 +38,6 @@ export default function PrototypeClientFilmDemo({
             setShowIntro(false);
             setShowShowroom(true);
           }}
-          tagline={tagline}
         />
       ) : null}
 

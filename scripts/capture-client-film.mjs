@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Capture screenshots + video for /prototype/open-limits-client-film (creation-first intro)
+ * Capture creation film — /prototype/open-limits-client-film
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -11,12 +11,12 @@ const ROUTE = "/prototype/open-limits-client-film";
 const OUT = path.join(process.cwd(), "artifacts", "prototype-visuals", "open-limits-client-film");
 
 const SHOTS = [
-  { name: "01-pencil", waitPhase: "pencil", minMs: 800 },
-  { name: "02-blueprint", waitPhase: "blueprint", minMs: 5200 },
-  { name: "03-transform", waitPhase: "transform", minMs: 10800, holdMs: 1400 },
-  { name: "04-villa", waitPhase: "villa", minMs: 14200, holdMs: 800 },
-  { name: "05-brand", waitPhase: "brand", minMs: 0, holdMs: 900 },
-  { name: "06-enter", waitPhase: "enter", minMs: 20800, holdMs: 500 }
+  { name: "01-opening", waitBeat: "opening", holdMs: 900 },
+  { name: "02-blueprint", waitBeat: "drawing", holdMs: 1800 },
+  { name: "03-moment", waitBeat: "moment", holdMs: 2200 },
+  { name: "04-architecture", waitBeat: "architecture", holdMs: 1800 },
+  { name: "05-identity", waitBeat: "identity", holdMs: 1200 },
+  { name: "06-end", waitBeat: "end", holdMs: 600 }
 ];
 
 async function main() {
@@ -29,7 +29,6 @@ async function main() {
   });
   await context.addInitScript(() => {
     localStorage.removeItem("ol-creation-intro-dismissed");
-    localStorage.removeItem("ol-client-film-dismissed");
     const nativeMatchMedia = window.matchMedia.bind(window);
     window.matchMedia = (query) => {
       if (String(query).includes("prefers-reduced-motion")) {
@@ -54,43 +53,37 @@ async function main() {
     if (m.type() === "error") errors.push(m.text());
   });
   page.on("request", (req) => {
-    const url = req.url();
-    if (/intro-film/i.test(url)) {
-      mediaRequests.push(url);
-    }
+    if (/intro-film/i.test(req.url())) mediaRequests.push(req.url());
   });
 
-  await page.goto(`${BASE}${ROUTE}?debug=1`, { waitUntil: "load" });
-  await page.waitForSelector(".olcrt-root[data-phase]", { timeout: 30000 });
+  await page.goto(`${BASE}${ROUTE}`, { waitUntil: "load" });
+  await page.waitForSelector(".olcrt-root[data-beat]", { timeout: 30000 });
+  await page.waitForTimeout(300);
 
-  const t0 = Date.now();
   const audit = [];
+  let lastBeat = "";
 
   for (const shot of SHOTS) {
-    await page.waitForFunction(
-      (phase) => document.querySelector(".olcrt-root")?.getAttribute("data-phase") === phase,
-      shot.waitPhase,
-      { timeout: 30000 }
-    );
-    const elapsed = Date.now() - t0;
-    if (shot.minMs > 0 && elapsed < shot.minMs) {
-      await page.waitForTimeout(shot.minMs - elapsed);
+    if (shot.waitBeat !== lastBeat) {
+      await page.waitForFunction(
+        (beat) => {
+          const root = document.querySelector(".olcrt-root");
+          return root?.getAttribute("data-beat") === beat || root?.getAttribute("data-phase") === beat;
+        },
+        shot.waitBeat,
+        { timeout: 60000 }
+      );
+      lastBeat = shot.waitBeat;
     }
-    await page.waitForTimeout(shot.holdMs ?? (shot.waitPhase === "transform" ? 900 : shot.waitPhase === "brand" ? 700 : 450));
+    await page.waitForTimeout(shot.holdMs ?? 450);
 
     const snap = await page.evaluate(() => {
-      const rect = (sel) => {
-        const el = document.querySelector(sel);
-        if (!el) return null;
-        const r = el.getBoundingClientRect();
-        return { w: Math.round(r.width), h: Math.round(r.height) };
-      };
       const root = document.querySelector(".olcrt-root");
       return {
-        phase: root?.getAttribute("data-phase"),
-        stage: rect(".olcrt-stage"),
+        beat: root?.getAttribute("data-beat") ?? root?.getAttribute("data-phase"),
+        filmMs: Number(root?.getAttribute("data-elapsed") ?? 0),
         hasCanvas: !!document.querySelector(".olcrt-canvas-wrap canvas"),
-        hasBlueprint: !!document.querySelector(".olcrt-svg-plan"),
+        hasPencil: !!document.querySelector(".olcrt-film-pencil"),
         hasIntroMedia: !!root?.querySelector("img, video")
       };
     });
@@ -106,9 +99,7 @@ async function main() {
   const videoFiles = fs.readdirSync(OUT).filter((f) => f.endsWith(".webm") && f !== "full-animation.webm");
   if (videoFiles.length) {
     const latest = videoFiles.sort().pop();
-    if (latest) {
-      fs.copyFileSync(path.join(OUT, latest), path.join(OUT, "full-animation.webm"));
-    }
+    if (latest) fs.copyFileSync(path.join(OUT, latest), path.join(OUT, "full-animation.webm"));
   }
 
   try {
@@ -127,11 +118,11 @@ async function main() {
 
   const verification = {
     route: ROUTE,
-    architecture: "creation-first",
+    architecture: "creation-film-unified",
     zeroMediaRequests: mediaRequests.length === 0,
     mediaRequests,
     zeroMediaDom: audit.every((a) => !a.hasIntroMedia),
-    phasesCaptured: audit.map((a) => a.phase)
+    beatsCaptured: audit.map((a) => a.beat)
   };
 
   fs.writeFileSync(path.join(OUT, "verification.json"), JSON.stringify(verification, null, 2));

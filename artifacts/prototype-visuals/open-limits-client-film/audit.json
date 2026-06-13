@@ -1,74 +1,56 @@
 {
   "audit": [
     {
-      "shot": "01-pencil",
-      "phase": "pencil",
-      "stage": {
-        "w": 1200,
-        "h": 675
-      },
-      "hasCanvas": false,
-      "hasBlueprint": false,
+      "shot": "01-opening",
+      "beat": "opening",
+      "filmMs": 1213,
+      "hasCanvas": true,
+      "hasPencil": false,
       "hasIntroMedia": false,
       "consoleErrors": 0
     },
     {
       "shot": "02-blueprint",
-      "phase": "blueprint",
-      "stage": {
-        "w": 1200,
-        "h": 675
-      },
-      "hasCanvas": false,
-      "hasBlueprint": true,
-      "hasIntroMedia": false,
-      "consoleErrors": 0
-    },
-    {
-      "shot": "03-transform",
-      "phase": "transform",
-      "stage": {
-        "w": 1200,
-        "h": 675
-      },
+      "beat": "drawing",
+      "filmMs": 3330,
       "hasCanvas": true,
-      "hasBlueprint": true,
+      "hasPencil": true,
       "hasIntroMedia": false,
       "consoleErrors": 0
     },
     {
-      "shot": "04-villa",
-      "phase": "villa",
-      "stage": {
-        "w": 1200,
-        "h": 675
-      },
+      "shot": "03-moment",
+      "beat": "moment",
+      "filmMs": 6280,
       "hasCanvas": true,
-      "hasBlueprint": true,
+      "hasPencil": false,
       "hasIntroMedia": false,
       "consoleErrors": 0
     },
     {
-      "shot": "05-brand",
-      "phase": "brand",
-      "stage": {
-        "w": 1200,
-        "h": 675
-      },
+      "shot": "04-architecture",
+      "beat": "architecture",
+      "filmMs": 9846,
       "hasCanvas": true,
-      "hasBlueprint": false,
+      "hasPencil": false,
       "hasIntroMedia": false,
       "consoleErrors": 0
     },
     {
-      "shot": "06-enter",
-      "phase": "enter",
-      "stage": {
-        "w": 1200,
-        "h": 675
-      },
-      "hasCanvas": false,
-      "hasBlueprint": false,
+      "shot": "05-identity",
+      "beat": "identity",
+      "filmMs": 12296,
+      "hasCanvas": true,
+      "hasPencil": false,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
+    },
+    {
+      "shot": "06-end",
+      "beat": "end",
+      "filmMs": 13646,
+      "hasCanvas": true,
+      "hasPencil": false,
       "hasIntroMedia": false,
       "consoleErrors": 0
     }
@@ -76,17 +58,17 @@
   "errors": [],
   "verification": {
     "route": "/prototype/open-limits-client-film",
-    "architecture": "creation-first",
+    "architecture": "creation-film-unified",
     "zeroMediaRequests": true,
     "mediaRequests": [],
     "zeroMediaDom": true,
-    "phasesCaptured": [
-      "pencil",
-      "blueprint",
-      "transform",
-      "villa",
-      "brand",
-      "enter"
+    "beatsCaptured": [
+      "opening",
+      "drawing",
+      "moment",
+      "architecture",
+      "identity",
+      "end"
     ]
   }
 }
