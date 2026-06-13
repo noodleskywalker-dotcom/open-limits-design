@@ -33,14 +33,14 @@ const PROTOTYPES = [
     note: "Signature storyboard — manual enter, improved v2"
   },
   {
-    id: "open-limits-premium",
-    route: "/prototype/open-limits-premium",
+    id: "open-limits-premium-v2",
+    route: "/prototype/open-limits-premium-v2",
     firstMs: 800,
-    middleMs: 6400,
-    finalMs: 10500,
-    enterMs: 11600,
-    videoMs: 13000,
-    note: "Premium hybrid — signature + cinematic polish"
+    middleMs: 6800,
+    finalMs: 11200,
+    enterMs: 12100,
+    videoMs: 13500,
+    note: "Premium v2 launch film — architectural film arc"
   }
 ];
 

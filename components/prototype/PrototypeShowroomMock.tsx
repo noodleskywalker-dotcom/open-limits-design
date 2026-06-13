@@ -1,13 +1,19 @@
 "use client";
 
 /** Minimal post-intro destination for prototype demos only — not the live homepage. */
-export default function PrototypeShowroomMock({ variant }: { variant: "cinematic" | "signature" | "premium" }) {
+export default function PrototypeShowroomMock({
+  variant
+}: {
+  variant: "cinematic" | "signature" | "premium" | "premium-v2";
+}) {
   const label =
     variant === "cinematic"
       ? "Current Cinematic"
       : variant === "premium"
         ? "Open Limits Premium"
-        : "Signature Open Limits";
+        : variant === "premium-v2"
+          ? "Open Limits Premium v2"
+          : "Signature Open Limits";
 
   return (
     <main className="prototype-showroom-mock">
