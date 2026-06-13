@@ -1,0 +1,69 @@
+{
+  "audit": [
+    {
+      "shot": "01-idea",
+      "phase": "blueprint",
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "hasMedia": false,
+      "consoleErrors": 3
+    },
+    {
+      "shot": "02-blueprint",
+      "phase": "blueprint",
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "hasMedia": false,
+      "consoleErrors": 3
+    },
+    {
+      "shot": "03-interior",
+      "phase": "interior",
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "hasMedia": true,
+      "consoleErrors": 3
+    },
+    {
+      "shot": "04-exterior",
+      "phase": "exterior",
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "hasMedia": true,
+      "consoleErrors": 3
+    },
+    {
+      "shot": "05-logo",
+      "phase": "enter",
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "hasMedia": true,
+      "consoleErrors": 3
+    },
+    {
+      "shot": "06-enter",
+      "phase": "enter",
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "hasMedia": true,
+      "consoleErrors": 3
+    }
+  ],
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

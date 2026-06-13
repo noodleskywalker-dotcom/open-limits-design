@@ -1,8 +1,8 @@
-# Film-grade intro media
+# Client film intro media
 
-Place cinematic clips and poster fallbacks here for `/prototype/open-limits-film-grade`.
+Media assets for `/prototype/open-limits-client-film`.
 
-## Video clips (optional)
+## Video clips (optional — drop in when ready)
 
 - `structure-rise.webm`
 - `interior-walkthrough.webm`
@@ -17,4 +17,6 @@ Place cinematic clips and poster fallbacks here for `/prototype/open-limits-film
 - `poster-interior.jpg`
 - `poster-exterior.jpg`
 
-When videos are missing, the intro uses posters (real architecture photography) with cinematic overlays — not CSS geometry.
+When videos are missing, the intro uses poster photography with cinematic overlays. SVG is used only for blueprint linework and logo draw — not for fake 3D geometry.
+
+Debug probe: append `?debug=1` to the prototype route.
