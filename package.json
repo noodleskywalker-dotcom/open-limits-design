@@ -22,7 +22,8 @@
     "furniture:extract-pdf": "node scripts/analyze-furniture-pdf.mjs",
     "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
     "legacy:import-website": "node scripts/import-legacy-website.mjs",
-    "legacy:download-images": "node scripts/download-legacy-images.mjs"
+    "legacy:download-images": "node scripts/download-legacy-images.mjs",
+    "prototype:measure-bundles": "node scripts/measure-prototype-bundles.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
