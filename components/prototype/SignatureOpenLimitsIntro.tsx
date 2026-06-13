@@ -1,32 +1,24 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 import SignatureBlueprintScene from "@/components/prototype/signature/SignatureBlueprintScene";
 import SignatureLogoMorph from "@/components/prototype/signature/SignatureLogoMorph";
+import VillaBlueprintSvg from "@/components/home/intro/VillaBlueprintSvg";
+import {
+  PREMIUM_PHASE_START_MS,
+  PREMIUM_DURATION_MS
+} from "@/lib/prototype/premium-constants";
 import {
   SIGNATURE_DURATION_MS,
   SIGNATURE_PHASE_START_MS,
-  signaturePhaseAtElapsed,
   type SignaturePhase
 } from "@/lib/prototype/signature-constants";
-
-function subscribeToHydration(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("pageshow", onStoreChange);
-  return () => window.removeEventListener("pageshow", onStoreChange);
-}
-
-function getClientMounted() {
-  return true;
-}
-
-function getServerMounted() {
-  return false;
-}
+import { useSignaturePhaseEngine } from "@/lib/prototype/useSignaturePhaseEngine";
 
 function playPencilSound() {
   if (typeof window === "undefined") return;
+  if (window.matchMedia("(max-width: 768px)").matches) return;
   try {
     const ctx = new AudioContext();
     const duration = 2.2;
@@ -56,19 +48,60 @@ function playPencilSound() {
   }
 }
 
+export type SignatureIntroVariant = "signature" | "premium";
+
 type SignatureOpenLimitsIntroProps = {
   onEnter: () => void;
+  finalRenderUrl?: string | null;
+  logoImageUrl?: string | null;
+  companyName?: string;
+  variant?: SignatureIntroVariant;
+  detailedBlueprint?: boolean;
+  headline?: string;
+  subtitle?: string;
+  timingLabel?: string;
+  ctaMs?: number;
 };
 
-export default function SignatureOpenLimitsIntro({ onEnter }: SignatureOpenLimitsIntroProps) {
-  const mounted = useSyncExternalStore(subscribeToHydration, getClientMounted, getServerMounted);
-  const reducedMotion = useReducedMotion();
-  const [phase, setPhase] = useState<SignaturePhase>("paper");
+function mapPhaseForBlueprint(phase: SignaturePhase): "dark" | "blueprint" | "draw" | "structure" | "interior" | "masterpiece" | "brand" | "enter" {
+  switch (phase) {
+    case "paper":
+      return "dark";
+    case "sketch":
+      return "draw";
+    case "rise":
+      return "structure";
+    case "interior":
+      return "interior";
+    case "exterior":
+      return "masterpiece";
+    case "logo":
+    case "enter":
+      return "brand";
+    default:
+      return "blueprint";
+  }
+}
+
+export default function SignatureOpenLimitsIntro({
+  onEnter,
+  finalRenderUrl,
+  logoImageUrl,
+  companyName = "Open Limits Design",
+  variant = "signature",
+  detailedBlueprint = false,
+  headline = "Design Without Limits",
+  subtitle = "Architecture · Interior Design · Furniture",
+  timingLabel,
+  ctaMs = SIGNATURE_PHASE_START_MS.enter
+}: SignatureOpenLimitsIntroProps) {
+  const { mounted, isMobile, reducedMotion, phase } = useSignaturePhaseEngine(variant);
   const [exiting, setExiting] = useState(false);
-  const startRef = useRef<number | null>(null);
-  const rafRef = useRef<number | null>(null);
   const soundRef = useRef(false);
   const dismissedRef = useRef(false);
+  const showDetailed = detailedBlueprint || variant === "premium";
+  const resolvedCtaMs = variant === "premium" ? PREMIUM_PHASE_START_MS.enter : ctaMs;
+  const durationMeta = variant === "premium" ? PREMIUM_DURATION_MS : SIGNATURE_DURATION_MS;
 
   const dismiss = useCallback(() => {
     if (dismissedRef.current) return;
@@ -78,60 +111,52 @@ export default function SignatureOpenLimitsIntro({ onEnter }: SignatureOpenLimit
   }, [onEnter]);
 
   useEffect(() => {
-    if (!mounted || reducedMotion) {
-      setPhase("enter");
-      return;
+    if ((phase === "paper" || phase === "sketch") && !soundRef.current && !reducedMotion) {
+      soundRef.current = true;
+      playPencilSound();
     }
-
-    startRef.current = performance.now();
-    soundRef.current = false;
-
-    const tick = (now: number) => {
-      const elapsed = now - (startRef.current ?? now);
-      const next = signaturePhaseAtElapsed(elapsed);
-      setPhase(next);
-
-      if ((next === "paper" || next === "sketch") && !soundRef.current) {
-        soundRef.current = true;
-        playPencilSound();
-      }
-
-      if (next !== "enter") {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [mounted, reducedMotion]);
+  }, [phase, reducedMotion]);
 
   if (!mounted) return null;
 
   const showScene = phase !== "logo" && phase !== "enter";
   const showLogo = phase === "logo" || phase === "enter";
+  const hudLabel = timingLabel ?? (variant === "premium" ? "Premium hybrid (code timings)" : "Signature (code timings)");
 
   return (
     <div
-      aria-label="Open Limits Design signature intro prototype"
-      className={`sig-intro ${exiting ? "sig-intro-exit" : ""}`}
+      aria-label={`Open Limits Design ${variant} intro prototype`}
+      className={`sig-intro ${exiting ? "sig-intro-exit" : ""} ${isMobile ? "sig-intro-mobile" : ""} ${variant === "premium" ? "sig-intro-premium" : ""}`}
       data-phase={phase}
     >
       <div aria-hidden className="sig-vignette" />
-      <div aria-hidden className="sig-grain" />
+      {!isMobile ? <div aria-hidden className="sig-grain" /> : null}
+
+      <button className="prototype-skip-fab" onClick={dismiss} type="button">
+        Skip
+      </button>
 
       <AnimatePresence mode="wait">
         {showScene ? (
           <motion.div
             animate={{ opacity: 1 }}
             className="sig-stage"
-            exit={{ opacity: 0, scale: 0.96, filter: "blur(6px)" }}
+            exit={{ opacity: 0, scale: 0.96, filter: isMobile ? "none" : "blur(6px)" }}
             initial={{ opacity: 0 }}
             key="scene"
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           >
-            <SignatureBlueprintScene phase={phase} />
+            {showDetailed && (phase === "sketch" || phase === "rise") ? (
+              <div className="sig-detailed-blueprint-layer">
+                <VillaBlueprintSvg phase={mapPhaseForBlueprint(phase)} />
+              </div>
+            ) : null}
+            <SignatureBlueprintScene
+              detailedBlueprint={showDetailed}
+              finalRenderUrl={finalRenderUrl}
+              isMobile={isMobile}
+              phase={phase}
+            />
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -145,21 +170,26 @@ export default function SignatureOpenLimitsIntro({ onEnter }: SignatureOpenLimit
             key="brand"
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           >
-            <SignatureLogoMorph visible={showLogo} />
+            <SignatureLogoMorph
+              companyName={companyName}
+              logoImageUrl={logoImageUrl}
+              premium={variant === "premium"}
+              visible={showLogo}
+            />
             <motion.p
               animate={{ opacity: 1 }}
               className="sig-brand-sub"
               initial={{ opacity: 0 }}
               transition={{ delay: 0.5, duration: 0.7 }}
             >
-              Architecture · Interior Design · Furniture
+              {subtitle}
             </motion.p>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
       <AnimatePresence>
-        {phase === "enter" ? (
+        {phase === "enter" && !reducedMotion ? (
           <motion.div
             animate={{ opacity: 1 }}
             className="sig-enter-only"
@@ -167,6 +197,16 @@ export default function SignatureOpenLimitsIntro({ onEnter }: SignatureOpenLimit
             key="enter"
             transition={{ duration: 0.8 }}
           >
+            {variant === "premium" ? (
+              <motion.p
+                animate={{ opacity: 1, y: 0 }}
+                className="sig-enter-headline"
+                initial={{ opacity: 0, y: 10 }}
+                transition={{ delay: 0.1, duration: 0.7 }}
+              >
+                {headline}
+              </motion.p>
+            ) : null}
             <button className="button sig-enter-button" onClick={dismiss} type="button">
               Enter Showroom
             </button>
@@ -183,10 +223,12 @@ export default function SignatureOpenLimitsIntro({ onEnter }: SignatureOpenLimit
       ) : null}
 
       <aside className="prototype-timing-hud sig-timing-hud">
-        <strong>Signature (code timings)</strong>
-        <span>CTA at {(SIGNATURE_PHASE_START_MS.enter / 1000).toFixed(1)}s</span>
+        <strong>{hudLabel}</strong>
+        <span>CTA at {(resolvedCtaMs / 1000).toFixed(1)}s</span>
         <span>No auto-enter — click only</span>
-        <span>Target {SIGNATURE_DURATION_MS.recommendedMin / 1000}–{SIGNATURE_DURATION_MS.recommendedMax / 1000}s arc</span>
+        <span>
+          Target {durationMeta.recommendedMin / 1000}–{durationMeta.recommendedMax / 1000}s arc
+        </span>
       </aside>
     </div>
   );

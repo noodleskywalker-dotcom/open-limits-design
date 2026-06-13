@@ -10,11 +10,11 @@ export type SignaturePhase =
 export const SIGNATURE_PHASE_START_MS: Record<SignaturePhase, number> = {
   paper: 0,
   sketch: 650,
-  rise: 3200,
-  interior: 5200,
-  exterior: 7200,
-  logo: 9400,
-  enter: 10800
+  rise: 3000,
+  interior: 5400,
+  exterior: 7600,
+  logo: 9800,
+  enter: 11200
 };
 
 export const SIGNATURE_PHASE_ORDER: SignaturePhase[] = [

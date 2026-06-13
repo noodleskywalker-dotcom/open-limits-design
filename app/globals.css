@@ -3922,6 +3922,33 @@ body[data-prototype] .ai-assistant {
   z-index: 220;
 }
 
+.prototype-skip-fab {
+  background: rgb(0 0 0 / 65%);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  color: rgb(244 240 230 / 88%);
+  cursor: pointer;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  padding: 0.5rem 1rem;
+  position: fixed;
+  right: 1rem;
+  text-transform: uppercase;
+  top: 1rem;
+  z-index: 220;
+}
+
+.prototype-skip-fab:hover,
+.prototype-replay-fab:hover {
+  border-color: rgb(200 162 74 / 55%);
+  color: rgb(200 162 74 / 95%);
+}
+
+.prototype-demo-badge-premium {
+  border-color: rgb(200 162 74 / 55%);
+  color: rgb(200 162 74 / 95%);
+}
+
 .prototype-timing-hud {
   background: rgb(0 0 0 / 72%);
   border: 1px solid rgb(255 255 255 / 8%);
@@ -4153,44 +4180,142 @@ body[data-prototype] .ai-assistant {
   stroke-width: 0.75;
 }
 
-.sig-plan-extrude {
-  opacity: 0;
-  transform: translateY(40px) rotateX(62deg);
-  transform-origin: center 70%;
-  transform-style: preserve-3d;
-}
-
 .sig-scene-rising .sig-plan-extrude {
-  animation: sigExtrudeRise 1.8s ease forwards;
+  animation: sigExtrudeRise 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .sig-scene-rising .sig-plan-flat {
-  animation: sigPlanToStructure 1.6s ease forwards;
+  animation: sigPlanToStructure 1.8s ease forwards;
+}
+
+.sig-scene-rising .sig-extrude-guides {
+  animation: sigGuidesRise 2s ease forwards;
+}
+
+.sig-rise-glow {
+  animation: sigRisePulse 2s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 50% 62%, rgb(200 162 74 / 22%) 0%, transparent 58%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+@keyframes sigRisePulse {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 0.75;
+  }
+}
+
+@keyframes sigGuidesRise {
+  from {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.85;
+  }
+
+  to {
+    opacity: 0.15;
+  }
 }
 
 @keyframes sigPlanToStructure {
   to {
-    opacity: 0.35;
-    transform: translateY(-8px) scale(0.98);
+    opacity: 0.28;
+    transform: translateY(-14px) scale(0.96);
   }
 }
 
 @keyframes sigExtrudeRise {
   from {
     opacity: 0;
-    transform: translateY(60px) rotateX(78deg) scaleY(0.1);
+    transform: translateY(80px) rotateX(82deg) scaleY(0.05);
+  }
+
+  35% {
+    opacity: 0.9;
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) rotateX(58deg) scaleY(1);
+    transform: translateY(-6px) rotateX(52deg) scaleY(1);
   }
 }
 
-.sig-wall {
-  fill: rgb(240 244 248 / 10%);
+.sig-extrude-guides {
+  opacity: 0;
+}
+
+.sig-extrude-guide {
   stroke: rgb(200 162 74 / 55%);
+  stroke-dasharray: 4 6;
   stroke-width: 1;
+}
+
+.sig-plan-extrude {
+  opacity: 0;
+  transform: translateY(50px) rotateX(68deg);
+  transform-origin: center 72%;
+  transform-style: preserve-3d;
+}
+
+.sig-wall {
+  fill: rgb(240 244 248 / 14%);
+  stroke: rgb(200 162 74 / 65%);
+  stroke-width: 1.1;
+}
+
+.sig-wall-a {
+  animation-delay: 0.05s;
+}
+
+.sig-wall-b {
+  animation-delay: 0.12s;
+}
+
+.sig-wall-c {
+  animation-delay: 0.18s;
+}
+
+.sig-wall-d {
+  animation-delay: 0.24s;
+}
+
+.sig-scene-rising .sig-wall {
+  animation: sigWallPop 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+@keyframes sigWallPop {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sig-roof-cap {
+  fill: rgb(200 162 74 / 28%);
+  opacity: 0;
+  stroke: rgb(200 162 74 / 75%);
+  stroke-width: 1;
+}
+
+.sig-scene-rising .sig-roof-cap {
+  animation: sigRoofCap 1.2s ease 0.35s forwards;
+}
+
+@keyframes sigRoofCap {
+  to {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
 }
 
 .sig-glass {
@@ -4211,7 +4336,47 @@ body[data-prototype] .ai-assistant {
 }
 
 .sig-scene-interior .sig-interior-world {
-  animation: sigInteriorIn 1.6s ease forwards;
+  animation: sigInteriorIn 1.8s ease forwards;
+}
+
+.sig-interior-corridor {
+  background: linear-gradient(90deg, transparent, rgb(200 162 74 / 12%), transparent);
+  height: 100%;
+  left: 38%;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 24%;
+}
+
+.sig-scene-interior .sig-interior-corridor {
+  animation: sigCorridorIn 1.6s ease 0.2s forwards;
+}
+
+@keyframes sigCorridorIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.sig-interior-light-shaft {
+  background: linear-gradient(180deg, rgb(255 240 210 / 18%), transparent 72%);
+  height: 55%;
+  left: 40%;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 20%;
+}
+
+.sig-scene-interior .sig-interior-light-shaft {
+  animation: sigLightShaft 1.4s ease 0.35s forwards;
+}
+
+@keyframes sigLightShaft {
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes sigInteriorIn {
@@ -4295,9 +4460,76 @@ body[data-prototype] .ai-assistant {
 }
 
 .sig-golden-sky {
-  background: linear-gradient(180deg, #1a1510 0%, #3d2e18 38%, #141820 100%);
+  animation: sigGoldenSkyShift 6s ease-in-out infinite alternate;
+  background:
+    radial-gradient(ellipse at 72% 18%, rgb(255 210 120 / 35%) 0%, transparent 42%),
+    linear-gradient(180deg, #2a1f12 0%, #5c4520 32%, #3d2e18 52%, #141820 100%);
   inset: 0;
   position: absolute;
+}
+
+@keyframes sigGoldenSkyShift {
+  from {
+    filter: brightness(0.95);
+  }
+
+  to {
+    filter: brightness(1.08);
+  }
+}
+
+.sig-sun-flare {
+  background: radial-gradient(circle, rgb(255 220 140 / 45%) 0%, transparent 68%);
+  height: 38%;
+  pointer-events: none;
+  position: absolute;
+  right: 8%;
+  top: 4%;
+  width: 32%;
+}
+
+.sig-golden-rays {
+  background: conic-gradient(from 210deg at 78% 12%, rgb(255 210 120 / 18%), transparent 28%, rgb(255 210 120 / 10%), transparent 55%);
+  inset: 0;
+  opacity: 0.7;
+  pointer-events: none;
+  position: absolute;
+}
+
+.sig-villa-photo {
+  animation: sigPhotoReveal 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0;
+  position: absolute;
+  transform: scale(1.08);
+  width: 100%;
+}
+
+@keyframes sigPhotoReveal {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sig-hero-shimmer {
+  animation: sigHeroShimmer 3.5s ease-in-out infinite alternate;
+  background: linear-gradient(105deg, transparent 40%, rgb(255 240 210 / 8%) 50%, transparent 60%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+@keyframes sigHeroShimmer {
+  from {
+    transform: translateX(-8%);
+  }
+
+  to {
+    transform: translateX(8%);
+  }
 }
 
 .sig-villa-hero {
@@ -4381,11 +4613,130 @@ body[data-prototype] .ai-assistant {
   width: 100%;
 }
 
+.sig-logo-morph {
+  filter: drop-shadow(0 0 18px rgb(200 162 74 / 18%));
+}
+
+.sig-logo-morph-premium {
+  filter: drop-shadow(0 0 28px rgb(200 162 74 / 28%));
+}
+
+.sig-logo-morph-line {
+  fill: none;
+  stroke: rgb(200 162 74 / 45%);
+  stroke-linecap: round;
+  stroke-width: 1;
+}
+
 .sig-logo-stroke {
   fill: none;
   stroke: rgb(200 162 74 / 92%);
   stroke-linecap: round;
   stroke-width: 1.5;
+}
+
+.sig-logo-stroke-frame {
+  stroke-width: 1.8;
+}
+
+.sig-logo-image-wrap {
+  max-width: min(92vw, 420px);
+  width: 100%;
+}
+
+.sig-logo-image-wrap-premium .ols-brand-logo-image {
+  max-height: 120px;
+}
+
+.sig-enter-headline {
+  color: rgb(244 240 230 / 95%);
+  font-family: ui-serif, Georgia, serif;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  margin: 0 0 1rem;
+}
+
+.sig-detailed-blueprint-layer {
+  inset: 0;
+  opacity: 1;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 0.9s ease;
+  z-index: 4;
+}
+
+.sig-scene-rising .sig-detailed-blueprint-layer,
+.sig-scene-interior .sig-detailed-blueprint-layer,
+.sig-scene-exterior .sig-detailed-blueprint-layer {
+  opacity: 0;
+}
+
+.sig-detailed-blueprint-layer .ols-blueprint-svg {
+  height: 100%;
+  width: 100%;
+}
+
+.sig-intro-premium .sig-paper-sheet {
+  border-color: rgb(200 162 74 / 32%);
+  box-shadow: 0 40px 100px rgb(0 0 0 / 75%), 0 0 60px rgb(200 162 74 / 8%);
+}
+
+.sig-intro-premium .sig-enter-button {
+  box-shadow: 0 12px 42px rgb(200 162 74 / 32%);
+}
+
+.sig-annotation-title {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+
+/* Mobile performance — simplify 3D, drop grain, reduce layers */
+.sig-intro-mobile .sig-grain {
+  display: none;
+}
+
+.sig-intro-mobile .sig-camera {
+  max-height: min(58vh, 420px);
+}
+
+.sig-intro-mobile .sig-plan-extrude {
+  transform: translateY(30px) rotateX(48deg);
+}
+
+.sig-intro-mobile.sig-scene-rising .sig-plan-extrude {
+  animation: sigExtrudeRiseMobile 1.6s ease forwards;
+}
+
+@keyframes sigExtrudeRiseMobile {
+  from {
+    opacity: 0;
+    transform: translateY(50px) rotateX(62deg) scaleY(0.2);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(42deg) scaleY(1);
+  }
+}
+
+.sig-intro-mobile .sig-golden-rays,
+.sig-intro-mobile .sig-hero-shimmer {
+  display: none;
+}
+
+.sig-intro-mobile .sig-sun-flare {
+  height: 28%;
+  opacity: 0.6;
+  width: 24%;
+}
+
+@media (max-width: 640px) {
+  .prototype-skip-fab {
+    font-size: 0.6rem;
+    padding: 0.4rem 0.75rem;
+    top: 0.85rem;
+  }
 }
 
 .sig-logo-text {

@@ -1,0 +1,174 @@
+{
+  "capturedAt": "2026-06-13T01:26:43.280Z",
+  "baseUrl": "http://127.0.0.1:3001",
+  "browser": "chromium (playwright headless, production server recommended)",
+  "prototypes": [
+    {
+      "id": "current-cinematic",
+      "route": "/prototype/current-cinematic",
+      "note": "PR #9 cinematic — auto-enter at ~12.4s",
+      "screenshots": [
+        {
+          "path": "artifacts/prototype-visuals/current-cinematic/01-first-frame.png",
+          "targetMs": 400,
+          "phase": {
+            "phase": "blueprint",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/current-cinematic/02-middle-frame.png",
+          "targetMs": 5500,
+          "phase": {
+            "phase": "interior",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/current-cinematic/03-final-frame.png",
+          "targetMs": 9500,
+          "phase": {
+            "phase": "brand",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/current-cinematic/04-enter-experience.png",
+          "targetMs": 10600,
+          "phase": {
+            "phase": "enter",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        }
+      ],
+      "video": {
+        "webm": "artifacts/prototype-visuals/current-cinematic/full-animation.webm",
+        "mp4": "artifacts/prototype-visuals/current-cinematic/full-animation.mp4",
+        "recordedMs": 13544,
+        "targetMs": 13500
+      },
+      "fpsEstimate": {
+        "avgFrameMs": 16.52166666664183,
+        "estimatedFps": 60.52658125702632,
+        "sampleCount": 120
+      }
+    },
+    {
+      "id": "signature-open-limits",
+      "route": "/prototype/signature-open-limits",
+      "note": "Signature storyboard — manual enter, improved v2",
+      "screenshots": [
+        {
+          "path": "artifacts/prototype-visuals/signature-open-limits/01-first-frame.png",
+          "targetMs": 800,
+          "phase": {
+            "phase": "sketch",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/signature-open-limits/02-middle-frame.png",
+          "targetMs": 6200,
+          "phase": {
+            "phase": "interior",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/signature-open-limits/03-final-frame.png",
+          "targetMs": 10200,
+          "phase": {
+            "phase": "logo",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/signature-open-limits/04-enter-experience.png",
+          "targetMs": 11300,
+          "phase": {
+            "phase": "enter",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        }
+      ],
+      "video": {
+        "webm": "artifacts/prototype-visuals/signature-open-limits/full-animation.webm",
+        "mp4": "artifacts/prototype-visuals/signature-open-limits/full-animation.mp4",
+        "recordedMs": 12561,
+        "targetMs": 12500
+      },
+      "fpsEstimate": {
+        "avgFrameMs": 16.54333333335817,
+        "estimatedFps": 60.44731009461004,
+        "sampleCount": 120
+      }
+    },
+    {
+      "id": "open-limits-premium",
+      "route": "/prototype/open-limits-premium",
+      "note": "Premium hybrid — signature + cinematic polish",
+      "screenshots": [
+        {
+          "path": "artifacts/prototype-visuals/open-limits-premium/01-first-frame.png",
+          "targetMs": 800,
+          "phase": {
+            "phase": "sketch",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/open-limits-premium/02-middle-frame.png",
+          "targetMs": 6400,
+          "phase": {
+            "phase": "interior",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/open-limits-premium/03-final-frame.png",
+          "targetMs": 10500,
+          "phase": {
+            "phase": "logo",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        },
+        {
+          "path": "artifacts/prototype-visuals/open-limits-premium/04-enter-experience.png",
+          "targetMs": 11600,
+          "phase": {
+            "phase": "enter",
+            "introVisible": true,
+            "showroomVisible": false
+          }
+        }
+      ],
+      "video": {
+        "webm": "artifacts/prototype-visuals/open-limits-premium/full-animation.webm",
+        "mp4": "artifacts/prototype-visuals/open-limits-premium/full-animation.mp4",
+        "recordedMs": 13028,
+        "targetMs": 13000
+      },
+      "fpsEstimate": {
+        "avgFrameMs": 16.615833333333335,
+        "estimatedFps": 60.18355985756557,
+        "sampleCount": 120
+      }
+    }
+  ],
+  "openLimitsPremium": {
+    "status": "CREATED",
+    "route": "/prototype/open-limits-premium"
+  },
+  "comparisonVideo": "artifacts/prototype-visuals/comparison/full-animation-side-by-side.mp4"
+}

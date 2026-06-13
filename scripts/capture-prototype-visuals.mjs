@@ -26,11 +26,21 @@ const PROTOTYPES = [
     id: "signature-open-limits",
     route: "/prototype/signature-open-limits",
     firstMs: 800,
-    middleMs: 6000,
-    finalMs: 10000,
-    enterMs: 11000,
-    videoMs: 12000,
-    note: "Signature storyboard — manual enter"
+    middleMs: 6200,
+    finalMs: 10200,
+    enterMs: 11300,
+    videoMs: 12500,
+    note: "Signature storyboard — manual enter, improved v2"
+  },
+  {
+    id: "open-limits-premium",
+    route: "/prototype/open-limits-premium",
+    firstMs: 800,
+    middleMs: 6400,
+    finalMs: 10500,
+    enterMs: 11600,
+    videoMs: 13000,
+    note: "Premium hybrid — signature + cinematic polish"
   }
 ];
 
@@ -273,7 +283,7 @@ async function main() {
     baseUrl: BASE,
     browser: "chromium (playwright headless, production server recommended)",
     prototypes: [],
-    openLimitsPremium: { status: "NOT_CREATED", route: "/prototype/open-limits-premium" }
+    openLimitsPremium: { status: "CREATED", route: "/prototype/open-limits-premium" }
   };
 
   for (const proto of PROTOTYPES) {

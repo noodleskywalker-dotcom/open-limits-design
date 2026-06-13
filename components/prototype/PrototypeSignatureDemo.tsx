@@ -4,7 +4,11 @@ import { useCallback, useState } from "react";
 import SignatureOpenLimitsIntro from "@/components/prototype/SignatureOpenLimitsIntro";
 import PrototypeShowroomMock from "@/components/prototype/PrototypeShowroomMock";
 
-export default function PrototypeSignatureDemo() {
+type PrototypeSignatureDemoProps = {
+  finalRenderUrl?: string | null;
+};
+
+export default function PrototypeSignatureDemo({ finalRenderUrl }: PrototypeSignatureDemoProps) {
   const [runId, setRunId] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
   const [showShowroom, setShowShowroom] = useState(false);
@@ -24,6 +28,7 @@ export default function PrototypeSignatureDemo() {
       {showIntro ? (
         <SignatureOpenLimitsIntro
           key={runId}
+          finalRenderUrl={finalRenderUrl}
           onEnter={() => {
             setShowIntro(false);
             setShowShowroom(true);
@@ -33,15 +38,9 @@ export default function PrototypeSignatureDemo() {
 
       {showShowroom && !showIntro ? <PrototypeShowroomMock variant="signature" /> : null}
 
-      {showIntro ? (
-        <button className="prototype-replay-fab" onClick={replay} type="button">
-          Replay
-        </button>
-      ) : (
-        <button className="prototype-replay-fab" onClick={replay} type="button">
-          Replay
-        </button>
-      )}
+      <button className="prototype-replay-fab" onClick={replay} type="button">
+        Replay
+      </button>
     </div>
   );
 }
