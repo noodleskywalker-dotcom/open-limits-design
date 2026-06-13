@@ -9772,3 +9772,144 @@ body[data-prototype] .ai-assistant {
     animation: none !important;
   }
 }
+
+/* ========== Video homepage intro (.ol-vintro-) ========== */
+.ol-vintro-root {
+  background: #000;
+  inset: 0;
+  opacity: 0;
+  overflow: hidden;
+  position: fixed;
+  transition: opacity 0.8s ease;
+  z-index: 300;
+}
+
+.ol-vintro-root-in {
+  opacity: 1;
+}
+
+.ol-vintro-root-out {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease;
+}
+
+.ol-vintro-backdrop {
+  background: #000;
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.ol-vintro-video {
+  display: block;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.ol-vintro-fallback {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 1;
+}
+
+.ol-vintro-fallback-logo {
+  height: auto;
+  max-height: 120px;
+  max-width: min(60vw, 280px);
+  opacity: 0.92;
+  width: auto;
+}
+
+.ol-vintro-fallback-name {
+  color: rgb(245 240 232 / 92%);
+  font-family: var(--font-heading, Georgia, serif);
+  font-size: clamp(0.9rem, 2.4vw, 1.25rem);
+  letter-spacing: 0.38em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ol-vintro-cta {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.ol-vintro-cta .ol-vintro-enter {
+  pointer-events: auto;
+}
+
+.ol-vintro-title {
+  color: rgb(245 240 232 / 94%);
+  font-family: var(--font-heading, Georgia, serif);
+  font-size: clamp(0.9rem, 2.4vw, 1.25rem);
+  font-weight: 400;
+  letter-spacing: 0.38em;
+  margin: 0;
+  pointer-events: none;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.ol-vintro-enter {
+  background: transparent;
+  border: 1px solid rgb(245 240 232 / 38%);
+  border-radius: 2px;
+  color: rgb(245 240 232 / 92%);
+  cursor: pointer;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  padding: 0.85rem 2rem;
+  text-transform: uppercase;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.ol-vintro-enter:hover {
+  background: rgb(245 240 232 / 8%);
+  border-color: rgb(245 240 232 / 62%);
+}
+
+.ol-vintro-skip {
+  background: rgb(0 0 0 / 35%);
+  border: 1px solid rgb(245 240 232 / 14%);
+  border-radius: 2px;
+  color: rgb(245 240 232 / 55%);
+  cursor: pointer;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  padding: 0.45rem 0.85rem;
+  position: absolute;
+  right: 1.25rem;
+  text-transform: uppercase;
+  top: 1.25rem;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  z-index: 4;
+}
+
+.ol-vintro-skip:hover {
+  border-color: rgb(245 240 232 / 30%);
+  color: rgb(245 240 232 / 90%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ol-vintro-root,
+  .ol-vintro-root-out {
+    transition: none;
+  }
+}

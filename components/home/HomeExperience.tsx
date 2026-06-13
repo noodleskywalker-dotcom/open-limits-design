@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import type { IntroSettings, ShowroomSection } from "@/lib/cms/types";
-import LuxuryIntro from "@/components/home/LuxuryIntro";
+import OpenLimitsVideoIntro from "@/components/intro/OpenLimitsVideoIntro";
 import ShowroomEntry from "@/components/showroom/ShowroomEntry";
 import { INTRO_STORAGE_KEY } from "@/lib/intro/constants";
 
@@ -44,7 +44,6 @@ type HomeExperienceProps = {
 export default function HomeExperience({
   logoImageUrl,
   companyName,
-  tagline,
   settings,
   sections
 }: HomeExperienceProps) {
@@ -61,10 +60,6 @@ export default function HomeExperience({
   const showIntro = override.showIntro ?? baseView.showIntro;
   const showShowroom = override.showShowroom ?? baseView.showShowroom;
 
-  const revealShowroom = useCallback(() => {
-    setOverride((current) => ({ ...current, showShowroom: true }));
-  }, []);
-
   const completeIntro = useCallback(() => {
     localStorage.setItem(INTRO_STORAGE_KEY, "1");
     setOverride({ showIntro: false, showShowroom: true });
@@ -77,13 +72,10 @@ export default function HomeExperience({
   return (
     <>
       {showIntro ? (
-        <LuxuryIntro
+        <OpenLimitsVideoIntro
           companyName={companyName}
           logoImageUrl={logoImageUrl}
           onEnter={completeIntro}
-          onRevealShowroom={revealShowroom}
-          settings={settings}
-          tagline={tagline}
         />
       ) : null}
       {showShowroom ? (
