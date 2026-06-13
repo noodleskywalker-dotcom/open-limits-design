@@ -1,10 +1,43 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import FurnitureProductPanel from "@/components/furniture/FurnitureProductPanel";
 import FurnitureShowroomHighlight from "@/components/furniture/FurnitureShowroomHighlight";
 import { getCompanyProfile, getFurnitureItemBySlug, getRelatedFurnitureItems } from "@/lib/cms/queries";
 import { getFurnitureCategory } from "@/lib/furniture-categories";
 import { resolveImageUrl } from "@/lib/cms/types";
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const item = await getFurnitureItemBySlug(slug);
+  if (!item) {
+    return { title: "Furniture — Open Limits Design" };
+  }
+
+  const title = item.seo_title?.trim() || `${item.title} — Open Limits Design`;
+  const description =
+    item.meta_description?.trim() ||
+    item.description?.slice(0, 160) ||
+    `Custom ${item.title} by Open Limits Design.`;
+
+  const heroImage = resolveImageUrl(item.featured_image ?? item.gallery?.[0]);
+
+  return {
+    title,
+    description,
+    openGraph: heroImage
+      ? {
+          title,
+          description,
+          images: [{ url: heroImage, alt: item.title }]
+        }
+      : { title, description }
+  };
+}
 
 export default async function FurnitureDetailPage({
   params,

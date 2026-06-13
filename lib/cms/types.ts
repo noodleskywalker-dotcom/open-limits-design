@@ -207,6 +207,8 @@ export type FurnitureItem = {
   availability: string | null;
   upholstery: string | null;
   collection: string | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
   category_id: string;
   featured_image_id: string | null;
   sort_order: number;

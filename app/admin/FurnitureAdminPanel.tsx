@@ -337,9 +337,14 @@ export default function FurnitureAdminPanel({ media }: { media: MediaAsset[] }) 
             extracted furniture data.
           </p>
         </div>
-        <Link className="button" href="/admin/furniture/import">
-          Open Import Catalog →
-        </Link>
+        <div className="button-row">
+          <Link className="button ghost" href="/admin/furniture/import/history">
+            Import History
+          </Link>
+          <Link className="button" href="/admin/furniture/import">
+            Open Import Catalog →
+          </Link>
+        </div>
       </div>
       {message ? <p className="status success">{message}</p> : null}
       {error ? <p className="status error">{error}</p> : null}

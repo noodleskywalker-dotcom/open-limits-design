@@ -183,6 +183,7 @@ create table if not exists public.furniture_categories (
   slug text not null unique,
   name text not null,
   description text,
+  parent_id uuid references public.furniture_categories(id) on delete set null,
   sort_order integer not null default 0,
   published boolean not null default true,
   created_at timestamptz not null default now(),
@@ -212,6 +213,23 @@ alter table public.furniture_items add column if not exists finishes text;
 alter table public.furniture_items add column if not exists features text;
 alter table public.furniture_items add column if not exists availability text;
 alter table public.furniture_items add column if not exists upholstery text;
+alter table public.furniture_items add column if not exists seo_title text;
+alter table public.furniture_items add column if not exists meta_description text;
+
+create table if not exists public.furniture_import_batches (
+  id uuid primary key default gen_random_uuid(),
+  source_type text not null default 'pdf',
+  file_name text not null,
+  item_count integer not null default 0,
+  image_count integer not null default 0,
+  status text not null default 'completed'
+    check (status in ('completed', 'failed', 'rolled_back', 'partial')),
+  log jsonb not null default '[]'::jsonb,
+  rollback_snapshot jsonb,
+  imported_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  rolled_back_at timestamptz
+);
 
 create table if not exists public.furniture_item_images (
   furniture_item_id uuid not null references public.furniture_items(id) on delete cascade,
@@ -359,6 +377,7 @@ alter table public.furniture_items enable row level security;
 alter table public.furniture_item_images enable row level security;
 alter table public.materials enable row level security;
 alter table public.furniture_item_materials enable row level security;
+alter table public.furniture_import_batches enable row level security;
 alter table public.bookings enable row level security;
 alter table public.blocked_times enable row level security;
 alter table public.admin_users enable row level security;
@@ -560,6 +579,10 @@ drop policy if exists "Authenticated users can manage furniture item materials" 
 create policy "Authenticated users can manage furniture item materials"
 on public.furniture_item_materials for all to authenticated using (true) with check (true);
 
+drop policy if exists "Authenticated users can manage furniture import batches" on public.furniture_import_batches;
+create policy "Authenticated users can manage furniture import batches"
+on public.furniture_import_batches for all to authenticated using (true) with check (true);
+
 -- bookings: public can create requests; only admins read/update.
 drop policy if exists "Anyone can create a booking request" on public.bookings;
 create policy "Anyone can create a booking request"
@@ -605,6 +628,8 @@ create index if not exists media_assets_category_idx on public.media_assets(cate
 create index if not exists projects_slug_idx on public.projects(slug);
 create index if not exists furniture_items_slug_idx on public.furniture_items(slug);
 create index if not exists furniture_items_category_sort_idx on public.furniture_items(category_id, sort_order);
+create index if not exists furniture_import_batches_created_at_idx on public.furniture_import_batches(created_at desc);
+create index if not exists furniture_categories_parent_id_idx on public.furniture_categories(parent_id);
 create index if not exists materials_published_sort_idx on public.materials(published, sort_order);
 create index if not exists bookings_date_idx on public.bookings(booking_date);
 create index if not exists blocked_times_date_idx on public.blocked_times(date);

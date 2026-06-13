@@ -38,11 +38,23 @@ export async function POST(request: NextRequest) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const { analyzeFurniturePdf, sanitizePdfReportForClient } = await import(
-      "@/lib/furniture/pdf-analyze.mjs"
-    );
-    const report = await analyzeFurniturePdf(buffer);
-    return NextResponse.json(sanitizePdfReportForClient(report));
+    const { analyzeFurniturePdf } = await import("@/lib/furniture/pdf-analyze.mjs");
+    const { buildImportPreview } = await import("@/lib/furniture/import-qc.mjs");
+
+    const report = await analyzeFurniturePdf(buffer, { includeImageBuffers: true });
+
+    const { data: existingItems } = await supabase
+      .from("furniture_items")
+      .select("id, slug, title");
+
+    const preview = buildImportPreview(report, existingItems ?? []);
+    preview.fileName = file.name || preview.fileName;
+
+    return NextResponse.json({
+      ...preview,
+      importMode: "preview-only",
+      message: "Review and edit extracted data before confirming import. Nothing is imported automatically."
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Analysis failed." },

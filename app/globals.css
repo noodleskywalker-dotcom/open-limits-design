@@ -1188,7 +1188,186 @@ a.card:hover {
   padding-left: 1.1rem;
 }
 
-/* ---------- admin ---------- */
+.import-qc-panel {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.import-qc-warning {
+  background: rgba(200, 120, 60, 0.08);
+  border: 1px solid rgba(200, 120, 60, 0.35);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.category-hierarchy-tree ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.category-hierarchy-tree li::before {
+  content: "└ ";
+  color: var(--muted);
+}
+
+.bulk-category-bar {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+}
+
+.import-image-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.import-image-card {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.5rem;
+}
+
+.import-image-card img {
+  aspect-ratio: 1;
+  border-radius: 0.35rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.import-qc-table {
+  min-width: 1100px;
+}
+
+.import-qc-table .row-duplicate {
+  background: rgba(200, 80, 60, 0.06);
+}
+
+.import-inline-input,
+.import-inline-textarea {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  color: inherit;
+  font: inherit;
+  margin-bottom: 0.25rem;
+  padding: 0.35rem 0.45rem;
+  width: 100%;
+}
+
+.import-inline-textarea {
+  min-height: 2.5rem;
+  resize: vertical;
+}
+
+.meta-input {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.confidence-stack {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.confidence-badge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.confidence-high {
+  background: rgba(60, 160, 100, 0.15);
+  color: #6ecf9a;
+}
+
+.confidence-medium {
+  background: rgba(200, 160, 60, 0.15);
+  color: #e0c070;
+}
+
+.confidence-low {
+  background: rgba(200, 80, 60, 0.15);
+  color: #e09080;
+}
+
+.import-confirm-block {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+}
+
+.checkbox-field {
+  align-items: start;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.checkbox-field input {
+  margin-top: 0.2rem;
+}
+
+.import-history-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.import-history-card {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.import-history-card header {
+  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.import-log {
+  font-size: 0.8rem;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.import-status-completed {
+  color: #6ecf9a;
+}
+
+.import-status-partial {
+  color: #e0c070;
+}
+
+.import-status-failed {
+  color: #e09080;
+}
+
+.import-status-rolled_back {
+  color: var(--muted);
+}
+
 .admin-shell {
   display: grid;
   gap: 1.5rem;

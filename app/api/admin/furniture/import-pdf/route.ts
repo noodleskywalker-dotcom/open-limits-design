@@ -5,6 +5,14 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
+type ConfirmImportBody = {
+  fileName?: string;
+  sourceType?: string;
+  confirmed?: boolean;
+  items?: unknown[];
+  images?: unknown[];
+};
+
 export async function POST(request: NextRequest) {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
@@ -21,26 +29,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid session." }, { status: 401 });
   }
 
-  let formData: FormData;
+  let body: ConfirmImportBody;
   try {
-    formData = await request.formData();
+    body = (await request.json()) as ConfirmImportBody;
   } catch {
-    return NextResponse.json({ error: "Expected multipart form data." }, { status: 400 });
+    return NextResponse.json({ error: "Expected JSON body with confirmed import payload." }, { status: 400 });
   }
 
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing file field." }, { status: 400 });
+  if (!body.confirmed) {
+    return NextResponse.json(
+      {
+        error:
+          "Import blocked — admin confirmation required. Review the preview, edit items, then set confirmed: true."
+      },
+      { status: 400 }
+    );
   }
 
-  if (!file.name.toLowerCase().endsWith(".pdf")) {
-    return NextResponse.json({ error: "Only .pdf files are supported." }, { status: 400 });
+  if (!Array.isArray(body.items) || !body.items.length) {
+    return NextResponse.json({ error: "No items in import payload." }, { status: 400 });
   }
 
   try {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const { importFurnitureFromPdf } = await import("@/lib/furniture/pdf-import.mjs");
-    const result = await importFurnitureFromPdf(buffer, supabase);
+    const { importConfirmedFurnitureCatalog } = await import("@/lib/furniture/pdf-import.mjs");
+    const result = await importConfirmedFurnitureCatalog(body, supabase, {
+      userId: userData.user.id
+    });
     revalidatePath("/furniture");
     revalidatePath("/furniture", "page");
     return NextResponse.json(result);
