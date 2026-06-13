@@ -10,6 +10,7 @@ import MediaLayer from "@/components/prototype/client-film/MediaLayer";
 import {
   CLIENT_FILM_CLIPS,
   CLIENT_FILM_DURATION_MS,
+  CLIENT_FILM_PHASE_START_MS,
   CLIENT_FILM_STORAGE_KEY,
   clientClipForPhase,
   clientPhaseAtOrAfter,
@@ -23,19 +24,13 @@ type ClientFilmIntroProps = {
   companyName?: string;
   tagline?: string;
   logoImageUrl?: string | null;
+  /** Reserved — exterior uses dedicated villa poster, not CMS interior render */
   finalRenderUrl?: string | null;
   debug?: boolean;
 };
 
-function resolveImageSrc(
-  status: ClientClipMediaStatus | undefined,
-  clipPhase: ClientFilmPhase,
-  finalRenderUrl: string | null | undefined
-): string {
+function resolveImageSrc(status: ClientClipMediaStatus | undefined): string {
   if (!status) return "";
-  if (clipPhase === "exterior" && finalRenderUrl && status.state !== "video") {
-    return finalRenderUrl;
-  }
   return status.src;
 }
 
@@ -44,10 +39,9 @@ export default function ClientFilmIntro({
   companyName = "Open Limits Design",
   tagline = "Design Without Limits",
   logoImageUrl,
-  finalRenderUrl,
   debug = false
 }: ClientFilmIntroProps) {
-  const { mounted, isMobile, reducedMotion, phase } = useClientFilmTimeline();
+  const { mounted, isMobile, reducedMotion, phase, elapsed } = useClientFilmTimeline();
   const { statusFor, ready, missingVideos } = useClientFilmMedia();
   const [exiting, setExiting] = useState(false);
   const dismissedRef = useRef(false);
@@ -73,10 +67,10 @@ export default function ClientFilmIntro({
       const status = statusFor(clip.id);
       if (status) {
         const img = new Image();
-        img.src = resolveImageSrc(status, clip.phase, finalRenderUrl);
+        img.src = resolveImageSrc(status);
       }
     }
-  }, [statusFor, finalRenderUrl]);
+  }, [statusFor]);
 
   if (!mounted) {
     return <div aria-hidden className="olcf-root olcf-root-loading" />;
@@ -99,7 +93,7 @@ export default function ClientFilmIntro({
               if (!status || !showMedia) return null;
 
               const active = phase === clip.phase;
-              const src = resolveImageSrc(status, clip.phase, finalRenderUrl);
+              const src = resolveImageSrc(status);
               const useVideo = status.state === "video" && active;
 
               return (
@@ -108,6 +102,7 @@ export default function ClientFilmIntro({
                   clipPhase={clip.phase}
                   isMobile={isMobile}
                   key={clip.id}
+                  phaseElapsed={active ? Math.max(0, elapsed - CLIENT_FILM_PHASE_START_MS[clip.phase]) : 0}
                   src={useVideo ? status.src : src}
                   useVideo={useVideo}
                 />
@@ -129,7 +124,7 @@ export default function ClientFilmIntro({
 
           {showBlueprint ? (
             <div className="olcf-layer olcf-blueprint-stack">
-              <BlueprintOverlay phase={phase} />
+              <BlueprintOverlay elapsed={elapsed} phase={phase} />
             </div>
           ) : null}
 

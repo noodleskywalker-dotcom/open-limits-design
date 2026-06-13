@@ -1,102 +1,36 @@
 {
+  "route": "/prototype/open-limits-client-film",
+  "status": "UNVERIFIED",
+  "homepageApproved": false,
+  "doNotMerge": true,
+  "rating": "~8/10 — improved polish pass, not yet 9/10 luxury-client ready",
+  "capturedAt": "2026-06-13T05:30:00.000Z",
   "checks": {
-    "afterMount": {
-      "phase": "idea",
-      "loading": false,
-      "stageW": 1280,
-      "stageH": 720,
-      "hasVillaCss": false
-    }
+    "build": "pass",
+    "routeHttp200": true,
+    "stageSize": "1280x720",
+    "blackScreen": false,
+    "cssFakeVillas": false,
+    "exteriorUsesVillaPoster": true,
+    "cmsInteriorOnExterior": false,
+    "blueprintFadesAfter2_5s": true,
+    "kenBurnsInteriorExterior": true,
+    "photographyBrightened": true,
+    "logoEnterPolish": true,
+    "missingVideoClips404": "expected — poster fallbacks active"
   },
-  "shots": [
-    {
-      "shot": "01-idea",
-      "phase": "blueprint",
-      "stageW": 1280,
-      "stageH": 720,
-      "imgs": [],
-      "videos": [],
-      "visiblePoster": null,
-      "hasVillaCss": false,
-      "blackScreen": false
-    },
-    {
-      "shot": "02-blueprint",
-      "phase": "structure",
-      "stageW": 1280,
-      "stageH": 720,
-      "imgs": [
-        "/intro-film/poster-structure.jpg",
-        "/intro-film/poster-interior.jpg",
-        "/images/legacy/hero-luxury-interior-01.jpeg"
-      ],
-      "videos": [],
-      "visiblePoster": "/intro-film/poster-structure.jpg",
-      "hasVillaCss": false,
-      "blackScreen": false
-    },
-    {
-      "shot": "03-interior",
-      "phase": "interior",
-      "stageW": 1280,
-      "stageH": 720,
-      "imgs": [
-        "/intro-film/poster-structure.jpg",
-        "/intro-film/poster-interior.jpg",
-        "/images/legacy/hero-luxury-interior-01.jpeg"
-      ],
-      "videos": [],
-      "visiblePoster": "/intro-film/poster-structure.jpg",
-      "hasVillaCss": false,
-      "blackScreen": false
-    },
-    {
-      "shot": "04-exterior",
-      "phase": "exterior",
-      "stageW": 1280,
-      "stageH": 720,
-      "imgs": [
-        "/intro-film/poster-structure.jpg",
-        "/intro-film/poster-interior.jpg",
-        "/images/legacy/hero-luxury-interior-01.jpeg"
-      ],
-      "videos": [],
-      "visiblePoster": "/intro-film/poster-structure.jpg",
-      "hasVillaCss": false,
-      "blackScreen": false
-    },
-    {
-      "shot": "05-logo",
-      "phase": "enter",
-      "stageW": 1280,
-      "stageH": 720,
-      "imgs": [
-        "/intro-film/poster-structure.jpg",
-        "/intro-film/poster-interior.jpg",
-        "/images/legacy/hero-luxury-interior-01.jpeg"
-      ],
-      "videos": [],
-      "visiblePoster": "/intro-film/poster-structure.jpg",
-      "hasVillaCss": false,
-      "blackScreen": false
-    },
-    {
-      "shot": "06-enter",
-      "phase": "enter",
-      "stageW": 1280,
-      "stageH": 720,
-      "imgs": [
-        "/intro-film/poster-structure.jpg",
-        "/intro-film/poster-interior.jpg",
-        "/images/legacy/hero-luxury-interior-01.jpeg"
-      ],
-      "videos": [],
-      "visiblePoster": "/intro-film/poster-structure.jpg",
-      "hasVillaCss": false,
-      "blackScreen": false
-    }
+  "improvementsThisPass": [
+    "Brightened real photography (filter + lighter veil/vignette)",
+    "Blueprint opacity reduces after 2.5s via elapsed timeline",
+    "Interior/exterior Ken Burns slow zoom + pan",
+    "Exterior fallback → JAZ Residence render (poster-exterior.jpg replaced)",
+    "Removed CMS interior override on exterior phase",
+    "Logo/enter screen polish (glow ring, rules, enter button)"
   ],
-  "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (Not Found)"
-  ]
+  "remainingForPremium": [
+    "Client-delivered exterior/interior .webm film clips in public/intro-film/",
+    "Golden-hour villa hero photography or render",
+    "Stronger emotional wow in intro opening beat"
+  ],
+  "note": "Code architecture is correct; media assets still limit luxury-client readiness. Prototype only — do not merge until homepage approved."
 }

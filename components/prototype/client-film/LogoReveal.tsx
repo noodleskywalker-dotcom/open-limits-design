@@ -29,11 +29,16 @@ export default function LogoReveal({
   const show = phase === "logo" || phase === "enter";
   if (!show) return null;
 
-  const showLogoImage = phase === "enter" && logoImageUrl;
+  const isEnter = phase === "enter";
+  const showLogoImage = isEnter && logoImageUrl;
 
   return (
-    <div aria-hidden className="olcf-layer olcf-logo-layer">
+    <div
+      aria-hidden
+      className={`olcf-layer olcf-logo-layer ${isEnter ? "olcf-logo-layer-enter" : ""}`}
+    >
       <div className="olcf-logo-bloom" />
+      <div className="olcf-logo-glow-ring" />
 
       <svg className="olcf-svg olcf-svg-logo" viewBox="0 0 1200 675">
         <motion.line
@@ -78,12 +83,15 @@ export default function LogoReveal({
         initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
         transition={{ delay: 0.75, duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
+        <div className="olcf-logo-rule olcf-logo-rule-left" />
+        <div className="olcf-logo-rule olcf-logo-rule-right" />
+
         {showLogoImage ? (
           <BrandLogoLines companyName={companyName} logoImageUrl={logoImageUrl} visible={show} />
         ) : (
           <>
             <h1 className="olcf-logo-name">{companyName.toUpperCase()}</h1>
-            <p className="olcf-logo-tag">{tagline}</p>
+            <p className={`olcf-logo-tag ${isEnter ? "olcf-logo-tag-enter" : ""}`}>{tagline}</p>
           </>
         )}
       </motion.div>

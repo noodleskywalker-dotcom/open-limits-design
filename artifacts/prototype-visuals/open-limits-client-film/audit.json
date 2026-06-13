@@ -12,12 +12,12 @@
     },
     {
       "shot": "02-blueprint",
-      "phase": "blueprint",
+      "phase": "structure",
       "stage": {
         "w": 1280,
         "h": 720
       },
-      "hasMedia": false,
+      "hasMedia": true,
       "consoleErrors": 3
     },
     {

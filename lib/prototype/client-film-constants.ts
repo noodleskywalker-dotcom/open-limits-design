@@ -34,6 +34,9 @@ export const CLIENT_FILM_DURATION_MS = {
 
 export const CLIENT_FILM_STORAGE_KEY = "ol-client-film-dismissed";
 
+/** Blueprint overlay begins fading after this mark (ms). */
+export const CLIENT_FILM_BLUEPRINT_FADE_MS = 2500;
+
 export type ClientFilmClipDef = {
   id: string;
   phase: ClientFilmPhase;
@@ -62,7 +65,7 @@ export const CLIENT_FILM_CLIPS: ClientFilmClipDef[] = [
     phase: "exterior",
     video: "/intro-film/exterior-villa-reveal.webm",
     poster: "/intro-film/poster-exterior.jpg",
-    fallbackImage: "/images/legacy/architecture-showroom-02.jpeg"
+    fallbackImage: "/images/legacy/project-jaz-residence.jpg"
   }
 ];
 

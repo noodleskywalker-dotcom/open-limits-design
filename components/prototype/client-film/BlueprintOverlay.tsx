@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { ClientFilmPhase } from "@/lib/prototype/client-film-constants";
+import {
+  CLIENT_FILM_BLUEPRINT_FADE_MS,
+  type ClientFilmPhase
+} from "@/lib/prototype/client-film-constants";
 
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },
@@ -12,24 +15,37 @@ const draw = {
   })
 };
 
+function blueprintOpacity(elapsed: number, phase: ClientFilmPhase): number {
+  if (phase === "structure") return 0.18;
+
+  if (elapsed >= CLIENT_FILM_BLUEPRINT_FADE_MS) {
+    const fadeT = Math.min(1, (elapsed - CLIENT_FILM_BLUEPRINT_FADE_MS) / 1200);
+    return 1 - fadeT * 0.62;
+  }
+
+  return 1;
+}
+
 type BlueprintOverlayProps = {
   phase: ClientFilmPhase;
+  elapsed: number;
 };
 
-export default function BlueprintOverlay({ phase }: BlueprintOverlayProps) {
+export default function BlueprintOverlay({ phase, elapsed }: BlueprintOverlayProps) {
   const show = phase === "idea" || phase === "blueprint" || phase === "structure";
   const drawing = phase === "blueprint";
   const fadeOut = phase === "structure";
+  const overlayOpacity = blueprintOpacity(elapsed, phase);
 
   if (!show) return null;
 
   return (
     <motion.div
-      animate={{ opacity: fadeOut ? 0.35 : 1 }}
+      animate={{ opacity: overlayOpacity }}
       aria-hidden
       className="olcf-layer olcf-blueprint"
       initial={{ opacity: 0 }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="olcf-vellum" />
       <div className="olcf-vellum-frame" />
@@ -56,7 +72,7 @@ export default function BlueprintOverlay({ phase }: BlueprintOverlayProps) {
 
       {drawing || fadeOut ? (
         <svg className="olcf-svg olcf-svg-plan" viewBox="0 0 1200 675">
-          <g className="olcf-grid" opacity={drawing ? 0.45 : 0.15}>
+          <g className="olcf-grid" opacity={drawing ? 0.38 : 0.12}>
             {Array.from({ length: 11 }, (_, i) => (
               <line
                 className="olcf-grid-line"
