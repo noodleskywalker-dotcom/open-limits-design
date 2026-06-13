@@ -4911,14 +4911,23 @@ body[data-prototype] .ai-assistant {
   display: flex;
   flex: 1;
   justify-content: center;
+  min-height: 0;
   perspective: 1600px;
   width: 100%;
   z-index: 1;
 }
 
+/** Scene root — MUST have explicit width; all sheet content is absolute and gives no intrinsic size. */
+.pf2-scene {
+  flex-shrink: 0;
+  max-width: min(94vw, 780px);
+  position: relative;
+  width: min(94vw, 780px);
+}
+
 .pf2-camera {
   max-height: min(72vh, 560px);
-  max-width: min(94vw, 780px);
+  max-width: 100%;
   transform-style: preserve-3d;
   width: 100%;
   will-change: transform;
