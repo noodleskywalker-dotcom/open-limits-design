@@ -29,6 +29,19 @@ async function main() {
   });
   await context.addInitScript(() => {
     localStorage.removeItem("ol-client-film-dismissed");
+    const nativeMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = (query) => {
+      if (String(query).includes("prefers-reduced-motion")) {
+        return {
+          matches: false,
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+          dispatchEvent: () => false
+        };
+      }
+      return nativeMatchMedia(query);
+    };
   });
   const page = await context.newPage();
   await page.emulateMedia({ reducedMotion: "no-preference", colorScheme: "dark" });
@@ -39,7 +52,7 @@ async function main() {
     if (m.type() === "error") errors.push(m.text());
   });
 
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}${ROUTE}`, { waitUntil: "load" });
   await page.waitForSelector(".olcf-root[data-phase]", { timeout: 30000 });
 
   const t0 = Date.now();

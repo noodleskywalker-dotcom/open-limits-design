@@ -23,7 +23,11 @@ function getMobileSnapshot() {
 export function useClientFilmTimeline() {
   const [mounted, setMounted] = useState(false);
   const isMobile = useSyncExternalStore(subscribeMobile, getMobileSnapshot, () => false);
-  const reducedMotion = useReducedMotion();
+  const reducedMotionFromFramer = useReducedMotion();
+  const reducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : !!reducedMotionFromFramer;
   const [phase, setPhase] = useState<ClientFilmPhase>("idea");
   const [elapsed, setElapsed] = useState(0);
   const startRef = useRef<number | null>(null);

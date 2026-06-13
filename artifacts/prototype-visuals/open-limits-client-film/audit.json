@@ -8,17 +8,17 @@
         "h": 720
       },
       "hasMedia": false,
-      "consoleErrors": 3
+      "consoleErrors": 6
     },
     {
       "shot": "02-blueprint",
-      "phase": "structure",
+      "phase": "blueprint",
       "stage": {
         "w": 1280,
         "h": 720
       },
-      "hasMedia": true,
-      "consoleErrors": 3
+      "hasMedia": false,
+      "consoleErrors": 6
     },
     {
       "shot": "03-interior",
@@ -28,7 +28,7 @@
         "h": 720
       },
       "hasMedia": true,
-      "consoleErrors": 3
+      "consoleErrors": 6
     },
     {
       "shot": "04-exterior",
@@ -38,17 +38,17 @@
         "h": 720
       },
       "hasMedia": true,
-      "consoleErrors": 3
+      "consoleErrors": 6
     },
     {
       "shot": "05-logo",
-      "phase": "enter",
+      "phase": "logo",
       "stage": {
         "w": 1280,
         "h": 720
       },
-      "hasMedia": true,
-      "consoleErrors": 3
+      "hasMedia": false,
+      "consoleErrors": 6
     },
     {
       "shot": "06-enter",
@@ -58,10 +58,13 @@
         "h": 720
       },
       "hasMedia": true,
-      "consoleErrors": 3
+      "consoleErrors": 6
     }
   ],
   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
     "Failed to load resource: the server responded with a status of 404 (Not Found)",
     "Failed to load resource: the server responded with a status of 404 (Not Found)",
     "Failed to load resource: the server responded with a status of 404 (Not Found)"

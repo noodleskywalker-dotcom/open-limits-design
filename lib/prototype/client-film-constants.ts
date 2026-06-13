@@ -58,14 +58,14 @@ export const CLIENT_FILM_CLIPS: ClientFilmClipDef[] = [
     phase: "interior",
     video: "/intro-film/interior-walkthrough.webm",
     poster: "/intro-film/poster-interior.jpg",
-    fallbackImage: "/images/legacy/hero-luxury-interior-01.jpeg"
+    fallbackImage: "/images/legacy/hero-luxury-interior-02.jpeg"
   },
   {
     id: "exterior",
     phase: "exterior",
     video: "/intro-film/exterior-villa-reveal.webm",
     poster: "/intro-film/poster-exterior.jpg",
-    fallbackImage: "/images/legacy/project-jaz-residence.jpg"
+    fallbackImage: ""
   }
 ];
 
