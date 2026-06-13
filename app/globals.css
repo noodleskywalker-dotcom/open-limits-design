@@ -7205,3 +7205,474 @@ body[data-prototype] .ai-assistant {
     radial-gradient(ellipse at 50% 0%, rgb(200 162 74 / 8%) 0%, transparent 50%),
     linear-gradient(180deg, #0c121c 0%, #030508 100%);
 }
+
+/* ========== v3 luxury emotion pass — villa hero, atmosphere, morph ========== */
+
+.ol-film-blueprint-fading {
+  opacity: 0.08;
+  transition: opacity 0.9s ease;
+}
+
+.ol-film-blueprint-fading .ol-film-vellum {
+  opacity: 0.35;
+  transition: opacity 0.9s ease;
+}
+
+.ol-film-root[data-phase="structure"] .ol-film-blueprint,
+.ol-film-root[data-phase="materials"] .ol-film-blueprint,
+.ol-film-root[data-phase="walkthrough"] .ol-film-blueprint {
+  opacity: 0.06;
+  transition: opacity 0.8s ease;
+}
+
+.ol-film-root[data-phase="exterior"] .ol-film-blueprint {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.ol-film-vignette-hero {
+  background: radial-gradient(ellipse at 50% 38%, transparent 18%, rgb(0 0 0 / 92%) 100%);
+}
+
+.ol-film-lens-breathe-global {
+  animation: olFilmLensBreathe 5.5s ease-in-out infinite;
+  backdrop-filter: blur(0.4px);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 6;
+}
+
+@keyframes olFilmLensBreathe {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.35;
+    transform: scale(1.012);
+  }
+}
+
+.ol-film-sun-particles {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.ol-film-sun-particle {
+  animation: olFilmSunParticle calc(4s + (var(--i) * 0.18s)) ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.35s);
+  background: radial-gradient(circle, rgb(255 235 200 / 70%) 0%, rgb(255 200 120 / 20%) 40%, transparent 70%);
+  border-radius: 50%;
+  height: calc(2px + (var(--i) % 3));
+  left: calc(55% + (var(--i) * 2.4%) % 38%);
+  position: absolute;
+  top: calc(8% + (var(--i) * 4.1%) % 42%);
+  width: calc(2px + (var(--i) % 3));
+}
+
+@keyframes olFilmSunParticle {
+  from {
+    opacity: 0.15;
+    transform: translate3d(0, 0, 0) scale(0.8);
+  }
+
+  to {
+    opacity: 0.65;
+    transform: translate3d(8px, -12px, 0) scale(1.2);
+  }
+}
+
+/* Exterior hero — cinematic villa launch film */
+.ol-film-exterior-hero {
+  z-index: 5;
+}
+
+.ol-film-ext-photo-bg {
+  filter: blur(28px) saturate(1.2) brightness(0.55);
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0.35;
+  position: absolute;
+  transform: scale(1.15);
+  width: 100%;
+  z-index: 0;
+}
+
+.ol-film-ext-photo-veil {
+  background:
+    linear-gradient(180deg, rgb(255 160 60 / 22%) 0%, transparent 38%),
+    radial-gradient(ellipse at 72% 14%, rgb(255 200 100 / 18%) 0%, transparent 48%),
+    linear-gradient(180deg, transparent 55%, rgb(8 10 14 / 85%) 100%);
+  inset: 0;
+  mix-blend-mode: soft-light;
+  position: absolute;
+  z-index: 1;
+}
+
+.ol-film-ext-hero-atmosphere {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
+.ol-film-ext-dust-gold {
+  animation: olFilmHeroDust 4.5s ease-in-out infinite alternate;
+  background:
+    radial-gradient(circle at 68% 22%, rgb(255 220 150 / 14%) 0%, transparent 42%),
+    radial-gradient(circle at 32% 68%, rgb(255 190 100 / 8%) 0%, transparent 38%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olFilmHeroDust {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 0.85;
+  }
+}
+
+.ol-film-ext-lens-breathe {
+  animation: olFilmLensBreathe 4s ease-in-out infinite;
+  background: radial-gradient(ellipse at 50% 45%, rgb(255 200 120 / 6%) 0%, transparent 55%);
+  inset: 0;
+  position: absolute;
+}
+
+.ol-film-ext-light-streak {
+  animation: olFilmLightStreak 6s ease-in-out infinite alternate;
+  background: linear-gradient(118deg, transparent 42%, rgb(255 230 190 / 14%) 50%, transparent 58%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olFilmLightStreak {
+  from {
+    opacity: 0.25;
+    transform: translateX(-3%) rotate(-2deg);
+  }
+
+  to {
+    opacity: 0.65;
+    transform: translateX(4%) rotate(-1deg);
+  }
+}
+
+/* Shared luxury villa silhouette */
+.ol-film-villa-hero {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: 2;
+}
+
+.ol-film-villa-hero-morph {
+  opacity: 0.92;
+  transform: scale(0.94);
+}
+
+.ol-film-villa-sky {
+  animation: olFilmVillaSky 6s ease-in-out infinite alternate;
+  background:
+    radial-gradient(ellipse at 74% 10%, rgb(255 175 70 / 62%) 0%, transparent 46%),
+    radial-gradient(ellipse at 20% 80%, rgb(80 60 40 / 35%) 0%, transparent 50%),
+    linear-gradient(180deg, #1a1006 0%, #6a4820 26%, #c48838 40%, #5a4028 58%, #0c0e12 100%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olFilmVillaSky {
+  from {
+    filter: brightness(0.94) saturate(1.05);
+  }
+
+  to {
+    filter: brightness(1.06) saturate(1.12);
+  }
+}
+
+.ol-film-villa-sun {
+  animation: olFilmVillaSun 4.5s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgb(255 230 160 / 72%) 0%, rgb(255 190 90 / 28%) 35%, transparent 68%);
+  height: 38%;
+  position: absolute;
+  right: 6%;
+  top: 2%;
+  width: 32%;
+}
+
+@keyframes olFilmVillaSun {
+  from {
+    opacity: 0.75;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.ol-film-villa-sun-rays {
+  animation: olFilmVillaRays 5s ease-in-out infinite alternate;
+  background: conic-gradient(from 195deg at 78% 10%, transparent 0deg, rgb(255 220 150 / 22%) 18deg, transparent 36deg, rgb(255 200 120 / 14%) 54deg, transparent 72deg);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+@keyframes olFilmVillaRays {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 0.85;
+  }
+}
+
+.ol-film-villa-haze {
+  background:
+    linear-gradient(180deg, rgb(255 190 100 / 14%) 0%, transparent 32%),
+    linear-gradient(0deg, rgb(255 160 80 / 8%) 0%, transparent 22%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.ol-film-villa-ground-shadow {
+  background: linear-gradient(180deg, transparent 58%, rgb(0 0 0 / 55%) 100%);
+  bottom: 0;
+  height: 48%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 1;
+}
+
+.ol-film-villa-body {
+  bottom: 8%;
+  height: 72%;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 78%;
+  z-index: 2;
+}
+
+.ol-film-villa-svg {
+  height: 100%;
+  position: relative;
+  width: 100%;
+  z-index: 2;
+}
+
+.ol-film-villa-roof-path {
+  fill: url(#ol-film-villa-roof-grad);
+  filter: drop-shadow(0 12px 24px rgb(0 0 0 / 45%));
+  stroke: rgb(200 162 74 / 35%);
+  stroke-width: 0.6;
+}
+
+.ol-film-villa-outline .ol-film-villa-roof-path {
+  fill: linear-gradient(180deg, rgb(55 52 48), rgb(22 20 18));
+}
+
+.ol-film-villa-roof-path {
+  fill: rgb(38 36 34);
+}
+
+.ol-film-villa-glass {
+  animation: olFilmVillaGlassGlow 3.2s ease-in-out infinite alternate;
+  fill: rgb(255 210 140 / 22%);
+  stroke: rgb(200 162 74 / 42%);
+  stroke-width: 0.5;
+}
+
+@keyframes olFilmVillaGlassGlow {
+  from {
+    fill: rgb(255 200 120 / 18%);
+  }
+
+  to {
+    fill: rgb(255 230 180 / 32%);
+  }
+}
+
+.ol-film-villa-column {
+  fill: rgb(200 162 74 / 28%);
+  stroke: rgb(200 162 74 / 55%);
+  stroke-width: 0.4;
+}
+
+.ol-film-villa-interior-glow {
+  animation: olFilmInteriorGlow 3s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 50% 72%, rgb(255 200 120 / 38%) 0%, rgb(255 170 80 / 12%) 40%, transparent 62%);
+  bottom: 18%;
+  height: 45%;
+  left: 18%;
+  position: absolute;
+  right: 18%;
+  z-index: 1;
+}
+
+@keyframes olFilmInteriorGlow {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.ol-film-villa-glass-shine {
+  animation: olFilmGlassShimmer 4s ease-in-out infinite alternate;
+  background: linear-gradient(108deg, transparent 38%, rgb(255 255 255 / 16%) 50%, transparent 62%);
+  bottom: 18%;
+  height: 42%;
+  left: 22%;
+  position: absolute;
+  right: 22%;
+  z-index: 3;
+}
+
+.ol-film-villa-pool {
+  background:
+    linear-gradient(180deg, rgb(70 130 170 / 42%), rgb(35 75 115 / 28%)),
+    linear-gradient(125deg, rgb(255 255 255 / 10%), transparent);
+  border-radius: 2px;
+  bottom: 2%;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 35%);
+  height: 12%;
+  left: 14%;
+  overflow: hidden;
+  position: absolute;
+  right: 14%;
+  z-index: 3;
+}
+
+.ol-film-villa-pool-reflect {
+  background: linear-gradient(180deg, rgb(255 200 120 / 32%), rgb(255 180 90 / 8%) 50%, transparent);
+  height: 55%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.ol-film-villa-pool-shimmer {
+  animation: olFilmPoolShimmer 3.2s ease-in-out infinite alternate;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 18%), transparent);
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 45%;
+}
+
+.ol-film-villa-palm {
+  background: linear-gradient(180deg, rgb(50 85 42 / 55%), transparent);
+  border-radius: 50% 50% 0 0;
+  height: 26%;
+  position: absolute;
+  top: 10%;
+  width: 7%;
+  z-index: 1;
+}
+
+.ol-film-villa-palm-l {
+  left: 3%;
+  transform: rotate(-14deg);
+}
+
+.ol-film-villa-palm-r {
+  right: 5%;
+  transform: rotate(10deg);
+}
+
+.ol-film-villa-landscape {
+  background: linear-gradient(180deg, transparent, rgb(35 55 30 / 42%));
+  bottom: 0;
+  height: 14%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 1;
+}
+
+.ol-film-villa-flare {
+  animation: olFilmFlare 4.5s ease-in-out infinite alternate;
+  background: radial-gradient(circle at 76% 18%, rgb(255 230 170 / 24%) 0%, transparent 44%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
+.ol-film-villa-vignette {
+  background: radial-gradient(ellipse at 50% 42%, transparent 28%, rgb(0 0 0 / 58%) 100%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 5;
+}
+
+/* Morph edge lines — villa collapses inward */
+.ol-film-villa-edge-line {
+  filter: drop-shadow(0 0 6px rgb(255 210 140 / 45%));
+  stroke: rgb(255 220 160 / 88%);
+  stroke-linecap: round;
+  stroke-width: 1.4;
+}
+
+.ol-film-villa-glow .ol-film-villa-edge-line {
+  animation: olFilmEdgePulse 1.2s ease-in-out infinite alternate;
+  stroke: rgb(255 235 200 / 98%);
+  stroke-width: 1.8;
+}
+
+@keyframes olFilmEdgePulse {
+  from {
+    filter: drop-shadow(0 0 4px rgb(255 210 140 / 35%));
+  }
+
+  to {
+    filter: drop-shadow(0 0 12px rgb(255 230 180 / 65%));
+  }
+}
+
+.ol-film-brand-villa-dissolve {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+.ol-film-brand-layer .ol-film-villa-hero-morph {
+  filter: saturate(1.1) brightness(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ol-film-lens-breathe-global,
+  .ol-film-ext-lens-breathe,
+  .ol-film-ext-light-streak,
+  .ol-film-villa-sky,
+  .ol-film-villa-sun,
+  .ol-film-villa-sun-rays,
+  .ol-film-sun-particle,
+  .ol-film-villa-glass,
+  .ol-film-villa-interior-glow {
+    animation: none !important;
+  }
+}

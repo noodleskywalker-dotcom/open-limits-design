@@ -8,16 +8,28 @@ export type CinematicFilmPhase =
   | "brand"
   | "enter";
 
-/** Luxury launch-film arc — ~12.5s to CTA, extended walkthrough for slower dolly. */
+/** Emotional arc pacing — building admired longer than drawing. Exterior = hero (3s). */
 export const CINEMATIC_FILM_PHASE_START_MS: Record<CinematicFilmPhase, number> = {
   idea: 0,
-  blueprint: 1500,
-  structure: 3500,
-  materials: 5500,
-  walkthrough: 7200,
-  exterior: 9800,
-  brand: 11400,
-  enter: 12600
+  blueprint: 1000,
+  structure: 3000,
+  materials: 5000,
+  walkthrough: 7000,
+  exterior: 9500,
+  brand: 12500,
+  enter: 14000
+};
+
+/** Emotional labels (debug / documentation — not shown in UI). */
+export const CINEMATIC_FILM_EMOTIONAL_ARC: Record<CinematicFilmPhase, string> = {
+  idea: "Dream",
+  blueprint: "Design",
+  structure: "Creation",
+  materials: "Craftsmanship",
+  walkthrough: "Luxury",
+  exterior: "Masterpiece",
+  brand: "Identity",
+  enter: "Enter"
 };
 
 export const CINEMATIC_FILM_PHASE_ORDER: CinematicFilmPhase[] = [
@@ -43,7 +55,7 @@ export const CINEMATIC_FILM_STORAGE_KEY = "ol-cinematic-film-dismissed";
 
 export const CINEMATIC_FILM_DURATION_MS = {
   ctaVisible: CINEMATIC_FILM_PHASE_START_MS.enter,
-  total: 14200
+  total: 16000
 };
 
 export function phaseAtOrAfter(current: CinematicFilmPhase, target: CinematicFilmPhase): boolean {

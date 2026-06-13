@@ -4,13 +4,13 @@ import { motion } from "framer-motion";
 import type { CinematicFilmPhase } from "@/lib/prototype/cinematic-film-constants";
 import { phaseAtOrAfter } from "@/lib/prototype/cinematic-film-constants";
 
-/** Softer hand-drawn reveal — longer ease, staggered pressure layers. */
+/** Faster blueprint draw — 2s phase window, building gets more screen time. */
 const pencilDraw = {
   hidden: { pathLength: 0, opacity: 0 },
   visible: (delay: number) => ({
     pathLength: 1,
     opacity: 1,
-    transition: { duration: 2.4, delay, ease: [0.16, 1, 0.3, 1] as const }
+    transition: { duration: 1.35, delay, ease: [0.16, 1, 0.3, 1] as const }
   })
 };
 
@@ -19,7 +19,7 @@ const pressureDraw = {
   visible: (delay: number) => ({
     pathLength: 1,
     opacity: 0.35,
-    transition: { duration: 2.8, delay: delay + 0.08, ease: [0.12, 1, 0.28, 1] as const }
+    transition: { duration: 1.5, delay: delay + 0.05, ease: [0.12, 1, 0.28, 1] as const }
   })
 };
 
@@ -49,9 +49,13 @@ export default function BlueprintDraw({ phase }: BlueprintDrawProps) {
   const idea = phase === "idea";
   const blueprint = phase === "blueprint";
   const showPlan = phaseAtOrAfter(phase, "blueprint");
+  const fadePlan = phaseAtOrAfter(phase, "structure");
 
   return (
-    <div aria-hidden className="ol-film-layer ol-film-blueprint">
+    <div
+      aria-hidden
+      className={`ol-film-layer ol-film-blueprint ${fadePlan ? "ol-film-blueprint-fading" : ""}`}
+    >
       <div className="ol-film-vellum" />
       <div className="ol-film-vellum-edge" />
 

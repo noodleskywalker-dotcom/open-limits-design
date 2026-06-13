@@ -12,6 +12,7 @@ import MaterialReveal from "@/components/prototype/cinematic-film/MaterialReveal
 import StructureRise from "@/components/prototype/cinematic-film/StructureRise";
 import {
   CINEMATIC_FILM_DURATION_MS,
+  CINEMATIC_FILM_EMOTIONAL_ARC,
   CINEMATIC_FILM_PHASE_START_MS,
   CINEMATIC_FILM_STORAGE_KEY,
   phaseAtOrAfter
@@ -34,9 +35,8 @@ function cameraForPhase(phase: string, isMobile: boolean) {
     case "materials":
       return { rotateX: isMobile ? 8 : 12, scale: 1.03, y: "-2%" };
     case "walkthrough":
-      return { rotateX: isMobile ? 5 : 8, scale: 1.05, y: "-3%" };
+      return { rotateX: isMobile ? 4 : 6, scale: 1.04, y: "-2.5%" };
     case "exterior":
-      return { rotateX: 0, scale: 1.06, y: 0 };
     default:
       return { rotateX: 0, scale: 1, y: 0 };
   }
@@ -96,7 +96,10 @@ export default function CinematicFilmIntro({
             <motion.div
               animate={cam}
               className="ol-film-stage-camera"
-              transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                duration: phase === "exterior" ? 3.2 : 2.2,
+                ease: [0.12, 1, 0.28, 1]
+              }}
             >
               <div className="ol-film-stage">
                 <BlueprintDraw phase={phase} />
@@ -149,6 +152,7 @@ export default function CinematicFilmIntro({
         <aside className="prototype-timing-hud ol-film-debug-hud">
           <strong>Cinematic film debug</strong>
           <span>Phase: {phase}</span>
+          <span>Arc: {CINEMATIC_FILM_EMOTIONAL_ARC[phase]}</span>
           <span>CTA at {(CINEMATIC_FILM_PHASE_START_MS.enter / 1000).toFixed(1)}s</span>
           <span>Total ~{(CINEMATIC_FILM_DURATION_MS.total / 1000).toFixed(1)}s</span>
         </aside>

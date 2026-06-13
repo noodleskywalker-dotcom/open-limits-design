@@ -13,14 +13,14 @@ const OUT = path.join(process.cwd(), "artifacts", "prototype-visuals", "open-lim
 
 /** Wait until phase engine reaches target (wall-clock sync). */
 const SHOTS = [
-  { name: "01-idea-0.8s", waitPhase: "idea", minMs: 600 },
-  { name: "02-blueprint-2.5s", waitPhase: "blueprint", minMs: 2000 },
-  { name: "03-structure-4.5s", waitPhase: "structure", minMs: 3800 },
-  { name: "04-materials-6.5s", waitPhase: "materials", minMs: 5800 },
-  { name: "05-interior-8.5s", waitPhase: "walkthrough", minMs: 7800 },
-  { name: "06-exterior-10.5s", waitPhase: "exterior", minMs: 10200 },
-  { name: "07-brand-12.0s", waitPhase: "brand", minMs: 11600 },
-  { name: "08-enter-13.0s", waitPhase: "enter", minMs: 12800 }
+  { name: "01-idea-0.6s", waitPhase: "idea", minMs: 500 },
+  { name: "02-blueprint-1.8s", waitPhase: "blueprint", minMs: 1500 },
+  { name: "03-structure-3.8s", waitPhase: "structure", minMs: 3300 },
+  { name: "04-materials-5.8s", waitPhase: "materials", minMs: 5300 },
+  { name: "05-interior-8.0s", waitPhase: "walkthrough", minMs: 7300 },
+  { name: "06-exterior-10.5s", waitPhase: "exterior", minMs: 9800 },
+  { name: "07-brand-13.0s", waitPhase: "brand", minMs: 12700 },
+  { name: "08-enter-14.5s", waitPhase: "enter", minMs: 14200 }
 ];
 
 async function main() {
@@ -31,12 +31,15 @@ async function main() {
     viewport: { width: 1280, height: 720 },
     recordVideo: { dir: OUT, size: { width: 1280, height: 720 } }
   });
+  await context.addInitScript(() => {
+    localStorage.removeItem("ol-cinematic-film-dismissed");
+  });
   const page = await context.newPage();
   await page.emulateMedia({ reducedMotion: "no-preference", colorScheme: "dark" });
 
   const t0 = Date.now();
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector(".ol-film-root[data-phase]", { timeout: 20000 });
+  await page.goto(`${BASE}${ROUTE}`, { waitUntil: "networkidle" });
+  await page.waitForSelector(".ol-film-root[data-phase]", { timeout: 30000 });
 
   const audit = [];
 
@@ -51,7 +54,7 @@ async function main() {
       await page.waitForTimeout(shot.minMs - elapsed);
     }
     /* Let in-phase animation settle */
-    await page.waitForTimeout(shot.waitPhase === "walkthrough" ? 900 : shot.waitPhase === "brand" ? 700 : 400);
+    await page.waitForTimeout(shot.waitPhase === "walkthrough" ? 900 : shot.waitPhase === "exterior" ? 1400 : shot.waitPhase === "brand" ? 900 : 350);
 
     const snap = await page.evaluate(() => {
       const rect = (sel) => {
@@ -75,10 +78,10 @@ async function main() {
   await context.close();
   await browser.close();
 
-  const videoFiles = fs.readdirSync(OUT).filter((f) => f.endsWith(".webm"));
+  const videoFiles = fs.readdirSync(OUT).filter((f) => f.endsWith(".webm") && f !== "full-animation.webm");
   if (videoFiles.length) {
     const latest = videoFiles.sort().pop();
-    fs.renameSync(path.join(OUT, latest), path.join(OUT, "full-animation.webm"));
+    fs.copyFileSync(path.join(OUT, latest), path.join(OUT, "full-animation.webm"));
   }
 
   try {
