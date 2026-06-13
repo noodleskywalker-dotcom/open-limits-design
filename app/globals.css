@@ -7676,3 +7676,557 @@ body[data-prototype] .ai-assistant {
     animation: none !important;
   }
 }
+
+/* ========== Open Limits Film Grade (.olfg-) — media-first intro ========== */
+.olfg-demo-shell {
+  background: #020202;
+}
+
+.olfg-root {
+  align-items: center;
+  background: #020202;
+  color: #fff;
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  place-items: center;
+  position: fixed;
+  z-index: 9999;
+}
+
+.olfg-root-loading {
+  background: #020202;
+}
+
+.olfg-root-exit {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.68s ease;
+}
+
+.olfg-stage-wrap {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.olfg-stage {
+  aspect-ratio: 16 / 9;
+  background: #030303;
+  height: min(100vh, 810px);
+  overflow: hidden;
+  position: relative;
+  width: min(100vw, 1440px);
+}
+
+.olfg-layer {
+  inset: 0;
+  position: absolute;
+}
+
+/* Media stack */
+.olfg-media-stack {
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.olfg-media-base {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgb(200 162 74 / 5%) 0%, transparent 55%),
+    linear-gradient(180deg, #080808 0%, #020202 100%);
+  z-index: 0;
+}
+
+.olfg-media-layer {
+  z-index: 1;
+}
+
+.olfg-media-video,
+.olfg-media-image {
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+}
+
+.olfg-media-grade {
+  inset: 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.olfg-media-grade-structure {
+  background: linear-gradient(180deg, rgb(255 180 80 / 10%) 0%, transparent 40%, rgb(0 0 0 / 35%) 100%);
+}
+
+.olfg-media-grade-interior {
+  background:
+    radial-gradient(ellipse at 60% 25%, rgb(255 200 120 / 18%) 0%, transparent 50%),
+    linear-gradient(180deg, rgb(255 160 60 / 8%) 0%, transparent 45%, rgb(0 0 0 / 40%) 100%);
+}
+
+.olfg-media-grade-exterior {
+  background:
+    radial-gradient(ellipse at 72% 12%, rgb(255 180 70 / 28%) 0%, transparent 48%),
+    linear-gradient(180deg, rgb(255 140 50 / 14%) 0%, transparent 38%, rgb(0 0 0 / 45%) 100%);
+}
+
+.olfg-media-veil {
+  background: linear-gradient(180deg, rgb(0 0 0 / 25%) 0%, transparent 30%, rgb(0 0 0 / 55%) 100%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.olfg-media-shimmer {
+  animation: olfgShimmer 4.5s ease-in-out infinite alternate;
+  background: linear-gradient(108deg, transparent 40%, rgb(255 255 255 / 8%) 50%, transparent 60%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
+@keyframes olfgShimmer {
+  from {
+    opacity: 0.25;
+    transform: translateX(-3%);
+  }
+
+  to {
+    opacity: 0.55;
+    transform: translateX(4%);
+  }
+}
+
+.olfg-media-fade-black {
+  background: #020202;
+  z-index: 5;
+}
+
+/* Blueprint overlay */
+.olfg-blueprint-stack {
+  pointer-events: none;
+  z-index: 2;
+}
+
+.olfg-blueprint {
+  z-index: 2;
+}
+
+.olfg-vellum {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.07'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 48% 42%, rgb(255 248 235 / 7%) 0%, transparent 55%),
+    linear-gradient(180deg, rgb(12 14 20 / 88%) 0%, rgb(4 4 6 / 94%) 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.olfg-vellum-frame {
+  border: 1px solid rgb(200 162 74 / 10%);
+  box-shadow: inset 0 0 50px rgb(200 162 74 / 5%);
+  inset: 2.5%;
+  position: absolute;
+}
+
+.olfg-gold-point {
+  background: radial-gradient(circle, rgb(255 230 170 / 95%) 0%, rgb(200 162 74 / 35%) 45%, transparent 70%);
+  border-radius: 50%;
+  height: 7px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px;
+  z-index: 3;
+}
+
+.olfg-svg {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.olfg-stroke {
+  fill: none;
+  stroke: rgb(240 244 248 / 72%);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 0.85;
+}
+
+.olfg-stroke-gold {
+  stroke: rgb(200 162 74 / 90%);
+  stroke-width: 1;
+}
+
+.olfg-stroke-room {
+  stroke: rgb(240 244 248 / 58%);
+}
+
+.olfg-stroke-pool {
+  stroke: rgb(120 180 200 / 50%);
+  stroke-dasharray: 4 6;
+}
+
+.olfg-stroke-dim {
+  stroke: rgb(200 162 74 / 50%);
+  stroke-width: 0.65;
+}
+
+.olfg-grid-line {
+  stroke: rgb(200 162 74 / 7%);
+  stroke-width: 0.45;
+}
+
+.olfg-annotation {
+  fill: rgb(200 162 74 / 52%);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.olfg-annotation-title {
+  fill: rgb(200 162 74 / 68%);
+  font-size: 12px;
+}
+
+.olfg-annotation-n {
+  fill: rgb(200 162 74 / 75%);
+  font-size: 11px;
+}
+
+/* Atmosphere */
+.olfg-vignette {
+  background: radial-gradient(ellipse at 50% 42%, transparent 20%, rgb(0 0 0 / 88%) 100%);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.olfg-vignette-hero {
+  background: radial-gradient(ellipse at 50% 38%, transparent 15%, rgb(0 0 0 / 92%) 100%);
+}
+
+.olfg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  inset: 0;
+  mix-blend-mode: soft-light;
+  opacity: 0.22;
+  pointer-events: none;
+  position: absolute;
+  z-index: 7;
+}
+
+.olfg-fx {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 8;
+}
+
+.olfg-haze {
+  background:
+    linear-gradient(180deg, rgb(255 190 100 / 10%) 0%, transparent 32%),
+    linear-gradient(0deg, rgb(255 160 80 / 6%) 0%, transparent 20%);
+  inset: 0;
+  position: absolute;
+}
+
+.olfg-bloom {
+  animation: olfgBloom 5s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 70% 18%, rgb(255 220 150 / 16%) 0%, transparent 50%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olfgBloom {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 0.85;
+  }
+}
+
+.olfg-light-streak {
+  animation: olfgLightStreak 5.5s ease-in-out infinite alternate;
+  background: linear-gradient(118deg, transparent 42%, rgb(255 230 190 / 10%) 50%, transparent 58%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olfgLightStreak {
+  from {
+    opacity: 0.2;
+    transform: translateX(-2%);
+  }
+
+  to {
+    opacity: 0.5;
+    transform: translateX(3%);
+  }
+}
+
+.olfg-lens-breathe {
+  animation: olfgLensBreathe 5s ease-in-out infinite;
+  backdrop-filter: blur(0.3px);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olfgLensBreathe {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.olfg-dust-field {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.olfg-dust {
+  animation: olfgDust calc(5s + (var(--i) * 0.14s)) ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.22s);
+  background: rgb(255 235 200 / 45%);
+  border-radius: 50%;
+  height: 2px;
+  left: calc((var(--i) * 11.7%) % 100%);
+  position: absolute;
+  top: calc((var(--i) * 16.3%) % 100%);
+  width: 2px;
+}
+
+@keyframes olfgDust {
+  from {
+    opacity: 0.08;
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    opacity: 0.45;
+    transform: translate3d(10px, -16px, 0);
+  }
+}
+
+.olfg-sun-particles {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.olfg-sun-particle {
+  animation: olfgSunParticle calc(4s + (var(--i) * 0.2s)) ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.3s);
+  background: radial-gradient(circle, rgb(255 235 200 / 65%) 0%, transparent 70%);
+  border-radius: 50%;
+  height: calc(2px + (var(--i) % 2));
+  left: calc(52% + (var(--i) * 2.8%) % 40%);
+  position: absolute;
+  top: calc(10% + (var(--i) * 3.8%) % 38%);
+  width: calc(2px + (var(--i) % 2));
+}
+
+@keyframes olfgSunParticle {
+  from {
+    opacity: 0.12;
+    transform: scale(0.85);
+  }
+
+  to {
+    opacity: 0.55;
+    transform: scale(1.15) translate3d(6px, -8px, 0);
+  }
+}
+
+/* Logo reveal */
+.olfg-logo-layer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.olfg-logo-bloom {
+  animation: olfgLogoBloom 1.2s ease forwards;
+  background: radial-gradient(circle at 50% 50%, rgb(255 220 160 / 28%) 0%, transparent 58%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olfgLogoBloom {
+  from {
+    opacity: 0.7;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+
+.olfg-svg-logo {
+  height: 100%;
+  opacity: 0.88;
+  position: absolute;
+  width: 100%;
+}
+
+.olfg-logo-gold-line {
+  filter: drop-shadow(0 0 8px rgb(200 162 74 / 45%));
+  stroke: rgb(255 230 190 / 95%);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.olfg-logo-frame {
+  fill: none;
+  stroke: rgb(200 162 74 / 78%);
+  stroke-width: 1;
+}
+
+.olfg-logo-accent {
+  fill: none;
+  stroke: rgb(255 220 150 / 82%);
+  stroke-width: 1.3;
+}
+
+.olfg-logo-lockup {
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+.olfg-logo-name {
+  color: rgb(244 240 230 / 95%);
+  font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.olfg-logo-tag {
+  color: rgb(200 162 74 / 80%);
+  font-size: clamp(0.62rem, 1.3vw, 0.82rem);
+  letter-spacing: 0.3em;
+  margin: 0.8rem 0 0;
+  text-transform: uppercase;
+}
+
+/* Controls */
+.olfg-skip {
+  z-index: 10001;
+}
+
+.olfg-enter-wrap {
+  bottom: 10%;
+  left: 50%;
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 10001;
+}
+
+.olfg-enter-btn {
+  background: transparent;
+  border: 1px solid rgb(200 162 74 / 62%);
+  border-radius: 999px;
+  color: rgb(244 240 230 / 92%);
+  cursor: pointer;
+  font-size: clamp(0.68rem, 1.5vw, 0.74rem);
+  letter-spacing: 0.22em;
+  min-width: min(280px, 88vw);
+  padding: 1rem 2.2rem;
+  text-transform: uppercase;
+  transition:
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    color 0.4s ease;
+}
+
+.olfg-enter-btn:hover {
+  border-color: rgb(200 162 74 / 92%);
+  box-shadow: 0 0 28px rgb(200 162 74 / 18%);
+  color: rgb(255 245 230 / 98%);
+}
+
+.olfg-debug-hud {
+  z-index: 10002;
+}
+
+.olfg-root[data-olfg-debug="true"] .olfg-stage {
+  outline: 2px solid #ff3b30;
+  outline-offset: 3px;
+}
+
+/* Mobile */
+.olfg-root-mobile .olfg-grain {
+  display: none;
+}
+
+.olfg-root-mobile .olfg-stage {
+  height: 100vh;
+  width: 100vw;
+}
+
+.olfg-stage-wrap-mobile {
+  height: 100dvh;
+  width: 100vw;
+}
+
+@media (max-width: 768px) {
+  .olfg-media-shimmer,
+  .olfg-lens-breathe {
+    display: none;
+  }
+
+  .olfg-media-grade {
+    opacity: 0.85;
+  }
+
+  .olfg-dust {
+    animation-duration: 7s;
+  }
+
+  .olfg-enter-btn {
+    min-width: min(300px, 92vw);
+    padding: 1.05rem 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olfg-bloom,
+  .olfg-light-streak,
+  .olfg-lens-breathe,
+  .olfg-dust,
+  .olfg-sun-particle,
+  .olfg-media-shimmer {
+    animation: none !important;
+  }
+}
