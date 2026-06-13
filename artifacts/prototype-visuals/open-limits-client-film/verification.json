@@ -1,0 +1,102 @@
+{
+  "checks": {
+    "afterMount": {
+      "phase": "idea",
+      "loading": false,
+      "stageW": 1280,
+      "stageH": 720,
+      "hasVillaCss": false
+    }
+  },
+  "shots": [
+    {
+      "shot": "01-idea",
+      "phase": "blueprint",
+      "stageW": 1280,
+      "stageH": 720,
+      "imgs": [],
+      "videos": [],
+      "visiblePoster": null,
+      "hasVillaCss": false,
+      "blackScreen": false
+    },
+    {
+      "shot": "02-blueprint",
+      "phase": "structure",
+      "stageW": 1280,
+      "stageH": 720,
+      "imgs": [
+        "/intro-film/poster-structure.jpg",
+        "/intro-film/poster-interior.jpg",
+        "/images/legacy/hero-luxury-interior-01.jpeg"
+      ],
+      "videos": [],
+      "visiblePoster": "/intro-film/poster-structure.jpg",
+      "hasVillaCss": false,
+      "blackScreen": false
+    },
+    {
+      "shot": "03-interior",
+      "phase": "interior",
+      "stageW": 1280,
+      "stageH": 720,
+      "imgs": [
+        "/intro-film/poster-structure.jpg",
+        "/intro-film/poster-interior.jpg",
+        "/images/legacy/hero-luxury-interior-01.jpeg"
+      ],
+      "videos": [],
+      "visiblePoster": "/intro-film/poster-structure.jpg",
+      "hasVillaCss": false,
+      "blackScreen": false
+    },
+    {
+      "shot": "04-exterior",
+      "phase": "exterior",
+      "stageW": 1280,
+      "stageH": 720,
+      "imgs": [
+        "/intro-film/poster-structure.jpg",
+        "/intro-film/poster-interior.jpg",
+        "/images/legacy/hero-luxury-interior-01.jpeg"
+      ],
+      "videos": [],
+      "visiblePoster": "/intro-film/poster-structure.jpg",
+      "hasVillaCss": false,
+      "blackScreen": false
+    },
+    {
+      "shot": "05-logo",
+      "phase": "enter",
+      "stageW": 1280,
+      "stageH": 720,
+      "imgs": [
+        "/intro-film/poster-structure.jpg",
+        "/intro-film/poster-interior.jpg",
+        "/images/legacy/hero-luxury-interior-01.jpeg"
+      ],
+      "videos": [],
+      "visiblePoster": "/intro-film/poster-structure.jpg",
+      "hasVillaCss": false,
+      "blackScreen": false
+    },
+    {
+      "shot": "06-enter",
+      "phase": "enter",
+      "stageW": 1280,
+      "stageH": 720,
+      "imgs": [
+        "/intro-film/poster-structure.jpg",
+        "/intro-film/poster-interior.jpg",
+        "/images/legacy/hero-luxury-interior-01.jpeg"
+      ],
+      "videos": [],
+      "visiblePoster": "/intro-film/poster-structure.jpg",
+      "hasVillaCss": false,
+      "blackScreen": false
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}
