@@ -1,0 +1,389 @@
+/* Creation-first intro — zero media. Prefix: olcrt- */
+
+.olcrt-demo-shell {
+  background: #000;
+}
+
+.olcrt-root {
+  align-items: center;
+  background: #000;
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  min-height: 100dvh;
+  overflow: hidden;
+  place-items: center;
+  position: fixed;
+  z-index: 200;
+}
+
+.olcrt-root-loading {
+  background: #000;
+}
+
+.olcrt-root-exit {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.68s ease;
+}
+
+.olcrt-stage-wrap {
+  perspective: 1600px;
+  position: relative;
+  width: min(96vw, 1200px);
+  z-index: 2;
+}
+
+.olcrt-stage-wrap-mobile {
+  width: 100vw;
+}
+
+.olcrt-stage {
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.olcrt-black-base {
+  background: #000;
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.olcrt-layer {
+  inset: 0;
+  position: absolute;
+}
+
+.olcrt-canvas-wrap {
+  inset: 0;
+  position: absolute;
+  z-index: 3;
+}
+
+.olcrt-canvas-wrap canvas {
+  display: block;
+}
+
+/* Blueprint SVG layers */
+.olcrt-blueprint-layer {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.olcrt-svg {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.olcrt-gold-point {
+  animation: olcrtGoldPulse 2.4s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgb(255 230 170 / 95%) 0%, rgb(200 162 74 / 35%) 45%, transparent 72%);
+  border-radius: 50%;
+  height: 10px;
+  left: 50%;
+  position: absolute;
+  top: 62%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  z-index: 2;
+}
+
+@keyframes olcrtGoldPulse {
+  from {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+.olcrt-stroke {
+  fill: none;
+  stroke: rgb(120 185 240 / 82%);
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1.4;
+}
+
+.olcrt-stroke-gold {
+  stroke: rgb(200 162 74 / 92%);
+  stroke-width: 1.6;
+}
+
+.olcrt-stroke-pencil {
+  stroke-width: 2.2;
+}
+
+.olcrt-stroke-room {
+  stroke: rgb(100 170 235 / 72%);
+}
+
+.olcrt-stroke-pool {
+  stroke: rgb(90 200 255 / 68%);
+  stroke-dasharray: 5 3;
+}
+
+.olcrt-stroke-dim {
+  stroke: rgb(140 190 235 / 45%);
+  stroke-width: 0.7;
+}
+
+.olcrt-pencil-tip {
+  fill: rgb(200 162 74 / 95%);
+}
+
+.olcrt-grid-line {
+  stroke: rgb(100 160 220 / 10%);
+  stroke-width: 0.45;
+}
+
+.olcrt-annotation {
+  fill: rgb(130 190 240 / 52%);
+  font-family: ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.olcrt-annotation-title {
+  fill: rgb(160 210 255 / 38%);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.olcrt-annotation-scale {
+  fill: rgb(140 200 255 / 48%);
+  font-size: 7px;
+}
+
+.olcrt-annotation-n {
+  fill: rgb(200 162 74 / 75%);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Villa atmosphere — procedural, no images */
+.olcrt-villa-atmo {
+  pointer-events: none;
+  z-index: 5;
+}
+
+.olcrt-villa-sky {
+  background: linear-gradient(180deg, #0a0806 0%, #1a1208 35%, #2a1a0c 70%, #1a1008 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.olcrt-villa-sun {
+  animation: olcrtSunGlow 5s ease-in-out infinite alternate;
+  background: radial-gradient(circle at 72% 22%, rgb(255 200 120 / 28%) 0%, rgb(255 160 80 / 8%) 28%, transparent 52%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olcrtSunGlow {
+  from {
+    opacity: 0.65;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.olcrt-villa-haze {
+  background: linear-gradient(180deg, transparent 40%, rgb(255 180 100 / 6%) 75%, rgb(255 140 60 / 10%) 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.olcrt-villa-ground-glow {
+  background: radial-gradient(ellipse 90% 40% at 50% 88%, rgb(255 170 90 / 16%) 0%, transparent 55%);
+  inset: 0;
+  position: absolute;
+}
+
+.olcrt-villa-rays {
+  animation: olcrtRays 8s ease-in-out infinite alternate;
+  background: linear-gradient(118deg, transparent 42%, rgb(255 210 140 / 6%) 50%, transparent 58%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olcrtRays {
+  from {
+    opacity: 0.35;
+    transform: translateX(-2%);
+  }
+
+  to {
+    opacity: 0.75;
+    transform: translateX(3%);
+  }
+}
+
+.olcrt-vignette {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 6;
+}
+
+.olcrt-vignette-warm {
+  background: radial-gradient(ellipse at 50% 45%, transparent 18%, rgb(0 0 0 / 72%) 100%);
+}
+
+/* Brand morph */
+.olcrt-brand-layer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 7;
+}
+
+.olcrt-brand-bloom {
+  background: radial-gradient(circle at 50% 50%, rgb(200 162 74 / 14%) 0%, transparent 55%);
+  height: 60%;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+}
+
+.olcrt-villa-edge-line {
+  stroke: rgb(220 200 170 / 88%);
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.olcrt-logo-gold-line {
+  stroke: rgb(200 162 74 / 95%);
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+.olcrt-logo-frame {
+  fill: none;
+  stroke: rgb(245 240 232 / 92%);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.olcrt-logo-accent {
+  fill: none;
+  stroke: rgb(200 162 74 / 88%);
+  stroke-linecap: round;
+  stroke-width: 1.4;
+}
+
+.olcrt-logo-lockup {
+  margin-top: 1.5rem;
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+.olcrt-logo-name {
+  color: rgb(245 240 232 / 94%);
+  font-family: var(--font-heading, Georgia, serif);
+  font-size: clamp(0.85rem, 2.2vw, 1.15rem);
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.olcrt-logo-tag {
+  color: rgb(245 240 232 / 42%);
+  font-size: clamp(0.55rem, 1.4vw, 0.7rem);
+  letter-spacing: 0.22em;
+  margin: 0.55rem 0 0;
+  text-transform: uppercase;
+}
+
+/* Controls */
+.olcrt-skip {
+  background: rgb(0 0 0 / 35%);
+  border: 1px solid rgb(245 240 232 / 12%);
+  border-radius: 2px;
+  color: rgb(245 240 232 / 55%);
+  cursor: pointer;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  padding: 0.45rem 0.85rem;
+  position: fixed;
+  right: 1.25rem;
+  text-transform: uppercase;
+  top: 1.25rem;
+  transition: border-color 0.2s, color 0.2s;
+  z-index: 210;
+}
+
+.olcrt-skip:hover {
+  border-color: rgb(245 240 232 / 28%);
+  color: rgb(245 240 232 / 90%);
+}
+
+.olcrt-enter-wrap {
+  align-items: center;
+  bottom: 2.5rem;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  z-index: 210;
+}
+
+.olcrt-enter-btn {
+  background: transparent;
+  border: 1px solid rgb(245 240 232 / 35%);
+  border-radius: 2px;
+  color: rgb(245 240 232 / 92%);
+  cursor: pointer;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  padding: 0.85rem 2rem;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.olcrt-enter-btn:hover {
+  background: rgb(245 240 232 / 8%);
+  border-color: rgb(245 240 232 / 60%);
+}
+
+.olcrt-debug-hud {
+  z-index: 220;
+}
+
+.olcrt-root-mobile .olcrt-stage {
+  aspect-ratio: auto;
+  height: 100dvh;
+  width: 100vw;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olcrt-gold-point,
+  .olcrt-villa-sun,
+  .olcrt-villa-rays {
+    animation: none !important;
+  }
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Capture screenshots + video for /prototype/open-limits-client-film
+ * Capture screenshots + video for /prototype/open-limits-client-film (creation-first intro)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -11,12 +11,12 @@ const ROUTE = "/prototype/open-limits-client-film";
 const OUT = path.join(process.cwd(), "artifacts", "prototype-visuals", "open-limits-client-film");
 
 const SHOTS = [
-  { name: "01-idea", waitPhase: "idea", minMs: 650 },
-  { name: "02-blueprint", waitPhase: "blueprint", minMs: 1700 },
-  { name: "03-interior", waitPhase: "interior", minMs: 5200 },
-  { name: "04-exterior", waitPhase: "exterior", minMs: 7600 },
-  { name: "05-logo", waitPhase: "logo", minMs: 9900 },
-  { name: "06-enter", waitPhase: "enter", minMs: 11200 }
+  { name: "01-pencil", waitPhase: "pencil", minMs: 800 },
+  { name: "02-blueprint", waitPhase: "blueprint", minMs: 4000 },
+  { name: "03-transform", waitPhase: "transform", minMs: 9500 },
+  { name: "04-villa", waitPhase: "villa", minMs: 14500 },
+  { name: "05-brand", waitPhase: "brand", minMs: 18500 },
+  { name: "06-enter", waitPhase: "enter", minMs: 21500 }
 ];
 
 async function main() {
@@ -28,6 +28,7 @@ async function main() {
     recordVideo: { dir: OUT, size: { width: 1280, height: 720 } }
   });
   await context.addInitScript(() => {
+    localStorage.removeItem("ol-creation-intro-dismissed");
     localStorage.removeItem("ol-client-film-dismissed");
     const nativeMatchMedia = window.matchMedia.bind(window);
     window.matchMedia = (query) => {
@@ -47,28 +48,35 @@ async function main() {
   await page.emulateMedia({ reducedMotion: "no-preference", colorScheme: "dark" });
 
   const errors = [];
+  const mediaRequests = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => {
     if (m.type() === "error") errors.push(m.text());
   });
+  page.on("request", (req) => {
+    const url = req.url();
+    if (/intro-film/i.test(url)) {
+      mediaRequests.push(url);
+    }
+  });
 
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: "load" });
-  await page.waitForSelector(".olcf-root[data-phase]", { timeout: 30000 });
+  await page.goto(`${BASE}${ROUTE}?debug=1`, { waitUntil: "load" });
+  await page.waitForSelector(".olcrt-root[data-phase]", { timeout: 30000 });
 
   const t0 = Date.now();
   const audit = [];
 
   for (const shot of SHOTS) {
     await page.waitForFunction(
-      (phase) => document.querySelector(".olcf-root")?.getAttribute("data-phase") === phase,
+      (phase) => document.querySelector(".olcrt-root")?.getAttribute("data-phase") === phase,
       shot.waitPhase,
-      { timeout: 20000 }
+      { timeout: 30000 }
     );
     const elapsed = Date.now() - t0;
     if (elapsed < shot.minMs) {
       await page.waitForTimeout(shot.minMs - elapsed);
     }
-    await page.waitForTimeout(shot.waitPhase === "exterior" ? 1200 : shot.waitPhase === "logo" ? 800 : 450);
+    await page.waitForTimeout(shot.waitPhase === "transform" ? 900 : shot.waitPhase === "brand" ? 700 : 450);
 
     const snap = await page.evaluate(() => {
       const rect = (sel) => {
@@ -77,10 +85,13 @@ async function main() {
         const r = el.getBoundingClientRect();
         return { w: Math.round(r.width), h: Math.round(r.height) };
       };
+      const root = document.querySelector(".olcrt-root");
       return {
-        phase: document.querySelector(".olcf-root")?.getAttribute("data-phase"),
-        stage: rect(".olcf-stage"),
-        hasMedia: !!document.querySelector(".olcf-media-image, .olcf-media-video")
+        phase: root?.getAttribute("data-phase"),
+        stage: rect(".olcrt-stage"),
+        hasCanvas: !!document.querySelector(".olcrt-canvas-wrap canvas"),
+        hasBlueprint: !!document.querySelector(".olcrt-svg-plan"),
+        hasIntroMedia: !!root?.querySelector("img, video")
       };
     });
 
@@ -114,8 +125,18 @@ async function main() {
     /* optional */
   }
 
-  fs.writeFileSync(path.join(OUT, "audit.json"), JSON.stringify({ audit, errors }, null, 2));
-  console.log(JSON.stringify({ out: OUT, audit, errors }, null, 2));
+  const verification = {
+    route: ROUTE,
+    architecture: "creation-first",
+    zeroMediaRequests: mediaRequests.length === 0,
+    mediaRequests,
+    zeroMediaDom: audit.every((a) => !a.hasIntroMedia),
+    phasesCaptured: audit.map((a) => a.phase)
+  };
+
+  fs.writeFileSync(path.join(OUT, "verification.json"), JSON.stringify(verification, null, 2));
+  fs.writeFileSync(path.join(OUT, "audit.json"), JSON.stringify({ audit, errors, verification }, null, 2));
+  console.log(JSON.stringify({ out: OUT, verification, audit, errors }, null, 2));
 }
 
 main().catch((err) => {

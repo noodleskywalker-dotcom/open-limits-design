@@ -1,31 +1,26 @@
-# Client film intro media
+# Creation-first intro — zero media
 
-Media assets for `/prototype/open-limits-client-film`.
+**Route:** `/prototype/open-limits-client-film`
 
-## Bundled (current)
+This prototype no longer depends on photos, renders, or videos.
 
-| File | Source | Status |
-|------|--------|--------|
-| `poster-interior.jpg` | `hero-luxury-interior-02.jpeg` — grand living, arches, chandelier | ✅ Ready |
-| `interior-walkthrough.webm` | WordPress project clip `3.5.mp4` (luxury living walkthrough) | ✅ Ready |
-| `poster-structure.jpg` | Architecture foyer render | ✅ Ready |
-| `poster-blueprint.jpg` | Architecture hero still | ✅ Ready |
+## Architecture
 
-## Required — client must supply
+Six phases, all procedural:
 
-| File | Requirement | Status |
-|------|-------------|--------|
-| `poster-exterior.jpg` | **Real exterior villa / project render.** Golden hour preferred. Not bedroom. Not interior. | ❌ **MISSING** — no exterior exists in legacy or WordPress library |
-| `exterior-villa-reveal.webm` | Exterior film clip (optional for prototype, required for 9+/10) | ❌ **MISSING** |
+1. **Pencil** — gold point + stroke draw on black
+2. **Blueprint** — villa floorplan SVG (dimensions, rooms, elevation, scale)
+3. **Transform** — React Three Fiber wall extrusion from blueprint geometry
+4. **Villa** — stylized 3D form + procedural golden-hour atmosphere
+5. **Brand** — villa lines collapse into Open Limits logo paths
+6. **Enter** — vector lockup + Enter Experience
 
-See `MEDIA-GAP.md` for audit details.
+## Success test
 
-## Optional video clips
+Delete every file under `public/intro-film/` — the intro still runs.
 
-- `structure-rise.webm`
-- `blueprint-overlay.webm`
-- `logo-reveal.webm`
+No `<img>`, no `<video>`, no `/intro-film/` network requests.
 
-When videos are missing, the intro uses poster photography with cinematic Ken Burns drift. SVG is used only for blueprint linework and logo draw — not for fake 3D geometry.
+## Debug
 
-Debug probe: append `?debug=1` to the prototype route.
+`/prototype/open-limits-client-film?debug=1` — phase HUD + replay FAB

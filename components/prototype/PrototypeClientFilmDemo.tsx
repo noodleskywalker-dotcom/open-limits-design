@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import ClientFilmIntro from "@/components/prototype/client-film/ClientFilmIntro";
+import CreationIntro from "@/components/prototype/creation/CreationIntro";
 import PrototypeShowroomMock from "@/components/prototype/PrototypeShowroomMock";
 
 type PrototypeClientFilmDemoProps = {
   companyName: string;
-  logoImageUrl: string | null;
+  logoImageUrl?: string | null;
   tagline: string;
   finalRenderUrl?: string | null;
   debug?: boolean;
@@ -14,9 +14,7 @@ type PrototypeClientFilmDemoProps = {
 
 export default function PrototypeClientFilmDemo({
   companyName,
-  logoImageUrl,
   tagline,
-  finalRenderUrl,
   debug = false
 }: PrototypeClientFilmDemoProps) {
   const [runId, setRunId] = useState(0);
@@ -30,14 +28,12 @@ export default function PrototypeClientFilmDemo({
   }, []);
 
   return (
-    <div className="prototype-demo-shell olcf-demo-shell">
+    <div className="prototype-demo-shell olcrt-demo-shell">
       {showIntro ? (
-        <ClientFilmIntro
+        <CreationIntro
           key={runId}
           companyName={companyName}
           debug={debug}
-          finalRenderUrl={finalRenderUrl}
-          logoImageUrl={logoImageUrl}
           onEnter={() => {
             setShowIntro(false);
             setShowShowroom(true);

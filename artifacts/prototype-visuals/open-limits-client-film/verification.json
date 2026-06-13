@@ -1,31 +1,15 @@
 {
   "route": "/prototype/open-limits-client-film",
-  "status": "PASS_PROTOTYPE_FAIL_HOMEPAGE",
-  "prototypeSystem": "PASS",
-  "homepageApproved": false,
-  "doNotMerge": true,
-  "capturedAt": "2026-06-13T05:35:00.000Z",
-  "checks": {
-    "build": "pass",
-    "routeHttp200": true,
-    "interiorVideoActive": true,
-    "interiorVideoSrc": "/intro-film/interior-walkthrough.webm",
-    "interiorPosterSrc": "/intro-film/poster-interior.jpg",
-    "interiorPosterSource": "hero-luxury-interior-02.jpeg",
-    "exteriorPosterPresent": false,
-    "exteriorVideoPresent": false,
-    "exteriorPhaseShowsMedia": false,
-    "exteriorInteriorMisuse": false,
-    "structureVideoPresent": false
-  },
-  "mediaChanges": {
-    "poster-interior.jpg": "Upgraded to hero-luxury-interior-02.jpeg (grand living)",
-    "interior-walkthrough.webm": "Added from openlimitsdesign.com 3.5.mp4 (VP9 WebM)",
-    "poster-exterior.jpg": "REMOVED — was bedroom interior (JAZ Residence), no valid exterior in library"
-  },
-  "blockers": {
-    "poster-exterior.jpg": "No exterior villa render exists in legacy or WordPress media — client must deliver",
-    "exterior-villa-reveal.webm": "Not available — required for 9+/10"
-  },
-  "note": "Interior media upgraded with real project walkthrough. Exterior phase intentionally empty until client delivers true exterior assets. See public/intro-film/MEDIA-GAP.md"
+  "architecture": "creation-first",
+  "zeroMediaRequests": true,
+  "mediaRequests": [],
+  "zeroMediaDom": true,
+  "phasesCaptured": [
+    "pencil",
+    "blueprint",
+    "transform",
+    "villa",
+    "brand",
+    "enter"
+  ]
 }

@@ -1,72 +1,92 @@
 {
   "audit": [
     {
-      "shot": "01-idea",
-      "phase": "blueprint",
+      "shot": "01-pencil",
+      "phase": "pencil",
       "stage": {
-        "w": 1280,
-        "h": 720
+        "w": 1200,
+        "h": 675
       },
-      "hasMedia": false,
-      "consoleErrors": 6
+      "hasCanvas": false,
+      "hasBlueprint": false,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
     },
     {
       "shot": "02-blueprint",
       "phase": "blueprint",
       "stage": {
-        "w": 1280,
-        "h": 720
+        "w": 1200,
+        "h": 675
       },
-      "hasMedia": false,
-      "consoleErrors": 6
+      "hasCanvas": false,
+      "hasBlueprint": true,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
     },
     {
-      "shot": "03-interior",
-      "phase": "interior",
+      "shot": "03-transform",
+      "phase": "transform",
       "stage": {
-        "w": 1280,
-        "h": 720
+        "w": 1200,
+        "h": 675
       },
-      "hasMedia": true,
-      "consoleErrors": 6
+      "hasCanvas": true,
+      "hasBlueprint": true,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
     },
     {
-      "shot": "04-exterior",
-      "phase": "exterior",
+      "shot": "04-villa",
+      "phase": "villa",
       "stage": {
-        "w": 1280,
-        "h": 720
+        "w": 1200,
+        "h": 675
       },
-      "hasMedia": true,
-      "consoleErrors": 6
+      "hasCanvas": true,
+      "hasBlueprint": true,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
     },
     {
-      "shot": "05-logo",
-      "phase": "logo",
+      "shot": "05-brand",
+      "phase": "brand",
       "stage": {
-        "w": 1280,
-        "h": 720
+        "w": 1200,
+        "h": 675
       },
-      "hasMedia": false,
-      "consoleErrors": 6
+      "hasCanvas": true,
+      "hasBlueprint": false,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
     },
     {
       "shot": "06-enter",
       "phase": "enter",
       "stage": {
-        "w": 1280,
-        "h": 720
+        "w": 1200,
+        "h": 675
       },
-      "hasMedia": true,
-      "consoleErrors": 6
+      "hasCanvas": false,
+      "hasBlueprint": false,
+      "hasIntroMedia": false,
+      "consoleErrors": 0
     }
   ],
-  "errors": [
-    "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "Failed to load resource: the server responded with a status of 404 (Not Found)"
-  ]
+  "errors": [],
+  "verification": {
+    "route": "/prototype/open-limits-client-film",
+    "architecture": "creation-first",
+    "zeroMediaRequests": true,
+    "mediaRequests": [],
+    "zeroMediaDom": true,
+    "phasesCaptured": [
+      "pencil",
+      "blueprint",
+      "transform",
+      "villa",
+      "brand",
+      "enter"
+    ]
+  }
 }
