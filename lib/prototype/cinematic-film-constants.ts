@@ -8,16 +8,16 @@ export type CinematicFilmPhase =
   | "brand"
   | "enter";
 
-/** Luxury launch-film arc — ~12s to CTA. */
+/** Luxury launch-film arc — ~12.5s to CTA, extended walkthrough for slower dolly. */
 export const CINEMATIC_FILM_PHASE_START_MS: Record<CinematicFilmPhase, number> = {
   idea: 0,
   blueprint: 1500,
   structure: 3500,
   materials: 5500,
   walkthrough: 7200,
-  exterior: 9000,
-  brand: 10800,
-  enter: 12000
+  exterior: 9800,
+  brand: 11400,
+  enter: 12600
 };
 
 export const CINEMATIC_FILM_PHASE_ORDER: CinematicFilmPhase[] = [
@@ -43,11 +43,15 @@ export const CINEMATIC_FILM_STORAGE_KEY = "ol-cinematic-film-dismissed";
 
 export const CINEMATIC_FILM_DURATION_MS = {
   ctaVisible: CINEMATIC_FILM_PHASE_START_MS.enter,
-  total: 13500
+  total: 14200
 };
 
 export function phaseAtOrAfter(current: CinematicFilmPhase, target: CinematicFilmPhase): boolean {
   return (
     CINEMATIC_FILM_PHASE_ORDER.indexOf(current) >= CINEMATIC_FILM_PHASE_ORDER.indexOf(target)
   );
+}
+
+export function phaseBefore(current: CinematicFilmPhase, target: CinematicFilmPhase): boolean {
+  return CINEMATIC_FILM_PHASE_ORDER.indexOf(current) < CINEMATIC_FILM_PHASE_ORDER.indexOf(target);
 }

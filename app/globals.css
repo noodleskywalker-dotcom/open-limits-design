@@ -6713,3 +6713,495 @@ body[data-prototype] .ai-assistant {
     animation: none !important;
   }
 }
+
+/* —— v2 luxury pass —— */
+.ol-film-vellum {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.08'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 48% 42%, rgb(255 248 235 / 9%) 0%, transparent 55%),
+    linear-gradient(180deg, rgb(18 22 32 / 92%) 0%, rgb(8 10 16 / 96%) 100%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.ol-film-vellum-edge {
+  border: 1px solid rgb(200 162 74 / 12%);
+  box-shadow: inset 0 0 60px rgb(200 162 74 / 6%);
+  inset: 3%;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.ol-film-stroke-ghost {
+  stroke: rgb(200 162 74 / 35%);
+  stroke-width: 2.2;
+}
+
+.ol-film-stroke-pressure {
+  stroke-width: 1.6;
+}
+
+.ol-film-pencil-tip {
+  fill: rgb(255 235 200 / 90%);
+  filter: drop-shadow(0 0 4px rgb(255 210 140 / 60%));
+}
+
+.ol-film-annotation-sketch {
+  font-family: "Segoe Print", "Bradley Hand", "Snell Roundhand", cursive;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+
+.ol-film-root[data-phase="structure"] .ol-film-blueprint,
+.ol-film-root[data-phase="materials"] .ol-film-blueprint,
+.ol-film-root[data-phase="walkthrough"] .ol-film-blueprint {
+  opacity: 0.18;
+  transition: opacity 1.6s ease;
+}
+
+.ol-film-root[data-phase="structure"] .ol-film-svg-plan,
+.ol-film-root[data-phase="materials"] .ol-film-svg-plan {
+  filter: blur(0.8px);
+}
+
+.ol-film-transition-bloom {
+  background:
+    radial-gradient(ellipse at 50% 48%, rgb(255 220 160 / 42%) 0%, rgb(255 200 120 / 12%) 35%, transparent 68%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 7;
+}
+
+.ol-film-fx-global {
+  z-index: 5;
+}
+
+.ol-film-beam-c {
+  animation-delay: 2.6s;
+  opacity: 0.45;
+  transform: rotate(-22deg);
+}
+
+/* Interior v2 — parallax + richer silhouettes */
+.ol-film-int-parallax {
+  inset: 0;
+  position: absolute;
+}
+
+.ol-film-int-warm-ambient {
+  background:
+    radial-gradient(ellipse at 55% 30%, rgb(255 200 120 / 22%) 0%, transparent 52%),
+    radial-gradient(ellipse at 30% 70%, rgb(255 180 100 / 10%) 0%, transparent 45%);
+  inset: 0;
+}
+
+.ol-film-int-wood-slats {
+  background: repeating-linear-gradient(90deg, rgb(85 62 40 / 55%) 0 4px, rgb(55 38 25 / 35%) 4px 18px);
+  inset: 12% 8%;
+  position: absolute;
+}
+
+.ol-film-int-brass-rail {
+  background: linear-gradient(90deg, rgb(200 162 74 / 55%), rgb(255 220 150 / 35%), rgb(200 162 74 / 55%));
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgb(200 162 74 / 25%);
+  height: 3px;
+  left: 10%;
+  position: absolute;
+  top: 38%;
+  width: 72%;
+}
+
+.ol-film-int-glass-depth {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.ol-film-int-glass-pane {
+  background: linear-gradient(145deg, rgb(160 200 230 / 16%), rgb(100 140 180 / 6%));
+  border: 1px solid rgb(200 162 74 / 22%);
+  height: 88%;
+  left: 4%;
+  position: absolute;
+  top: 6%;
+  width: 42%;
+}
+
+.ol-film-int-glass-pane-b {
+  left: 50%;
+  width: 44%;
+}
+
+.ol-film-int-glass-reflection {
+  animation: olFilmGlassShimmer 3s ease-in-out infinite alternate;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 22%) 50%, transparent 65%);
+  inset: 6% 4%;
+  position: absolute;
+}
+
+@keyframes olFilmGlassShimmer {
+  from {
+    opacity: 0.35;
+    transform: translateX(-4%);
+  }
+
+  to {
+    opacity: 0.85;
+    transform: translateX(6%);
+  }
+}
+
+.ol-film-int-window-mullion {
+  background: rgb(200 162 74 / 35%);
+  height: 88%;
+  left: 47%;
+  position: absolute;
+  top: 6%;
+  width: 2px;
+}
+
+.ol-film-int-light-strip-c {
+  left: 22%;
+  top: 18%;
+  width: 56%;
+}
+
+.ol-film-int-chandelier-glow {
+  background: radial-gradient(circle, rgb(255 220 160 / 50%) 0%, transparent 70%);
+  height: 120px;
+  left: 36%;
+  position: absolute;
+  top: 14%;
+  width: 120px;
+}
+
+.ol-film-int-sofa-shadow {
+  background: radial-gradient(ellipse at 50% 0%, rgb(0 0 0 / 45%) 0%, transparent 70%);
+  bottom: -8%;
+  height: 30%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.ol-film-int-sofa-arm {
+  background: linear-gradient(180deg, rgb(55 48 42 / 92%), rgb(32 28 25 / 95%));
+  border-radius: 6px 6px 2px 2px;
+  bottom: 20%;
+  height: 55%;
+  position: absolute;
+  width: 12%;
+}
+
+.ol-film-int-sofa-arm-l {
+  left: 0;
+}
+
+.ol-film-int-sofa-arm-r {
+  right: 0;
+}
+
+.ol-film-int-sofa-cushion-back {
+  height: 45%;
+  left: 18%;
+  top: 8%;
+  width: 64%;
+}
+
+.ol-film-int-table-brass {
+  background: rgb(200 162 74 / 50%);
+  border-radius: 50%;
+  bottom: 0;
+  height: 8px;
+  left: 46%;
+  position: absolute;
+  width: 8px;
+}
+
+.ol-film-int-table-leg-l {
+  left: 38%;
+}
+
+.ol-film-int-table-leg-r {
+  left: 58%;
+}
+
+.ol-film-int-marble-vein {
+  background: linear-gradient(118deg, transparent 40%, rgb(255 255 255 / 14%) 50%, transparent 58%);
+  height: 100%;
+  left: 10%;
+  position: absolute;
+  top: 0;
+  width: 35%;
+}
+
+.ol-film-int-marble-vein-b {
+  left: 55%;
+  transform: rotate(8deg);
+  width: 28%;
+}
+
+.ol-film-int-floor-specular {
+  animation: olFilmSpecular 2.5s ease-in-out infinite alternate;
+  background: linear-gradient(90deg, transparent, rgb(255 230 190 / 18%), transparent);
+  bottom: 20%;
+  height: 8%;
+  left: 15%;
+  position: absolute;
+  right: 15%;
+}
+
+@keyframes olFilmSpecular {
+  from {
+    opacity: 0.4;
+  }
+
+  to {
+    opacity: 0.9;
+  }
+}
+
+.ol-film-int-brass-baseboard {
+  background: linear-gradient(90deg, rgb(200 162 74 / 45%), rgb(255 220 150 / 30%), rgb(200 162 74 / 45%));
+  bottom: 32%;
+  box-shadow: 0 0 10px rgb(200 162 74 / 20%);
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.ol-film-int-dust-walk {
+  animation: olFilmWalkDust 3s ease-in-out infinite alternate;
+  background: radial-gradient(circle at 60% 50%, rgb(255 230 200 / 12%) 0%, transparent 55%);
+  inset: 0;
+  pointer-events: none;
+}
+
+@keyframes olFilmWalkDust {
+  from {
+    opacity: 0.3;
+  }
+
+  to {
+    opacity: 0.7;
+  }
+}
+
+.ol-film-surface-brass-h {
+  animation-delay: 0.5s;
+  bottom: 36%;
+  height: 2px;
+  left: 6%;
+  right: 6%;
+  top: auto;
+}
+
+.ol-film-surface-glass-depth {
+  animation: olFilmGlassSlide 1.2s ease 0.55s forwards;
+  background: linear-gradient(180deg, rgb(140 180 210 / 10%), rgb(80 120 160 / 4%));
+  border-left: 1px solid rgb(200 162 74 / 20%);
+  height: 0;
+  left: 42%;
+  opacity: 0;
+  top: 24%;
+  width: 3%;
+}
+
+/* Exterior v2 */
+.ol-film-ext-sun-rays {
+  background: conic-gradient(from 200deg at 78% 12%, transparent 0deg, rgb(255 220 150 / 18%) 20deg, transparent 40deg, rgb(255 210 130 / 12%) 60deg, transparent 80deg);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ol-film-ext-golden-grade {
+  background: linear-gradient(180deg, rgb(255 180 80 / 12%) 0%, transparent 35%, rgb(255 140 60 / 8%) 100%);
+  inset: 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ol-film-ext-photo-grade {
+  background:
+    linear-gradient(180deg, rgb(255 160 60 / 18%) 0%, transparent 40%),
+    radial-gradient(ellipse at 75% 15%, rgb(255 200 100 / 22%) 0%, transparent 45%);
+  inset: 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ol-film-ext-horizon {
+  background: linear-gradient(180deg, transparent, rgb(60 45 30 / 40%));
+  bottom: 18%;
+  height: 8%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.ol-film-ext-roof-overhang {
+  background: rgb(30 28 26);
+  clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
+  height: 4%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 20%;
+}
+
+.ol-film-ext-column {
+  background: linear-gradient(180deg, rgb(200 162 74 / 35%), rgb(140 110 50 / 15%));
+  height: 55%;
+  position: absolute;
+  top: 28%;
+  width: 2.5%;
+}
+
+.ol-film-ext-column-l {
+  left: 12%;
+}
+
+.ol-film-ext-column-r {
+  right: 12%;
+}
+
+.ol-film-ext-glass-glow {
+  animation: olFilmFacadeGlow 3s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 50% 60%, rgb(255 200 120 / 28%) 0%, transparent 55%);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes olFilmFacadeGlow {
+  from {
+    opacity: 0.5;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.ol-film-ext-entry-canopy {
+  background: linear-gradient(180deg, rgb(40 38 36), rgb(20 18 16));
+  border-bottom: 2px solid rgb(200 162 74 / 40%);
+  height: 6%;
+  left: 38%;
+  position: absolute;
+  top: 62%;
+  width: 24%;
+}
+
+.ol-film-ext-pool-reflection {
+  background: linear-gradient(180deg, rgb(255 200 120 / 25%), transparent);
+  height: 40%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.ol-film-ext-pool-shimmer {
+  animation: olFilmPoolShimmer 2.8s ease-in-out infinite alternate;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 15%), transparent);
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 40%;
+}
+
+@keyframes olFilmPoolShimmer {
+  from {
+    transform: translateX(-10%);
+  }
+
+  to {
+    transform: translateX(120%);
+  }
+}
+
+.ol-film-ext-palm-c {
+  height: 22%;
+  left: 78%;
+  top: 12%;
+  transform: rotate(5deg);
+  width: 6%;
+}
+
+.ol-film-ext-landscape-fg {
+  background: linear-gradient(180deg, transparent, rgb(30 50 25 / 45%));
+  bottom: 0;
+  height: 10%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.ol-film-ext-flare-b {
+  background: radial-gradient(circle at 20% 80%, rgb(255 180 100 / 12%) 0%, transparent 40%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ol-film-ext-vignette {
+  background: radial-gradient(ellipse at 50% 45%, transparent 30%, rgb(0 0 0 / 55%) 100%);
+}
+
+.ol-film-ext-sky {
+  background:
+    radial-gradient(ellipse at 70% 8%, rgb(255 180 80 / 55%) 0%, transparent 48%),
+    linear-gradient(180deg, #2a1808 0%, #7a5528 32%, #c89040 44%, #4a3820 62%, #0a0c10 100%);
+}
+
+/* Brand morph v2 */
+.ol-film-brand-bloom {
+  animation: olFilmBrandBloom 1.4s ease forwards;
+  background: radial-gradient(circle at 50% 50%, rgb(255 220 160 / 35%) 0%, transparent 60%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+@keyframes olFilmBrandBloom {
+  from {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+.ol-film-morph-single-line {
+  filter: drop-shadow(0 0 8px rgb(200 162 74 / 50%));
+  stroke: rgb(255 230 190 / 95%);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.ol-film-morph-logo-accent {
+  fill: none;
+  stroke: rgb(255 220 150 / 85%);
+  stroke-width: 1.4;
+}
+
+.ol-film-stage {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(200 162 74 / 8%) 0%, transparent 50%),
+    linear-gradient(180deg, #0c121c 0%, #030508 100%);
+}

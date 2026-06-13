@@ -11,15 +11,16 @@ const BASE = process.argv[2] ?? "http://127.0.0.1:3001";
 const ROUTE = "/prototype/open-limits-cinematic-film";
 const OUT = path.join(process.cwd(), "artifacts", "prototype-visuals", "open-limits-cinematic-film");
 
+/** Wait until phase engine reaches target (wall-clock sync). */
 const SHOTS = [
-  { name: "01-idea-0.8s", ms: 800 },
-  { name: "02-blueprint-2.5s", ms: 2500 },
-  { name: "03-structure-4.5s", ms: 4500 },
-  { name: "04-materials-6.5s", ms: 6500 },
-  { name: "05-interior-8.5s", ms: 8500 },
-  { name: "06-exterior-10.2s", ms: 10200 },
-  { name: "07-brand-11.5s", ms: 11500 },
-  { name: "08-enter-12.5s", ms: 12500 }
+  { name: "01-idea-0.8s", waitPhase: "idea", minMs: 600 },
+  { name: "02-blueprint-2.5s", waitPhase: "blueprint", minMs: 2000 },
+  { name: "03-structure-4.5s", waitPhase: "structure", minMs: 3800 },
+  { name: "04-materials-6.5s", waitPhase: "materials", minMs: 5800 },
+  { name: "05-interior-8.5s", waitPhase: "walkthrough", minMs: 7800 },
+  { name: "06-exterior-10.5s", waitPhase: "exterior", minMs: 10200 },
+  { name: "07-brand-12.0s", waitPhase: "brand", minMs: 11600 },
+  { name: "08-enter-13.0s", waitPhase: "enter", minMs: 12800 }
 ];
 
 async function main() {
@@ -33,19 +34,26 @@ async function main() {
   const page = await context.newPage();
   await page.emulateMedia({ reducedMotion: "no-preference", colorScheme: "dark" });
 
+  const t0 = Date.now();
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector(".ol-film-root", { timeout: 20000 });
+  await page.waitForSelector(".ol-film-root[data-phase]", { timeout: 20000 });
 
-  let elapsed = 0;
   const audit = [];
 
   for (const shot of SHOTS) {
-    const delta = shot.ms - elapsed;
-    if (delta > 0) await page.waitForTimeout(delta);
-    elapsed = shot.ms;
+    await page.waitForFunction(
+      (phase) => document.querySelector(".ol-film-root")?.getAttribute("data-phase") === phase,
+      shot.waitPhase,
+      { timeout: 20000 }
+    );
+    const elapsed = Date.now() - t0;
+    if (elapsed < shot.minMs) {
+      await page.waitForTimeout(shot.minMs - elapsed);
+    }
+    /* Let in-phase animation settle */
+    await page.waitForTimeout(shot.waitPhase === "walkthrough" ? 900 : shot.waitPhase === "brand" ? 700 : 400);
 
     const snap = await page.evaluate(() => {
-      const cs = (el) => (el ? getComputedStyle(el) : null);
       const rect = (sel) => {
         const el = document.querySelector(sel);
         if (!el) return null;
@@ -55,28 +63,32 @@ async function main() {
       return {
         phase: document.querySelector(".ol-film-root")?.getAttribute("data-phase"),
         stage: rect(".ol-film-stage"),
-        stageOpacity: cs(document.querySelector(".ol-film-stage-outer"))?.opacity ?? "missing",
-        paths: document.querySelectorAll(".ol-film-stroke, .ol-film-stroke-idea").length,
-        blackRatio: (() => {
-          const stage = document.querySelector(".ol-film-stage");
-          if (!stage) return "no-stage";
-          const r = stage.getBoundingClientRect();
-          return r.width > 100 && r.height > 100 ? "ok" : "collapsed";
-        })()
+        paths: document.querySelectorAll(".ol-film-stroke, .ol-film-stroke-idea").length
       };
     });
 
-    audit.push({ shot: shot.name, ms: shot.ms, ...snap });
+    audit.push({ shot: shot.name, targetPhase: shot.waitPhase, ...snap });
     await page.screenshot({ path: path.join(OUT, `${shot.name}.png`) });
   }
 
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1200);
   await context.close();
   await browser.close();
 
   const videoFiles = fs.readdirSync(OUT).filter((f) => f.endsWith(".webm"));
-  if (videoFiles[0]) {
-    fs.renameSync(path.join(OUT, videoFiles[0]), path.join(OUT, "full-animation.webm"));
+  if (videoFiles.length) {
+    const latest = videoFiles.sort().pop();
+    fs.renameSync(path.join(OUT, latest), path.join(OUT, "full-animation.webm"));
+  }
+
+  try {
+    const { execSync } = await import("node:child_process");
+    execSync(
+      `ffmpeg -y -i "${path.join(OUT, "full-animation.webm")}" -vf "fps=12,scale=640:-1" "${path.join(OUT, "full-animation.gif")}"`,
+      { stdio: "ignore" }
+    );
+  } catch {
+    /* optional */
   }
 
   fs.writeFileSync(path.join(OUT, "audit.json"), JSON.stringify(audit, null, 2));

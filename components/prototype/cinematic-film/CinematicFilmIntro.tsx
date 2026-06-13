@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import BlueprintDraw from "@/components/prototype/cinematic-film/BlueprintDraw";
 import CinematicFilmEffects from "@/components/prototype/cinematic-film/CinematicFilmEffects";
+import CinematicTransitionBloom from "@/components/prototype/cinematic-film/CinematicTransitionBloom";
 import ExteriorReveal from "@/components/prototype/cinematic-film/ExteriorReveal";
 import InteriorWalkthrough from "@/components/prototype/cinematic-film/InteriorWalkthrough";
 import LogoMorph from "@/components/prototype/cinematic-film/LogoMorph";
@@ -25,6 +26,21 @@ type CinematicFilmIntroProps = {
   finalRenderUrl?: string | null;
   debug?: boolean;
 };
+
+function cameraForPhase(phase: string, isMobile: boolean) {
+  switch (phase) {
+    case "structure":
+      return { rotateX: isMobile ? 12 : 18, scale: 1.02, y: "-1%" };
+    case "materials":
+      return { rotateX: isMobile ? 8 : 12, scale: 1.03, y: "-2%" };
+    case "walkthrough":
+      return { rotateX: isMobile ? 5 : 8, scale: 1.05, y: "-3%" };
+    case "exterior":
+      return { rotateX: 0, scale: 1.06, y: 0 };
+    default:
+      return { rotateX: 0, scale: 1, y: 0 };
+  }
+}
 
 export default function CinematicFilmIntro({
   onEnter,
@@ -55,8 +71,7 @@ export default function CinematicFilmIntro({
   }
 
   const showStage = !phaseAtOrAfter(phase, "brand");
-  const structureTilt = phaseAtOrAfter(phase, "structure") && !phaseAtOrAfter(phase, "walkthrough");
-  const stageScale = phase === "exterior" ? 1.04 : 1;
+  const cam = cameraForPhase(phase, isMobile);
 
   return (
     <div
@@ -66,24 +81,22 @@ export default function CinematicFilmIntro({
       data-phase={phase}
     >
       <CinematicFilmEffects isMobile={isMobile} phase={phase} />
+      <CinematicTransitionBloom phase={phase} />
 
       <AnimatePresence mode="wait">
         {showStage ? (
           <motion.div
             animate={{ opacity: 1 }}
             className="ol-film-stage-outer"
-            exit={{ opacity: 0, scale: 0.98 }}
+            exit={{ opacity: 0, scale: 0.98, filter: "blur(8px)" }}
             initial={{ opacity: 1 }}
             key="stage"
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
           >
             <motion.div
-              animate={{
-                rotateX: structureTilt ? (isMobile ? 10 : 16) : 0,
-                scale: stageScale
-              }}
+              animate={cam}
               className="ol-film-stage-camera"
-              transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="ol-film-stage">
                 <BlueprintDraw phase={phase} />
@@ -111,7 +124,7 @@ export default function CinematicFilmIntro({
             className="ol-film-enter"
             initial={{ opacity: 0, y: 16 }}
             key="enter"
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           >
             <button className="ol-film-enter-btn" onClick={dismiss} type="button">
               Enter Experience

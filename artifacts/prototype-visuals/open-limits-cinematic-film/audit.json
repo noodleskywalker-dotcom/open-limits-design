@@ -1,92 +1,79 @@
 [
   {
     "shot": "01-idea-0.8s",
-    "ms": 800,
+    "targetPhase": "idea",
     "phase": "idea",
     "stage": {
       "w": 1100,
       "h": 619
     },
-    "stageOpacity": "1",
-    "paths": 1,
-    "blackRatio": "ok"
+    "paths": 2
   },
   {
     "shot": "02-blueprint-2.5s",
-    "ms": 2500,
+    "targetPhase": "blueprint",
     "phase": "blueprint",
     "stage": {
       "w": 1100,
       "h": 619
     },
-    "stageOpacity": "1",
-    "paths": 18,
-    "blackRatio": "ok"
+    "paths": 18
   },
   {
     "shot": "03-structure-4.5s",
-    "ms": 4500,
+    "targetPhase": "structure",
     "phase": "structure",
     "stage": {
-      "w": 1154,
-      "h": 596
+      "w": 1169,
+      "h": 609
     },
-    "stageOpacity": "1",
-    "paths": 18,
-    "blackRatio": "ok"
+    "paths": 18
   },
   {
     "shot": "04-materials-6.5s",
-    "ms": 6500,
+    "targetPhase": "materials",
     "phase": "materials",
     "stage": {
-      "w": 1155,
-      "h": 596
+      "w": 1177,
+      "h": 620
     },
-    "stageOpacity": "1",
-    "paths": 18,
-    "blackRatio": "ok"
+    "paths": 18
   },
   {
     "shot": "05-interior-8.5s",
-    "ms": 8500,
+    "targetPhase": "walkthrough",
+    "phase": "walkthrough",
+    "stage": {
+      "w": 1183,
+      "h": 643
+    },
+    "paths": 18
+  },
+  {
+    "shot": "06-exterior-10.5s",
+    "targetPhase": "exterior",
     "phase": "exterior",
     "stage": {
-      "w": 1126,
-      "h": 633
+      "w": 1168,
+      "h": 655
     },
-    "stageOpacity": "1",
-    "paths": 18,
-    "blackRatio": "ok"
+    "paths": 18
   },
   {
-    "shot": "06-exterior-10.2s",
-    "ms": 10200,
+    "shot": "07-brand-12.0s",
+    "targetPhase": "brand",
     "phase": "brand",
     "stage": {
-      "w": 1121,
-      "h": 631
+      "w": 1143,
+      "h": 643
     },
-    "stageOpacity": "7.89951e-05",
-    "paths": 18,
-    "blackRatio": "ok"
+    "paths": 18
   },
   {
-    "shot": "07-brand-11.5s",
-    "ms": 11500,
+    "shot": "08-enter-13.0s",
+    "targetPhase": "enter",
     "phase": "enter",
     "stage": null,
-    "stageOpacity": "missing",
-    "paths": 0,
-    "blackRatio": "no-stage"
-  },
-  {
-    "shot": "08-enter-12.5s",
-    "ms": 12500,
-    "phase": "enter",
-    "stage": null,
-    "stageOpacity": "missing",
-    "paths": 0,
-    "blackRatio": "no-stage"
+    "paths": 0
   }
 ]
