@@ -3,6 +3,13 @@
 import { motion } from "framer-motion";
 import type { CreationPhase } from "@/lib/prototype/creation/creation-constants";
 import { creationPhaseAtOrAfter, phaseProgress } from "@/lib/prototype/creation/creation-constants";
+import {
+  BLUEPRINT_STROKES,
+  strokeColor,
+  strokeVisualState,
+  wallProgressMap,
+  type BlueprintStrokeVariant
+} from "@/lib/prototype/creation/villa-geometry";
 
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },
@@ -18,13 +25,19 @@ type CreationBlueprintSvgProps = {
   elapsed: number;
 };
 
-function strokeColor(transformT: number, base: "gold" | "room" | "pool" | "dim" | "default") {
-  const warm = transformT > 0.15;
-  if (base === "gold") return warm ? "rgb(200 162 74 / 92%)" : "rgb(200 162 74 / 92%)";
-  if (base === "pool") return warm ? "rgb(106 154 184 / 85%)" : "rgb(90 200 255 / 68%)";
-  if (base === "dim") return warm ? "rgb(200 162 74 / 55%)" : "rgb(140 190 235 / 45%)";
-  if (base === "room") return warm ? "rgb(240 236 228 / 78%)" : "rgb(100 170 235 / 72%)";
-  return warm ? "rgb(240 236 228 / 82%)" : "rgb(120 185 240 / 82%)";
+function strokeClass(variant: BlueprintStrokeVariant) {
+  switch (variant) {
+    case "gold":
+      return "olcrt-stroke olcrt-stroke-gold";
+    case "room":
+      return "olcrt-stroke olcrt-stroke-room";
+    case "pool":
+      return "olcrt-stroke olcrt-stroke-pool";
+    case "dim":
+      return "olcrt-stroke olcrt-stroke-dim";
+    default:
+      return "olcrt-stroke";
+  }
 }
 
 export default function CreationBlueprintSvg({ phase, elapsed }: CreationBlueprintSvgProps) {
@@ -32,8 +45,17 @@ export default function CreationBlueprintSvg({ phase, elapsed }: CreationBluepri
   const showPlan = creationPhaseAtOrAfter(phase, "blueprint") && phase !== "brand" && phase !== "enter";
   const drawing = phase === "blueprint";
   const transformT = phaseProgress(elapsed, "transform", "villa");
+  const progressMap = wallProgressMap(transformT);
+  const syncPhase = phase === "transform" || phase === "villa" ? phase : "blueprint";
 
   if (!showPencil && !showPlan) return null;
+
+  const annotationOpacity =
+    phase === "transform"
+      ? Math.max(0, 1 - transformT * 1.4)
+      : phase === "villa"
+        ? 0.12
+        : 1;
 
   return (
     <div aria-hidden className="olcrt-layer olcrt-blueprint-layer">
@@ -66,7 +88,7 @@ export default function CreationBlueprintSvg({ phase, elapsed }: CreationBluepri
 
       {showPlan ? (
         <svg className="olcrt-svg olcrt-svg-plan" viewBox="0 0 1200 675">
-          <g className="olcrt-grid" opacity={drawing ? 0.5 : phase === "transform" ? 0.12 : 0.22}>
+          <g className="olcrt-grid" opacity={drawing ? 0.5 : phase === "transform" ? 0.1 : 0.2}>
             {Array.from({ length: 13 }, (_, i) => (
               <line
                 className="olcrt-grid-line"
@@ -89,136 +111,49 @@ export default function CreationBlueprintSvg({ phase, elapsed }: CreationBluepri
             ))}
           </g>
 
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-gold"
-            custom={0}
-            d="M178 418 Q179 300 182 182 H618 Q620 300 618 418 H178 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "gold")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke"
-            custom={0.08}
-            d="M378 182 Q380 300 382 418"
-            initial="hidden"
-            stroke={strokeColor(transformT, "default")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke"
-            custom={0.12}
-            d="M182 298 Q400 302 618 300"
-            initial="hidden"
-            stroke={strokeColor(transformT, "default")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-room"
-            custom={0.16}
-            d="M182 182 H378 Q382 240 378 298 H182 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "room")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-room"
-            custom={0.2}
-            d="M382 182 H618 Q622 240 618 298 H382 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "room")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-room"
-            custom={0.24}
-            d="M182 302 H378 V416 H182 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "room")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-room"
-            custom={0.28}
-            d="M382 302 H618 V416 H382 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "room")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-pool"
-            custom={0.32}
-            d="M662 342 H818 Q822 410 818 478 H662 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "pool")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-gold"
-            custom={0.38}
-            d="M878 478 L882 222 Q960 188 1042 182 L1118 202 L1120 478 Z"
-            initial="hidden"
-            stroke={strokeColor(transformT, "gold")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-dim"
-            custom={0.48}
-            d="M182 542 H618 M182 550 V534 M618 550 V534"
-            initial="hidden"
-            stroke={strokeColor(transformT, "dim")}
-            variants={draw}
-          />
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-dim"
-            custom={0.52}
-            d="M138 182 V416 M130 182 H146 M130 416 H146"
-            initial="hidden"
-            stroke={strokeColor(transformT, "dim")}
-            variants={draw}
-          />
+          {BLUEPRINT_STROKES.map((stroke) => {
+            const visual = strokeVisualState(stroke, progressMap, syncPhase);
+            if (!drawing && visual.opacity < 0.02) return null;
 
-          <text className="olcrt-annotation olcrt-annotation-title" x={198} y={128}>
-            VILLA TYPE A — GROUND FLOOR
-          </text>
-          <text className="olcrt-annotation" x={218} y={248}>
-            LIVING · 14.2m
-          </text>
-          <text className="olcrt-annotation" x={438} y={248}>
-            MASTER SUITE
-          </text>
-          <text className="olcrt-annotation" x={688} y={418}>
-            POOL
-          </text>
-          <text className="olcrt-annotation" x={918} y={158}>
-            ELEVATION A
-          </text>
-          <text className="olcrt-annotation olcrt-annotation-scale" x={100} y={568}>
-            SCALE 1:100 · SHEET A-01
-          </text>
-          <motion.path
-            animate={drawing ? "visible" : "hidden"}
-            className="olcrt-stroke olcrt-stroke-gold"
-            custom={0.56}
-            d="M1048 558 L1048 522 M1028 542 L1048 522 L1068 542"
-            initial="hidden"
-            stroke={strokeColor(transformT, "gold")}
-            variants={draw}
-          />
-          <text className="olcrt-annotation olcrt-annotation-n" x={1040} y={578}>
-            N
-          </text>
+            return (
+              <g key={stroke.id} transform={`translate(0 ${-visual.liftY})`}>
+                <motion.path
+                  animate={drawing ? "visible" : "hidden"}
+                  className={strokeClass(stroke.variant)}
+                  custom={stroke.drawDelay}
+                  d={stroke.d}
+                  initial="hidden"
+                  opacity={drawing ? undefined : visual.opacity}
+                  stroke={strokeColor(visual.warmth, stroke.variant)}
+                  variants={draw}
+                />
+              </g>
+            );
+          })}
+
+          <g opacity={annotationOpacity}>
+            <text className="olcrt-annotation olcrt-annotation-title" x={198} y={128}>
+              VILLA TYPE A — GROUND FLOOR
+            </text>
+            <text className="olcrt-annotation" x={218} y={248}>
+              LIVING · 14.2m
+            </text>
+            <text className="olcrt-annotation" x={438} y={248}>
+              MASTER SUITE
+            </text>
+            <text className="olcrt-annotation" x={688} y={418}>
+              POOL
+            </text>
+            <text className="olcrt-annotation" x={918} y={158}>
+              ELEVATION A
+            </text>
+            <text className="olcrt-annotation olcrt-annotation-scale" x={100} y={568}>
+              SCALE 1:100 · SHEET A-01
+            </text>
+            <text className="olcrt-annotation olcrt-annotation-n" x={1040} y={578}>
+              N
+            </text>
+          </g>
         </svg>
       ) : null}
     </div>

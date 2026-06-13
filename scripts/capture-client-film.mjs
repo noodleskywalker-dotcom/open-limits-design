@@ -12,11 +12,11 @@ const OUT = path.join(process.cwd(), "artifacts", "prototype-visuals", "open-lim
 
 const SHOTS = [
   { name: "01-pencil", waitPhase: "pencil", minMs: 800 },
-  { name: "02-blueprint", waitPhase: "blueprint", minMs: 4000 },
-  { name: "03-transform", waitPhase: "transform", minMs: 9500 },
-  { name: "04-villa", waitPhase: "villa", minMs: 14500 },
-  { name: "05-brand", waitPhase: "brand", minMs: 18500 },
-  { name: "06-enter", waitPhase: "enter", minMs: 21500 }
+  { name: "02-blueprint", waitPhase: "blueprint", minMs: 5200 },
+  { name: "03-transform", waitPhase: "transform", minMs: 10800, holdMs: 1400 },
+  { name: "04-villa", waitPhase: "villa", minMs: 14200, holdMs: 800 },
+  { name: "05-brand", waitPhase: "brand", minMs: 0, holdMs: 900 },
+  { name: "06-enter", waitPhase: "enter", minMs: 20800, holdMs: 500 }
 ];
 
 async function main() {
@@ -73,10 +73,10 @@ async function main() {
       { timeout: 30000 }
     );
     const elapsed = Date.now() - t0;
-    if (elapsed < shot.minMs) {
+    if (shot.minMs > 0 && elapsed < shot.minMs) {
       await page.waitForTimeout(shot.minMs - elapsed);
     }
-    await page.waitForTimeout(shot.waitPhase === "transform" ? 900 : shot.waitPhase === "brand" ? 700 : 450);
+    await page.waitForTimeout(shot.holdMs ?? (shot.waitPhase === "transform" ? 900 : shot.waitPhase === "brand" ? 700 : 450));
 
     const snap = await page.evaluate(() => {
       const rect = (sel) => {

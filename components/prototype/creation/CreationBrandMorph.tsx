@@ -1,9 +1,16 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import type { CreationPhase } from "@/lib/prototype/creation/creation-constants";
 import { phaseProgress } from "@/lib/prototype/creation/creation-constants";
-import { LOGO_PATHS, VILLA_MORPH_LINES } from "@/lib/prototype/creation/villa-geometry";
+import {
+  brandCollapseT,
+  LOGO_ANCHOR,
+  LOGO_PATHS,
+  morphLineState,
+  VILLA_MORPH_LINES
+} from "@/lib/prototype/creation/villa-geometry";
 
 type CreationBrandMorphProps = {
   phase: CreationPhase;
@@ -26,30 +33,32 @@ export default function CreationBrandMorph({
   if (!show) return null;
 
   const brandT = phaseProgress(elapsed, "brand", "enter");
-  const collapse = phase === "brand" ? brandT : 1;
-  const centerX = 600;
-  const centerY = 340;
+  const collapse = brandCollapseT(brandT);
+  const logoDrawT = Math.max(0, (collapse - 0.48) / 0.52);
+  const bloomIntensity = 0.14 + collapse * 0.22;
 
   return (
-    <div aria-hidden className="olcrt-layer olcrt-brand-layer">
+    <div
+      aria-hidden
+      className="olcrt-layer olcrt-brand-layer"
+      style={{ "--olcrt-bloom": bloomIntensity } as CSSProperties}
+    >
       <div className="olcrt-brand-bloom" />
 
       <svg className="olcrt-svg olcrt-svg-morph" viewBox="0 0 1200 675">
         <g className="olcrt-villa-morph-lines">
           {VILLA_MORPH_LINES.map((line, i) => {
-            const x1 = lerp(line.x1, centerX, collapse * 0.88);
-            const y1 = lerp(line.y1, centerY, collapse * 0.88);
-            const x2 = lerp(line.x2, centerX + (i % 2 === 0 ? -40 : 40), collapse);
-            const y2 = lerp(line.y2, centerY, collapse);
+            const state = morphLineState(line, collapse);
             return (
               <line
                 className="olcrt-villa-edge-line"
                 key={i}
-                opacity={Math.max(0, 1 - collapse * 0.92)}
-                x1={x1}
-                x2={x2}
-                y1={y1}
-                y2={y2}
+                opacity={state.opacity}
+                strokeWidth={state.width}
+                x1={state.x1}
+                x2={state.x2}
+                y1={state.y1}
+                y2={state.y2}
               />
             );
           })}
@@ -57,29 +66,30 @@ export default function CreationBrandMorph({
 
         <line
           className="olcrt-logo-gold-line"
-          opacity={brandT > 0.35 ? 1 : 0}
-          x1={lerp(centerX, LOGO_PATHS.goldLine.x1, Math.max(0, (brandT - 0.35) / 0.65))}
-          x2={lerp(centerX, LOGO_PATHS.goldLine.x2, Math.max(0, (brandT - 0.35) / 0.65))}
-          y1={centerY}
-          y2={centerY}
+          opacity={logoDrawT > 0.05 ? Math.min(1, logoDrawT * 1.4) : collapse * 0.35}
+          strokeWidth={2 + logoDrawT}
+          x1={lerp(LOGO_ANCHOR.x, LOGO_PATHS.goldLine.x1, logoDrawT)}
+          x2={lerp(LOGO_ANCHOR.x, LOGO_PATHS.goldLine.x2, logoDrawT)}
+          y1={LOGO_ANCHOR.y}
+          y2={LOGO_ANCHOR.y}
         />
 
-        {brandT > 0.5 ? (
+        {logoDrawT > 0.12 ? (
           <>
             <motion.path
-              animate={{ pathLength: Math.min(1, (brandT - 0.5) * 2), opacity: 1 }}
+              animate={{ pathLength: Math.min(1, logoDrawT * 1.35), opacity: 1 }}
               className="olcrt-logo-frame"
               d={LOGO_PATHS.frame}
               initial={{ pathLength: 0, opacity: 0 }}
             />
             <motion.path
-              animate={{ pathLength: Math.min(1, (brandT - 0.58) * 2.4), opacity: 1 }}
+              animate={{ pathLength: Math.min(1, Math.max(0, (logoDrawT - 0.1) * 1.5)), opacity: 1 }}
               className="olcrt-logo-frame"
               d={LOGO_PATHS.frameLeg}
               initial={{ pathLength: 0, opacity: 0 }}
             />
             <motion.path
-              animate={{ pathLength: Math.min(1, (brandT - 0.65) * 2.8), opacity: 1 }}
+              animate={{ pathLength: Math.min(1, Math.max(0, (logoDrawT - 0.18) * 1.65)), opacity: 1 }}
               className="olcrt-logo-accent"
               d={LOGO_PATHS.accent}
               initial={{ pathLength: 0, opacity: 0 }}
