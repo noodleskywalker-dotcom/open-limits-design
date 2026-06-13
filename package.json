@@ -27,6 +27,7 @@
   "dependencies": {
     "@supabase/supabase-js": "latest",
     "@tailwindcss/postcss": "^4.3.1",
+    "framer-motion": "^12.40.0",
     "jszip": "^3.10.1",
     "next": "latest",
     "pdf-parse": "^2.4.5",

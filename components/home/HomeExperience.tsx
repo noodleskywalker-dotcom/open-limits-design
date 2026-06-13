@@ -4,8 +4,7 @@ import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import type { IntroSettings, ShowroomSection } from "@/lib/cms/types";
 import LuxuryIntro from "@/components/home/LuxuryIntro";
 import ShowroomEntry from "@/components/showroom/ShowroomEntry";
-
-const INTRO_KEY = "old-intro-seen";
+import { INTRO_STORAGE_KEY } from "@/lib/intro/constants";
 
 function subscribeToHydration(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -27,7 +26,7 @@ type IntroView = {
 };
 
 function readIntroView(enabled: boolean): IntroView {
-  const dismissed = localStorage.getItem(INTRO_KEY) === "1";
+  const dismissed = localStorage.getItem(INTRO_STORAGE_KEY) === "1";
   if (!enabled || dismissed) {
     return { showIntro: false, showShowroom: true };
   }
@@ -67,7 +66,7 @@ export default function HomeExperience({
   }, []);
 
   const completeIntro = useCallback(() => {
-    localStorage.setItem(INTRO_KEY, "1");
+    localStorage.setItem(INTRO_STORAGE_KEY, "1");
     setOverride({ showIntro: false, showShowroom: true });
   }, []);
 

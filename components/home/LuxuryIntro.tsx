@@ -1,7 +1,18 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { IntroSettings } from "@/lib/cms/types";
+import BrandLogoLines from "@/components/home/intro/BrandLogoLines";
+import IntroSceneLayers from "@/components/home/intro/IntroSceneLayers";
+import VillaBlueprintSvg from "@/components/home/intro/VillaBlueprintSvg";
+import {
+  AUTO_ENTER_MS,
+  INTRO_PHASE_ORDER,
+  PHASE_START_MS,
+  SERVICE_LINES,
+  type IntroPhase
+} from "@/lib/intro/constants";
 
 type LuxuryIntroProps = {
   logoImageUrl: string | null;
@@ -11,18 +22,6 @@ type LuxuryIntroProps = {
   onRevealShowroom: () => void;
   onEnter: () => void;
 };
-
-/** Full intro sequence — paper → draw → structure → render → glow → logo + CTA */
-type IntroPhase = "dark" | "paper" | "draw" | "structure" | "transform" | "glow" | "reveal";
-
-const PHASE_MS = {
-  paper: 450,
-  draw: 1100,
-  structure: 3100,
-  transform: 4300,
-  glow: 5600,
-  reveal: 6200
-} as const;
 
 function subscribeToHydration(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -38,36 +37,44 @@ function getServerMounted() {
   return false;
 }
 
-function prefersReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function phaseAtElapsed(elapsed: number): IntroPhase {
+  let current: IntroPhase = "dark";
+  for (const phase of INTRO_PHASE_ORDER) {
+    if (elapsed >= PHASE_START_MS[phase]) current = phase;
+  }
+  return current;
 }
 
-/** Inline SVG blueprint — used when no CMS blueprint image is uploaded. */
-function BlueprintDrawing() {
-  return (
-    <svg
-      aria-hidden
-      className="blueprint-svg-fallback"
-      viewBox="0 0 420 300"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g className="blueprint-lines">
-        <rect className="bp-fill bp-fill-main" height="220" rx="2" width="340" x="40" y="40" />
-        <rect className="bp-fill bp-fill-room" height="60" width="60" x="120" y="40" />
-        <rect className="bp-fill bp-fill-wing" height="100" width="180" x="120" y="160" />
-        <rect className="bp-stroke bp-outer" height="220" rx="2" width="340" x="40" y="40" />
-        <path className="bp-stroke bp-wall-v" d="M210 40 L210 160" />
-        <path className="bp-stroke bp-wall-h" d="M40 160 L380 160" />
-        <path className="bp-stroke bp-wall-v2" d="M120 160 L120 260" />
-        <path className="bp-stroke bp-wall-v3" d="M300 160 L300 260" />
-        <path className="bp-stroke bp-room" d="M120 40 L120 100 L180 100 L180 40 Z" />
-        <path className="bp-stroke bp-door" d="M300 160 A 28 28 0 0 1 328 188" />
-        <circle className="bp-stroke bp-dot" cx="80" cy="80" r="4" />
-        <circle className="bp-stroke bp-dot2" cx="340" cy="220" r="4" />
-        <path className="bp-stroke bp-detail" d="M40 260 L380 260" />
-      </g>
-    </svg>
-  );
+/** Subtle drafting ambience — Web Audio, no external assets. */
+function playDraftingAmbience() {
+  if (typeof window === "undefined") return;
+  try {
+    const ctx = new AudioContext();
+    const duration = 1.8;
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i += 1) {
+      const t = i / ctx.sampleRate;
+      const envelope = Math.exp(-t * 2.2) * (1 - Math.exp(-t * 12));
+      data[i] = (Math.random() * 2 - 1) * envelope * 0.018;
+    }
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 2800;
+    filter.Q.value = 0.8;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.35;
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    source.start();
+    window.setTimeout(() => void ctx.close(), (duration + 0.2) * 1000);
+  } catch {
+    /* Audio optional — silent fail */
+  }
 }
 
 export default function LuxuryIntro({
@@ -79,97 +86,187 @@ export default function LuxuryIntro({
   onEnter
 }: LuxuryIntroProps) {
   const mounted = useSyncExternalStore(subscribeToHydration, getClientMounted, getServerMounted);
+  const reducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<IntroPhase>("dark");
   const [exiting, setExiting] = useState(false);
+  const [ctaReady, setCtaReady] = useState(false);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const soundPlayedRef = useRef(false);
+  const autoEnterRef = useRef<number | null>(null);
+  const dismissedRef = useRef(false);
 
-  const blueprintUrl = settings.blueprintImageUrl;
-  const finalUrl = settings.finalRenderImageUrl;
-
-  const reducedMotion = mounted && prefersReducedMotion();
-  const displayPhase: IntroPhase = !mounted ? "dark" : reducedMotion ? "reveal" : phase;
-
-  useEffect(() => {
-    if (!mounted || reducedMotion) return;
-
-    const timers = (Object.entries(PHASE_MS) as [IntroPhase, number][]).map(([step, ms]) =>
-      window.setTimeout(() => setPhase(step), ms)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [mounted, reducedMotion]);
-
-  function dismiss() {
+  const dismiss = useCallback(() => {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
+    if (autoEnterRef.current) window.clearTimeout(autoEnterRef.current);
     setExiting(true);
     onRevealShowroom();
-    window.setTimeout(onEnter, 650);
-  }
+    window.setTimeout(onEnter, 720);
+  }, [onEnter, onRevealShowroom]);
+
+  useEffect(() => {
+    if (!mounted || reducedMotion) {
+      setPhase("enter");
+      setCtaReady(true);
+      return;
+    }
+
+    startRef.current = performance.now();
+    soundPlayedRef.current = false;
+
+    const tick = (now: number) => {
+      const elapsed = now - (startRef.current ?? now);
+      const next = phaseAtElapsed(elapsed);
+      setPhase(next);
+
+      if (next === "blueprint" && !soundPlayedRef.current) {
+        soundPlayedRef.current = true;
+        playDraftingAmbience();
+      }
+
+      if (next !== "enter") {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        setCtaReady(true);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [mounted, reducedMotion]);
+
+  useEffect(() => {
+    if (!ctaReady || reducedMotion) return;
+    autoEnterRef.current = window.setTimeout(() => dismiss(), AUTO_ENTER_MS);
+    return () => {
+      if (autoEnterRef.current) window.clearTimeout(autoEnterRef.current);
+    };
+  }, [ctaReady, dismiss, reducedMotion]);
 
   if (!mounted) {
     return null;
   }
 
-  const title = settings.introTitle ?? companyName;
+  const headline = settings.introTitle ?? "Design Without Limits";
   const subtitle = settings.introSubtitle ?? tagline;
+  const showBlueprint =
+    phase === "blueprint" ||
+    phase === "draw" ||
+    phase === "structure" ||
+    phase === "interior" ||
+    phase === "masterpiece";
+  const showBrand = phase === "brand" || phase === "enter";
+  const cameraPush =
+    phase === "draw" ||
+    phase === "structure" ||
+    phase === "interior" ||
+    phase === "masterpiece";
 
   return (
     <div
-      aria-label="Open Limits Design intro"
+      aria-label="Open Limits Design cinematic intro"
       aria-modal="true"
-      className={`luxury-intro blueprint-intro luxury-intro-mounted ${exiting ? "luxury-intro-exit" : ""}`}
-      data-phase={displayPhase}
+      className={`ols-intro luxury-intro luxury-intro-mounted ${exiting ? "ols-intro-exit luxury-intro-exit" : ""}`}
+      data-phase={phase}
       role="dialog"
     >
-      <div aria-hidden className="blueprint-intro-backdrop" />
-      <div aria-hidden className="blueprint-gold-glow" />
+      <div aria-hidden className="ols-intro-vignette" />
+      <div aria-hidden className="ols-intro-grain" />
 
-      <div className="blueprint-stage">
-        <div className="blueprint-paper">
-          {blueprintUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt="" className="blueprint-cms-image blueprint-layer" src={blueprintUrl} />
-          ) : (
-            <BlueprintDrawing />
-          )}
+      <motion.div
+        animate={{ opacity: phase === "dark" ? 0 : 1 }}
+        className="ols-intro-stage"
+        initial={{ opacity: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.div
+          animate={{
+            scale: cameraPush ? 1.08 : showBrand ? 0.92 : 1,
+            y: cameraPush ? -12 : 0,
+            opacity: showBrand ? 0 : 1
+          }}
+          className="ols-intro-canvas"
+          transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.div
+            animate={{
+              opacity: showBlueprint ? 1 : 0,
+              rotateX: showBlueprint ? 6 : 12,
+              scale: showBlueprint ? 1 : 0.94
+            }}
+            className="ols-blueprint-paper"
+            initial={{ opacity: 0, rotateX: 12, scale: 0.94 }}
+            style={{ transformPerspective: 1200 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <VillaBlueprintSvg phase={phase} />
+            <IntroSceneLayers finalRenderUrl={settings.finalRenderImageUrl} phase={phase} />
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
-          {finalUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt="" className="blueprint-final-image blueprint-layer" src={finalUrl} />
-          ) : (
-            <div aria-hidden className="blueprint-final-fallback blueprint-layer">
-              <div className="blueprint-final-glow" />
-              <div className="blueprint-final-room" />
-              <div className="blueprint-final-window" />
-            </div>
-          )}
-        </div>
-      </div>
+      <AnimatePresence>
+        {showBrand ? (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="ols-brand-panel"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            key="brand"
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <BrandLogoLines companyName={companyName} logoImageUrl={logoImageUrl} visible={showBrand} />
+            <motion.p
+              animate={{ opacity: 1 }}
+              className="ols-brand-name"
+              initial={{ opacity: 0 }}
+              transition={{ delay: 0.45, duration: 0.7 }}
+            >
+              {companyName}
+            </motion.p>
+            <motion.ul
+              animate={{ opacity: 1 }}
+              className="ols-brand-services"
+              initial={{ opacity: 0 }}
+              transition={{ delay: 0.6, duration: 0.7 }}
+            >
+              {SERVICE_LINES.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </motion.ul>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-      <div className="blueprint-intro-ui">
-        <div className="blueprint-intro-brand">
-          {logoImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt={companyName} className="luxury-intro-logo-image" src={logoImageUrl} />
-          ) : (
-            <div className="luxury-intro-logo-text">
-              <span className="logo-animated">OPEN LIMITS</span>
-              <span className="logo-animated delay">DESIGN</span>
-            </div>
-          )}
-        </div>
+      <AnimatePresence>
+        {phase === "enter" && !reducedMotion ? (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="ols-enter-panel"
+            initial={{ opacity: 0, y: 16 }}
+            key="enter"
+            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <p className="ols-enter-headline">{headline}</p>
+            {subtitle ? <p className="ols-enter-sub">{subtitle}</p> : null}
+            <button className="button ols-enter-button" onClick={dismiss} type="button">
+              Enter Showroom
+            </button>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-        <div className="blueprint-intro-copy">
-          <p className="eyebrow">{subtitle}</p>
-          <h1>{title}</h1>
-        </div>
-
-        <div className="luxury-intro-actions">
-          <button className="button" onClick={dismiss} type="button">
+      {reducedMotion ? (
+        <div className="ols-enter-panel ols-enter-panel-static">
+          <p className="ols-enter-headline">{headline}</p>
+          <button className="button ols-enter-button" onClick={dismiss} type="button">
             Enter Showroom
           </button>
-          <button className="button ghost" onClick={dismiss} type="button">
-            Skip Intro
-          </button>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

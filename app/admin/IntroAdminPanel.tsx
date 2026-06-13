@@ -120,8 +120,9 @@ export default function IntroAdminPanel({ media }: { media: MediaAsset[] }) {
         <div className="field full">
           <h3>Intro experience</h3>
           <p>
-            Blueprint-to-luxury intro animation on first visit. Upload blueprint and final render images in
-            Media, then assign below. Without images, an elegant SVG line animation is used.
+            Cinematic first-visit intro (~10s): blueprint drafting, structure rising, interior reveal, villa
+            masterpiece, and brand logo construction. Optional CMS final render overlays the exterior reveal.
+            Returning visitors skip via localStorage until browser data is cleared.
           </p>
         </div>
         <label className="field">
