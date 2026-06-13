@@ -21,6 +21,8 @@ type LuxuryIntroProps = {
   settings: IntroSettings;
   onRevealShowroom: () => void;
   onEnter: () => void;
+  /** Prototype / QA — skip timed auto-enter after CTA. */
+  disableAutoEnter?: boolean;
 };
 
 function subscribeToHydration(onStoreChange: () => void) {
@@ -83,7 +85,8 @@ export default function LuxuryIntro({
   tagline,
   settings,
   onRevealShowroom,
-  onEnter
+  onEnter,
+  disableAutoEnter = false
 }: LuxuryIntroProps) {
   const mounted = useSyncExternalStore(subscribeToHydration, getClientMounted, getServerMounted);
   const reducedMotion = useReducedMotion();
@@ -112,6 +115,9 @@ export default function LuxuryIntro({
       return;
     }
 
+    setPhase("dark");
+    setCtaReady(false);
+    dismissedRef.current = false;
     startRef.current = performance.now();
     soundPlayedRef.current = false;
 
@@ -139,12 +145,12 @@ export default function LuxuryIntro({
   }, [mounted, reducedMotion]);
 
   useEffect(() => {
-    if (!ctaReady || reducedMotion) return;
+    if (!ctaReady || reducedMotion || disableAutoEnter) return;
     autoEnterRef.current = window.setTimeout(() => dismiss(), AUTO_ENTER_MS);
     return () => {
       if (autoEnterRef.current) window.clearTimeout(autoEnterRef.current);
     };
-  }, [ctaReady, dismiss, reducedMotion]);
+  }, [ctaReady, dismiss, disableAutoEnter, reducedMotion]);
 
   if (!mounted) {
     return null;

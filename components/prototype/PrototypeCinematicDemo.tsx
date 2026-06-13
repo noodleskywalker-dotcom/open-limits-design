@@ -62,6 +62,7 @@ export default function PrototypeCinematicDemo({
         <LuxuryIntro
           key={runId}
           companyName={companyName}
+          disableAutoEnter
           logoImageUrl={logoImageUrl}
           onEnter={() => {
             setShowIntro(false);
