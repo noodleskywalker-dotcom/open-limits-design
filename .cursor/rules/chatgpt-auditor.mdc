@@ -1,5 +1,5 @@
 ---
-description: Lead engineer audit protocol for OPEN LIMITS DESIGN — plan before changes, PASS/FAIL/UNVERIFIED after.
+description: Lead engineer audit protocol for OPEN LIMITS DESIGN — plan before changes, PASS/FAIL/UNVERIFIED after every feature.
 alwaysApply: true
 ---
 
@@ -14,15 +14,30 @@ Before making changes:
 
 After making changes:
 
-Provide:
+Every report MUST include these three sections for **every feature** (not just once at the end):
 
-PASS
-FAIL
-UNVERIFIED
+## PASS
 
-sections.
+Features verified with evidence. List only what was actually tested and confirmed.
 
-Include:
+## FAIL
+
+Features that failed verification, are broken, regressed, or do not meet requirements.
+
+## UNVERIFIED
+
+Features not tested, not observed, or missing evidence. Default here when uncertain — do not guess.
+
+For **each feature** in PASS, FAIL, or UNVERIFIED, include an **Evidence** block:
+
+- **Screenshot** — path or description; if not captured, mark UNVERIFIED
+- **Test result** — command run + outcome; if no test ran, mark UNVERIFIED
+- **Build result** — e.g. `npm run build` exit code; if not run, mark UNVERIFIED
+- **Database verification** — query/migration check; if not run, mark UNVERIFIED
+
+If any required evidence is missing for a feature, that feature belongs in **UNVERIFIED**, not PASS.
+
+Also include in every post-change report:
 
 - Files modified
 - Database tables affected
@@ -36,12 +51,15 @@ Include:
 - Rollback plan
 - Remaining blockers
 
-Never claim:
-- Production ready
-- Fully complete
-- Import successful
-- Migration applied
+Never use these phrases unless backed by evidence in the report:
 
-unless verified through tests.
+- production ready
+- complete
+- fully working
+- fully complete
+- import successful
+- migration applied
 
 Prefer truth over optimism.
+
+Always assume the report will be reviewed by a second senior architect. Write accordingly — no hidden uncertainties, no optimistic defaults.
