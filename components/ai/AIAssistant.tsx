@@ -121,13 +121,18 @@ async function consumeChatStream(
     for (const event of events) {
       const line = event.trim();
       if (!line.startsWith("data: ")) continue;
-      const payload = JSON.parse(line.slice(6)) as {
+      let payload: {
         type: string;
         content?: string;
         reply?: string;
         links?: ChatLink[];
         previews?: ChatPreview[];
       };
+      try {
+        payload = JSON.parse(line.slice(6)) as typeof payload;
+      } catch {
+        continue;
+      }
 
       if (payload.type === "meta" && payload.previews) {
         setMessages((current) =>
@@ -183,7 +188,10 @@ export default function AIAssistant() {
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
   const sendingRef = useRef(false);
+
+  messagesRef.current = messages;
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -215,15 +223,16 @@ export default function AIAssistant() {
       sendingRef.current = true;
       setBusy(true);
 
-      let historyForApi: ChatMessage[] = [];
-      setMessages((current) => {
-        historyForApi = [...current, { id: crypto.randomUUID(), role: "user", content: trimmed }];
-        return historyForApi;
-      });
-
+      const userMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: trimmed
+      };
       const assistantId = crypto.randomUUID();
-      setMessages((current) => [
-        ...current,
+      const historyForApi = [...messagesRef.current, userMessage];
+
+      setMessages([
+        ...historyForApi,
         { id: assistantId, role: "assistant", content: "", streaming: true }
       ]);
 
