@@ -1,0 +1,79 @@
+[
+  {
+    "shot": "01-idea-0.6s",
+    "targetPhase": "idea",
+    "phase": "idea",
+    "stage": {
+      "w": 1100,
+      "h": 619
+    },
+    "paths": 2
+  },
+  {
+    "shot": "02-blueprint-1.8s",
+    "targetPhase": "blueprint",
+    "phase": "blueprint",
+    "stage": {
+      "w": 1100,
+      "h": 619
+    },
+    "paths": 18
+  },
+  {
+    "shot": "03-structure-3.8s",
+    "targetPhase": "structure",
+    "phase": "structure",
+    "stage": {
+      "w": 1169,
+      "h": 609
+    },
+    "paths": 18
+  },
+  {
+    "shot": "04-materials-5.8s",
+    "targetPhase": "materials",
+    "phase": "materials",
+    "stage": {
+      "w": 1177,
+      "h": 620
+    },
+    "paths": 18
+  },
+  {
+    "shot": "05-interior-8.0s",
+    "targetPhase": "walkthrough",
+    "phase": "walkthrough",
+    "stage": {
+      "w": 1165,
+      "h": 639
+    },
+    "paths": 18
+  },
+  {
+    "shot": "06-exterior-10.5s",
+    "targetPhase": "exterior",
+    "phase": "exterior",
+    "stage": {
+      "w": 1102,
+      "h": 620
+    },
+    "paths": 18
+  },
+  {
+    "shot": "07-brand-13.0s",
+    "targetPhase": "brand",
+    "phase": "brand",
+    "stage": {
+      "w": 1078,
+      "h": 606
+    },
+    "paths": 18
+  },
+  {
+    "shot": "08-enter-14.5s",
+    "targetPhase": "enter",
+    "phase": "enter",
+    "stage": null,
+    "paths": 0
+  }
+]

@@ -1,0 +1,32 @@
+OPEN LIMITS DESIGN — Full Backup Manifest
+Generated: 2026-06-13
+Archive: open-limits-design-full-backup.zip
+
+Total entries: 1682
+Uncompressed size: ~239 MB
+Compressed size: 226 MB (236,098,814 bytes)
+
+EXCLUDED:
+  - node_modules/
+  - .next/
+  - out/
+
+INCLUDED TOP-LEVEL:
+  app/           — Next.js pages & API routes
+  artifacts/     — Prototype screenshots, GIFs, MP4s, audit JSON
+  components/    — React components
+  lib/           — Shared libraries
+  public/        — Static assets (intro video, legacy images, intro-film)
+  scripts/       — DB seed, imports, verification
+  supabase/      — Schema & migrations
+  .git/          — Full git history & branches
+
+KEY FILES:
+  PROJECT_EXPORT.md
+  package.json, package-lock.json
+  tsconfig.json, next.config.mjs, postcss.config.mjs, eslint.config.mjs
+  .env.example, README.md
+  app/globals.css
+  public/intro-video/open-limits-intro.mp4
+
+See PROJECT_EXPORT.md for routes, Supabase tables, env vars, and deployment.

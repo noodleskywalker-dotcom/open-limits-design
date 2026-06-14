@@ -1,0 +1,60 @@
+{
+  "name": "open-limits-design",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "supabase:verify": "node scripts/verify-supabase.mjs",
+    "supabase:audit": "node scripts/audit-supabase-schema.mjs",
+    "supabase:apply-fix": "node scripts/apply-migration.mjs supabase/migrations/fix_media_relationships.sql",
+    "supabase:apply-phase2": "node scripts/apply-migration.mjs supabase/migrations/phase2_bookings_index_and_monthly.sql",
+    "supabase:verify-bookings": "node scripts/verify-booking-index.mjs",
+    "supabase:test-uploads": "node scripts/test-image-uploads.mjs",
+    "db:seed": "node scripts/seed-cms.mjs",
+    "furniture:import": "node scripts/import-furniture-from-excel.mjs",
+    "furniture:analyze": "node scripts/analyze-furniture-excel.mjs",
+    "furniture:analyze-pdf": "node scripts/analyze-furniture-pdf.mjs",
+    "furniture:import-pdf": "node scripts/import-furniture-from-pdf.mjs",
+    "furniture:extract-pdf": "node scripts/analyze-furniture-pdf.mjs",
+    "furniture:fix-slugs": "node scripts/fix-furniture-slugs.mjs",
+    "legacy:import-website": "node scripts/import-legacy-website.mjs",
+    "legacy:download-images": "node scripts/download-legacy-images.mjs",
+    "prototype:measure-bundles": "node scripts/measure-prototype-bundles.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@supabase/supabase-js": "latest",
+    "@tailwindcss/postcss": "^4.3.1",
+    "framer-motion": "^12.40.0",
+    "jszip": "^3.10.1",
+    "next": "latest",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^6.0.227",
+    "react": "latest",
+    "react-dom": "latest",
+    "server-only": "^0.0.1",
+    "tailwindcss": "^4.3.1",
+    "three": "^0.184.0",
+    "xlsx": "^0.18.5"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/three": "^0.184.1",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "playwright": "^1.49.0",
+    "postcss": "8.5.15",
+    "typescript": "latest"
+  }
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "shot": "01-idea-0.8s",
+    "targetPhase": "idea",
+    "phase": "idea",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": false
+  },
+  {
+    "shot": "02-blueprint-2.0s",
+    "targetPhase": "blueprint",
+    "phase": "blueprint",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": false
+  },
+  {
+    "shot": "03-structure-3.5s",
+    "targetPhase": "structure",
+    "phase": "structure",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": true
+  },
+  {
+    "shot": "04-interior-5.5s",
+    "targetPhase": "interior",
+    "phase": "interior",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": true
+  },
+  {
+    "shot": "05-exterior-8.0s",
+    "targetPhase": "exterior",
+    "phase": "exterior",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": true
+  },
+  {
+    "shot": "06-logo-10.2s",
+    "targetPhase": "logo",
+    "phase": "logo",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": false
+  },
+  {
+    "shot": "07-enter-11.5s",
+    "targetPhase": "enter",
+    "phase": "enter",
+    "stage": {
+      "w": 1280,
+      "h": 720
+    },
+    "hasMedia": true
+  }
+]

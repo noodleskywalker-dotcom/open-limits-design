@@ -1,0 +1,15 @@
+{
+  "route": "/prototype/open-limits-client-film",
+  "architecture": "creation-film-unified",
+  "zeroMediaRequests": true,
+  "mediaRequests": [],
+  "zeroMediaDom": true,
+  "beatsCaptured": [
+    "opening",
+    "drawing",
+    "moment",
+    "architecture",
+    "identity",
+    "end"
+  ]
+}

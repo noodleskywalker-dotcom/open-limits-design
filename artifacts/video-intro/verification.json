@@ -1,0 +1,18 @@
+{
+  "desktop": {
+    "playing": {
+      "ok": false,
+      "reason": "no video element"
+    },
+    "hasCta": true
+  },
+  "mobile": {
+    "playing": {
+      "ok": false,
+      "reason": "no video element"
+    },
+    "hasCta": true
+  },
+  "videoRequest": "http://127.0.0.1:3001/intro-video/open-limits-intro.mp4",
+  "errors": []
+}

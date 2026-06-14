@@ -1,0 +1,16 @@
+{
+  "measuredAt": "2026-06-13T00:34:25.631Z",
+  "note": "Server route dir sizes are approximate; shared client chunks are not route-split precisely without @next/bundle-analyzer.",
+  "cinematic": {
+    "serverRouteKb": 20.2,
+    "sharedStaticChunksDirKb": 1191.7
+  },
+  "signature": {
+    "serverRouteKb": 20.1,
+    "sharedStaticChunksDirKb": 1191.7
+  },
+  "comparison": {
+    "serverRouteKb": 17.2
+  },
+  "framerMotionDistKb": 4608.1
+}
