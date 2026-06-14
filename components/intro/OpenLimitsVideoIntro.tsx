@@ -74,9 +74,13 @@ export default function OpenLimitsVideoIntro({
 
     const tryPlay = () => {
       void video.play().catch(() => {
-        /* Autoplay may defer — not a hard failure until error event */
+        setFailed(true);
       });
     };
+
+    const loadTimeout = window.setTimeout(() => {
+      if (video.readyState < 2) setFailed(true);
+    }, 8000);
 
     const onLoadedData = () => tryPlay();
 
@@ -88,9 +92,11 @@ export default function OpenLimitsVideoIntro({
     if (video.readyState >= 2) tryPlay();
 
     return () => {
+      window.clearTimeout(loadTimeout);
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("ended", onEnded);
       video.removeEventListener("error", onError);
+      video.removeEventListener("loadeddata", onLoadedData);
     };
   }, [failed]);
 

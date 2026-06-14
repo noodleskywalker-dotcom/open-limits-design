@@ -66,7 +66,21 @@ export default function HomeExperience({
   }, []);
 
   if (!hydrated) {
-    return null;
+    /* SSR / pre-hydration: never render an empty page */
+    if (!settings.enabled) {
+      return (
+        <main className="showroom-entry-reveal visible">
+          <ShowroomEntry sections={sections} />
+        </main>
+      );
+    }
+    return (
+      <OpenLimitsVideoIntro
+        companyName={companyName}
+        logoImageUrl={logoImageUrl}
+        onEnter={() => {}}
+      />
+    );
   }
 
   return (

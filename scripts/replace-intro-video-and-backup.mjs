@@ -13,11 +13,24 @@ const PLACEHOLDER_SIZE = 489668;
 const OUT = path.join(process.cwd(), "public/intro-video/open-limits-intro.mp4");
 const BACKUP_ZIP = path.join(process.cwd(), "open-limits-design-full-backup.zip");
 
+const UPLOAD_DIR = path.join(process.cwd(), "uploads/intro-video");
+
+function listUploadDir() {
+  if (!fs.existsSync(UPLOAD_DIR)) return [];
+  return fs
+    .readdirSync(UPLOAD_DIR)
+    .filter((name) => !name.startsWith(".") && name !== "DROP-INTRO-VIDEO-HERE.md")
+    .map((name) => path.join(UPLOAD_DIR, name))
+    .filter((p) => fs.statSync(p).isFile());
+}
+
 const candidates = [
   process.argv[2],
+  ...listUploadDir(),
+  path.join(process.cwd(), "open-limits-intro.mp4 (2).zip"),
+  path.join(process.cwd(), "open-limits-intro.mp4.zip"),
   path.join(process.cwd(), "open-limits-intro.mp4.mp4"),
-  path.join(process.cwd(), "open-limits-intro.mp4"),
-  path.join(process.cwd(), "open-limits-intro.mp4.zip")
+  path.join(process.cwd(), "open-limits-intro.mp4")
 ].filter(Boolean);
 
 function hashFile(filePath) {
