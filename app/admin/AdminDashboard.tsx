@@ -15,6 +15,7 @@ import {
 } from "@/lib/cms/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import AdminLogin from "./AdminLogin";
+import AdminOverview from "@/components/admin/AdminOverview";
 import BookingsAdminPanel from "./BookingsAdminPanel";
 import FurnitureAdminPanel from "./FurnitureAdminPanel";
 import IntroAdminPanel from "./IntroAdminPanel";
@@ -249,6 +250,13 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
   const [teamForm, setTeamForm] = useState<TeamForm>(blankTeam);
   const [serviceForm, setServiceForm] = useState<ServiceForm>(blankService);
   const [comparisonForm, setComparisonForm] = useState<ComparisonForm>(blankComparison);
+  const [overviewStats, setOverviewStats] = useState({
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    furnitureItems: 0,
+    projects: 0,
+    media: 0
+  });
 
   const visibleMedia =
     categoryFilter === "All" ? media : media.filter((asset) => asset.category === categoryFilter);
@@ -259,7 +267,23 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
 
     const mediaResult = await supabase.from("media_assets").select("*").order("created_at", { ascending: false });
     if (mediaResult.error) throw mediaResult.error;
-    setMedia((mediaResult.data ?? []) as MediaAsset[]);
+    const mediaRows = (mediaResult.data ?? []) as MediaAsset[];
+    setMedia(mediaRows);
+
+    const [bookingsResult, furnitureResult, projectsCountResult] = await Promise.all([
+      supabase.from("bookings").select("status"),
+      supabase.from("furniture_items").select("id", { count: "exact", head: true }),
+      supabase.from("projects").select("id", { count: "exact", head: true })
+    ]);
+
+    const bookingRows = (bookingsResult.data ?? []) as { status: string }[];
+    setOverviewStats({
+      pendingBookings: bookingRows.filter((row) => row.status === "pending").length,
+      confirmedBookings: bookingRows.filter((row) => row.status === "confirmed").length,
+      furnitureItems: furnitureResult.count ?? 0,
+      projects: projectsCountResult.count ?? 0,
+      media: mediaRows.length
+    });
 
     const companyResult = await supabase
       .from("company_profile")
@@ -774,6 +798,11 @@ export default function AdminDashboard({ initialTab = "media" }: { initialTab?: 
 
         {message ? <p className="status success">{message}</p> : null}
         {error ? <p className="status error">{error}</p> : null}
+
+        <AdminOverview
+          onNavigate={(nextTab) => setTab(nextTab as AdminTab)}
+          stats={overviewStats}
+        />
 
         <div className="admin-shell">
           <aside className="admin-sidebar">

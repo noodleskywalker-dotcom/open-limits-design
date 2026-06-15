@@ -19,6 +19,15 @@ function monthLabel(date: Date) {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
+function formatDateLabel(date: string) {
+  return new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
 export default function BookingCalendar() {
   const [viewDate, setViewDate] = useState(() => {
     const now = new Date();
@@ -29,6 +38,7 @@ export default function BookingCalendar() {
   const [loadError, setLoadError] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
@@ -52,7 +62,6 @@ export default function BookingCalendar() {
   }, []);
 
   useEffect(() => {
-    // Availability lives in Supabase; sync whenever the visible month changes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAvailability(viewDate);
   }, [loadAvailability, viewDate]);
@@ -73,6 +82,19 @@ export default function BookingCalendar() {
     if (!slots) return "open";
     const hasFree = Object.values(slots).some((state) => state === "available");
     return hasFree ? "open" : "full";
+  }
+
+  function openDateModal(date: string) {
+    setSelectedDate(date);
+    setSelectedSlot("");
+    setResult(null);
+    setModalOpen(true);
+  }
+
+  function closeModal() {
+    setModalOpen(false);
+    setSelectedSlot("");
+    setResult(null);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -99,7 +121,7 @@ export default function BookingCalendar() {
 
       setResult({
         ok: true,
-        message: `Request received for ${selectedDate} at ${selectedSlot}. We will confirm shortly.`
+        message: `Request received for ${formatDateLabel(selectedDate)} at ${selectedSlot}. We will confirm shortly.`
       });
       setSelectedSlot("");
       setForm({ name: "", email: "", phone: "", notes: "" });
@@ -117,8 +139,14 @@ export default function BookingCalendar() {
   const slotsForSelected = selectedDate ? availability?.days[selectedDate] : null;
 
   return (
-    <div className="booking-shell">
-      <div className="booking-calendar">
+    <div className="booking-shell booking-shell-luxury">
+      <div className="booking-intro">
+        <p className="eyebrow">Private consultation</p>
+        <h2>Book a meeting with our CEO</h2>
+        <p className="meta">Select a date on the calendar. Available times appear in a popup — no manual entry required.</p>
+      </div>
+
+      <div className="booking-calendar booking-calendar-luxury">
         <div className="booking-month-bar">
           <button
             aria-label="Previous month"
@@ -153,11 +181,7 @@ export default function BookingCalendar() {
                 className={`booking-day ${dayState(date)} ${selectedDate === date ? "selected" : ""}`}
                 disabled={dayState(date) !== "open"}
                 key={date}
-                onClick={() => {
-                  setSelectedDate(date);
-                  setSelectedSlot("");
-                  setResult(null);
-                }}
+                onClick={() => openDateModal(date)}
                 type="button"
               >
                 {Number(date.slice(8))}
@@ -167,11 +191,28 @@ export default function BookingCalendar() {
             )
           )}
         </div>
+      </div>
 
-        {selectedDate ? (
-          <div className="booking-slots">
-            <p className="meta">Available times on {selectedDate}</p>
-            <div className="booking-slot-grid">
+      {modalOpen && selectedDate ? (
+        <div className="booking-modal-backdrop" onClick={closeModal} role="presentation">
+          <div
+            aria-labelledby="booking-modal-title"
+            aria-modal="true"
+            className="booking-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <div className="booking-modal-header">
+              <div>
+                <p className="eyebrow">Available times</p>
+                <h3 id="booking-modal-title">{formatDateLabel(selectedDate)}</h3>
+              </div>
+              <button aria-label="Close" className="booking-modal-close" onClick={closeModal} type="button">
+                ×
+              </button>
+            </div>
+
+            <div className="booking-slot-grid booking-slot-grid-modal">
               {(availability?.slots ?? []).map((slot) => {
                 const state = slotsForSelected?.[slot] ?? "available";
                 return (
@@ -187,55 +228,54 @@ export default function BookingCalendar() {
                 );
               })}
             </div>
-          </div>
-        ) : null}
-      </div>
 
-      <form className="booking-form" onSubmit={submit}>
-        <h3>Your details</h3>
-        <p className="meta">
-          {selectedDate && selectedSlot
-            ? `Requesting ${selectedDate} at ${selectedSlot}`
-            : "Select a date and time on the calendar."}
-        </p>
-        <label className="field">
-          <span>Full name</span>
-          <input
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            required
-            value={form.name}
-          />
-        </label>
-        <label className="field">
-          <span>Email</span>
-          <input
-            onChange={(event) => setForm({ ...form, email: event.target.value })}
-            required
-            type="email"
-            value={form.email}
-          />
-        </label>
-        <label className="field">
-          <span>Phone</span>
-          <input
-            onChange={(event) => setForm({ ...form, phone: event.target.value })}
-            placeholder="+974…"
-            value={form.phone}
-          />
-        </label>
-        <label className="field">
-          <span>Notes</span>
-          <textarea
-            onChange={(event) => setForm({ ...form, notes: event.target.value })}
-            placeholder="Tell us about your project"
-            value={form.notes}
-          />
-        </label>
-        <button className="button" disabled={!selectedDate || !selectedSlot || submitting} type="submit">
-          {submitting ? "Submitting…" : "Request meeting"}
-        </button>
-        {result ? <p className={`status ${result.ok ? "success" : "error"}`}>{result.message}</p> : null}
-      </form>
+            <form className="booking-form booking-form-modal" onSubmit={submit}>
+              <p className="meta">
+                {selectedSlot
+                  ? `Requesting ${selectedSlot} on ${formatDateLabel(selectedDate)}`
+                  : "Select an available time slot above."}
+              </p>
+              <label className="field">
+                <span>Full name</span>
+                <input
+                  onChange={(event) => setForm({ ...form, name: event.target.value })}
+                  required
+                  value={form.name}
+                />
+              </label>
+              <label className="field">
+                <span>Email</span>
+                <input
+                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  required
+                  type="email"
+                  value={form.email}
+                />
+              </label>
+              <label className="field">
+                <span>Phone</span>
+                <input
+                  onChange={(event) => setForm({ ...form, phone: event.target.value })}
+                  placeholder="+974…"
+                  value={form.phone}
+                />
+              </label>
+              <label className="field">
+                <span>Notes</span>
+                <textarea
+                  onChange={(event) => setForm({ ...form, notes: event.target.value })}
+                  placeholder="Tell us about your project"
+                  value={form.notes}
+                />
+              </label>
+              <button className="button" disabled={!selectedSlot || submitting} type="submit">
+                {submitting ? "Submitting…" : "Request meeting"}
+              </button>
+              {result ? <p className={`status ${result.ok ? "success" : "error"}`}>{result.message}</p> : null}
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   fallbackShowroomSections,
   fallbackTeam
 } from "./fallback";
+import { sortShowroomSections } from "./showroom-order";
 import {
   LEGACY_INTRO_BLUEPRINT_URL,
   LEGACY_INTRO_FINAL_URL,
@@ -292,7 +293,7 @@ export async function getIntroSlides(): Promise<IntroSlide[]> {
 
 export async function getShowroomSections(): Promise<ShowroomSection[]> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return fallbackShowroomSections;
+  if (!supabase) return sortShowroomSections(fallbackShowroomSections);
 
   for (const select of [
     "*, image:media_assets!showroom_sections_image_id_fkey(*)",
@@ -304,9 +305,9 @@ export async function getShowroomSections(): Promise<ShowroomSection[]> {
       .select(select)
       .eq("published", true)
       .order("sort_order", { ascending: true });
-    if (!error && data) return data as unknown as ShowroomSection[];
+    if (!error && data) return sortShowroomSections(data as unknown as ShowroomSection[]);
   }
-  return fallbackShowroomSections;
+  return sortShowroomSections(fallbackShowroomSections);
 }
 
 export async function getShowroomSectionBySlug(slug: string): Promise<ShowroomSection | null> {
