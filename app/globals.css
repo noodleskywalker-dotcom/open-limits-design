@@ -812,7 +812,7 @@ a.card:hover {
   bottom: 1.5rem;
   position: fixed;
   right: 1.5rem;
-  z-index: 50;
+  z-index: 400;
 }
 
 .ai-toggle {
