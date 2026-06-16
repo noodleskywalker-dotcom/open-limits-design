@@ -1,5 +1,16 @@
 import type { ChatPreview, ChatReplyPayload } from "@/lib/ai/chat-types";
 import type { SiteKnowledge } from "@/lib/ai/chat-context";
+import {
+  PUBLIC_CATALOG_PREP,
+  PUBLIC_EMPTY_CATALOG_LIVE,
+  PUBLIC_EMPTY_MATERIALS_LIVE,
+  PUBLIC_EMPTY_PROJECTS_LIVE,
+  PUBLIC_EMPTY_SERVICES_LIVE,
+  PUBLIC_GENERIC_HINT,
+  PUBLIC_MATERIALS_PREP,
+  PUBLIC_PROJECTS_PREP,
+  PUBLIC_SERVICES_PREP
+} from "@/lib/ai/public-messages";
 
 export type { ChatReplyPayload };
 
@@ -87,17 +98,19 @@ function furnitureReply(knowledge: SiteKnowledge): ChatReplyPayload {
   const categoryNames = categories.map((c) => `${c.name} (${c.itemCount})`);
 
   let reply = knowledge.live
-    ? `Live catalog: ${counts.categories} categor${counts.categories === 1 ? "y" : "ies"}, ${counts.furnitureItems} published item${counts.furnitureItems === 1 ? "" : "s"}.`
-    : "Supabase is not connected — connect your CMS to load the live furniture catalog.";
+    ? `Our furniture catalog features ${counts.categories} categor${counts.categories === 1 ? "y" : "ies"} and ${counts.furnitureItems} curated piece${counts.furnitureItems === 1 ? "" : "s"} — bespoke sofas, majlis, bedrooms, and accent furniture for luxury interiors.`
+    : PUBLIC_CATALOG_PREP;
 
   if (categoryNames.length) {
     reply += `\n\nCategories: ${joinNames(categoryNames, 8)}.`;
   }
 
   if (knowledge.furnitureItems.length) {
-    reply += "\n\nTap any item below for dimensions, materials, and gallery images.";
+    reply += "\n\nExplore featured pieces below — each includes dimensions, materials, and gallery imagery.";
   } else if (knowledge.live) {
-    reply += "\n\nNo furniture items are published yet. Add items in Admin → Furniture.";
+    reply += `\n\n${PUBLIC_EMPTY_CATALOG_LIVE}`;
+  } else {
+    reply += "\n\nBrowse the catalog or book a consultation for bespoke recommendations.";
   }
 
   const links = [
@@ -122,16 +135,16 @@ function materialsReply(knowledge: SiteKnowledge): ChatReplyPayload {
   const names = knowledge.materials.map((m) => m.name);
 
   let reply = knowledge.live
-    ? `Live material library: ${counts.materials} published finish${counts.materials === 1 ? "" : "es"}.`
-    : "Connect Supabase to load the live materials library.";
+    ? `Our material library includes ${counts.materials} curated finish${counts.materials === 1 ? "" : "es"} — marbles, woods, leathers, fabrics, and metal accents selected for luxury interiors.`
+    : PUBLIC_MATERIALS_PREP;
 
   if (names.length) {
     reply += `\n\n${joinNames(names, 10)}.`;
   } else if (knowledge.live) {
-    reply += "\n\nNo materials published yet — add them in Admin → Materials.";
+    reply += `\n\n${PUBLIC_EMPTY_MATERIALS_LIVE}`;
   }
 
-  reply += "\n\nMaterials can be linked to furniture pieces for in-context swatch comparison.";
+  reply += "\n\nMaterials can be paired with furniture pieces for in-context swatch comparison.";
 
   const links = [{ label: "Browse Materials", href: "/materials" }];
   for (const item of knowledge.materials.slice(0, 4)) {
@@ -151,7 +164,7 @@ function projectsReply(knowledge: SiteKnowledge): ChatReplyPayload {
 
   if (!knowledge.live) {
     return {
-      reply: "Connect Supabase to load the live project portfolio.",
+      reply: PUBLIC_PROJECTS_PREP,
       links: [{ label: "View Projects", href: "/projects" }],
       previews: [],
       source: "cms"
@@ -160,8 +173,7 @@ function projectsReply(knowledge: SiteKnowledge): ChatReplyPayload {
 
   if (!counts.projects) {
     return {
-      reply:
-        "No projects are published in the CMS yet. Add portfolio entries in Admin → Projects — each includes imagery, scope, and delivery details.",
+      reply: PUBLIC_EMPTY_PROJECTS_LIVE,
       links: [
         { label: "View Projects", href: "/projects" },
         { label: "Projects Showroom", href: "/showroom/projects" }
@@ -175,7 +187,7 @@ function projectsReply(knowledge: SiteKnowledge): ChatReplyPayload {
     .slice(0, 5)
     .map((p) => (p.location ? `${p.title} (${p.location})` : p.title));
 
-  const reply = `Live portfolio: ${counts.projects} published project${counts.projects === 1 ? "" : "s"} — ${joinNames(highlights, 5)}.`;
+  const reply = `Our portfolio spans ${counts.projects} completed project${counts.projects === 1 ? "" : "s"} — ${joinNames(highlights, 5)}. Each entry includes imagery, scope, and delivery details.`;
 
   const links = [
     { label: "View Projects", href: "/projects" },
@@ -197,10 +209,10 @@ function servicesReply(knowledge: SiteKnowledge): ChatReplyPayload {
   const lines = knowledge.services.map((s) => `${s.title} — ${s.description}`);
   const reply =
     knowledge.live && lines.length > 0
-      ? `Live services (${knowledge.counts.services}):\n\n${lines.join("\n")}\n\nShare your project type and location for a tailored next step.`
+      ? `We deliver ${knowledge.counts.services} core disciplines:\n\n${lines.join("\n")}\n\nShare your project type, location, and timeline — we will recommend the right next step.`
       : knowledge.live
-        ? "No active services in the CMS yet. Add them in Admin → Services."
-        : "Connect Supabase to load live services.";
+        ? PUBLIC_EMPTY_SERVICES_LIVE
+        : PUBLIC_SERVICES_PREP;
 
   const links = [
     { label: "View Services", href: "/services" },
@@ -224,7 +236,7 @@ function bookingReply(knowledge: SiteKnowledge): ChatReplyPayload {
   if (dateLines.length) {
     reply += `\n\nAvailable dates:\n${dateLines.join("\n")}`;
   }
-  reply += "\n\nChoose a date, pick an hourly slot, and leave your contact details — our team confirms every request.";
+  reply += "\n\nSelect a date, choose an available time, and leave your details — our team confirms every request personally.";
 
   return {
     reply,
@@ -270,19 +282,19 @@ function variedUnknownReply(question: string, knowledge: SiteKnowledge): ChatRep
     hints.push(`${knowledge.companyName} is a luxury architecture, interior, and furniture studio in Qatar.`);
   }
   if (/hello|hi|hey|good/.test(q)) {
-    hints.push("Hello — ask about catalog, materials, projects, services, or book a CEO meeting.");
+    hints.push("Hello — I can guide you through furniture, materials, services, projects, or booking a private CEO meeting.");
   }
   if (/showroom|virtual|tour/.test(q)) {
-    hints.push("Try our interactive showrooms — Architecture, Projects, Furniture, and Interior Design.");
+    hints.push("Explore our interactive showrooms — Architecture, Interior Design, Projects, and Furniture.");
   }
 
   if (!hints.length) {
     if (knowledge.live) {
       hints.push(
-        `Live CMS: ${knowledge.counts.categories} furniture categories, ${knowledge.counts.furnitureItems} items, ${knowledge.counts.materials} materials, ${knowledge.counts.projects} projects. Try "catalog", "materials", "projects", "booking", or "services".`
+        `We currently feature ${knowledge.counts.furnitureItems} furniture pieces, ${knowledge.counts.materials} materials, and ${knowledge.counts.projects} projects. ${PUBLIC_GENERIC_HINT}`
       );
     } else {
-      hints.push('Connect Supabase to enable live CMS answers. Try "catalog", "materials", "projects", "booking", or "services".');
+      hints.push(PUBLIC_GENERIC_HINT);
     }
   }
 

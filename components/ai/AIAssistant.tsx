@@ -14,14 +14,14 @@ type ChatMessage = {
   streaming?: boolean;
 };
 
-const WELCOME =
-  "Welcome to Open Limits Design. I pull live data from our CMS — catalog, materials, projects, services, and CEO meeting availability. Try a quick action below or ask anything.";
+import { PUBLIC_ASSISTANT_WELCOME } from "@/lib/ai/public-messages";
+
+const WELCOME = PUBLIC_ASSISTANT_WELCOME;
 
 const QUICK_ACTIONS: { label: string; prompt: string }[] = [
-  { label: "View Furniture Catalog", prompt: "catalog" },
+  { label: "View Furniture", prompt: "catalog" },
   { label: "Browse Materials", prompt: "materials" },
-  { label: "Book a Meeting", prompt: "booking" },
-  { label: "View Projects", prompt: "projects" },
+  { label: "Book Meeting", prompt: "booking" },
   { label: "Ask About Services", prompt: "services" }
 ];
 

@@ -1,3 +1,4 @@
+import { PUBLIC_BOOKING_DEFAULT } from "@/lib/ai/public-messages";
 import type { BookingAvailability } from "@/lib/ai/chat-types";
 import type { Booking, FurnitureCategory, FurnitureItem, Material, Project } from "@/lib/cms/types";
 import { BOOKING_SLOTS, resolveImageUrl } from "@/lib/cms/types";
@@ -114,7 +115,7 @@ function emptyKnowledge(): SiteKnowledge {
     homepageContent: { heroTitle: null, heroSubtitle: null, aboutText: null },
     siteContent: [],
     booking: {
-      summary: "Connect Supabase to load live booking availability.",
+      summary: PUBLIC_BOOKING_DEFAULT,
       openSlotCount: 0,
       openDayCount: 0,
       dates: []

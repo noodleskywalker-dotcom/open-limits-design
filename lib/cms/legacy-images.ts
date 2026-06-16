@@ -158,13 +158,24 @@ export const legacyShowroomSections: ShowroomSection[] = [
     image: media.heroArchitecture
   },
   {
+    id: "interior",
+    slug: "interior",
+    title: "Interior Design",
+    description: "Material palettes, spatial planning, and turnkey interiors.",
+    image_id: media.interiorBedroom.id,
+    link_url: "/showroom/interior",
+    sort_order: 2,
+    published: true,
+    image: media.interiorBedroom
+  },
+  {
     id: "projects",
     slug: "projects",
     title: "Projects",
     description: "A curated portfolio of completed work across Qatar.",
     image_id: media.projectsShowroom.id,
     link_url: "/showroom/projects",
-    sort_order: 2,
+    sort_order: 3,
     published: true,
     image: media.projectsShowroom
   },
@@ -175,20 +186,9 @@ export const legacyShowroomSections: ShowroomSection[] = [
     description: "Bespoke collections, majlis, bedrooms, and custom pieces.",
     image_id: media.furnitureShowroom.id,
     link_url: "/showroom/furniture",
-    sort_order: 3,
-    published: true,
-    image: media.furnitureShowroom
-  },
-  {
-    id: "interior",
-    slug: "interior",
-    title: "Interior Design",
-    description: "Material palettes, spatial planning, and turnkey interiors.",
-    image_id: media.interiorBedroom.id,
-    link_url: "/showroom/interior",
     sort_order: 4,
     published: true,
-    image: media.interiorBedroom
+    image: media.furnitureShowroom
   }
 ];
 

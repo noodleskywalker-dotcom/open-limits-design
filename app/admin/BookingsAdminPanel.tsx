@@ -9,7 +9,8 @@ export default function BookingsAdminPanel() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [blocked, setBlocked] = useState<BlockedTime[]>([]);
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "rejected">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "rejected" | "blocked">("all");
+  const [rangeFilter, setRangeFilter] = useState<"all" | "today" | "week" | "month">("all");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
@@ -85,8 +86,36 @@ export default function BookingsAdminPanel() {
     await loadData();
   }
 
-  const visibleBookings =
-    statusFilter === "all" ? bookings : bookings.filter((b) => b.status === statusFilter);
+  const visibleBookings = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const weekEnd = new Date();
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    const weekEndStr = weekEnd.toISOString().slice(0, 10);
+    const monthEnd = new Date();
+    monthEnd.setMonth(monthEnd.getMonth() + 1);
+    const monthEndStr = monthEnd.toISOString().slice(0, 10);
+
+    return bookings.filter((booking) => {
+      if (statusFilter !== "all" && statusFilter !== "blocked" && booking.status !== statusFilter) {
+        return false;
+      }
+      if (statusFilter === "blocked") return false;
+
+      if (rangeFilter === "today") return booking.booking_date === today;
+      if (rangeFilter === "week") {
+        return booking.booking_date >= today && booking.booking_date <= weekEndStr;
+      }
+      if (rangeFilter === "month") {
+        return booking.booking_date >= today && booking.booking_date <= monthEndStr;
+      }
+      return true;
+    });
+  }, [bookings, rangeFilter, statusFilter]);
+
+  const visibleBlocked =
+    statusFilter === "blocked" || statusFilter === "all"
+      ? blocked
+      : [];
 
   return (
     <div>
@@ -105,20 +134,59 @@ export default function BookingsAdminPanel() {
           <h2>Booking requests</h2>
           <p>Accept or reject requests. Pending and confirmed slots are unavailable to clients.</p>
         </div>
-        <label className="field">
-          <span>Filter</span>
-          <select
-            onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
-            value={statusFilter}
-          >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </label>
+        <div className="admin-filter-row">
+          <label className="field">
+            <span>Status</span>
+            <select
+              onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+              value={statusFilter}
+            >
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="rejected">Rejected</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Range</span>
+            <select
+              onChange={(event) => setRangeFilter(event.target.value as typeof rangeFilter)}
+              value={rangeFilter}
+            >
+              <option value="all">All dates</option>
+              <option value="today">Today</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+            </select>
+          </label>
+        </div>
       </div>
 
+      {statusFilter === "blocked" || (statusFilter === "all" && visibleBlocked.length) ? (
+        <div className="row-list admin-blocked-list">
+          {visibleBlocked.map((block) => (
+            <div className="row-item" key={block.id}>
+              <div>
+                <strong>{block.title ?? "Blocked time"}</strong>
+                <p>
+                  {block.date ?? "Recurring"}
+                  {block.start_time
+                    ? ` · ${block.start_time.slice(0, 5)}–${block.end_time?.slice(0, 5) ?? ""}`
+                    : " · Whole day"}
+                  {block.repeat_type !== "none" ? ` · ${block.repeat_type}` : ""}
+                </p>
+              </div>
+              <button className="button ghost" onClick={() => removeBlock(block.id)} type="button">
+                Unblock
+              </button>
+            </div>
+          ))}
+          {!visibleBlocked.length ? <p className="meta">No blocked times configured.</p> : null}
+        </div>
+      ) : null}
+
+      {statusFilter !== "blocked" ? (
       <div className="row-list">
         {visibleBookings.map((booking) => (
           <div className="row-item" key={booking.id}>
@@ -159,6 +227,7 @@ export default function BookingsAdminPanel() {
         ))}
         {!visibleBookings.length ? <div className="empty-state">No bookings found.</div> : null}
       </div>
+      ) : null}
     </div>
   );
 }

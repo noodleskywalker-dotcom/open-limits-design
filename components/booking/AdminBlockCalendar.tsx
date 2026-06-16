@@ -202,9 +202,44 @@ export default function AdminBlockCalendar({ bookings, blocked, onSave, onRemove
             click blocked items to delete.
           </p>
         </div>
-        <button className="button" onClick={() => openBlockModal()} type="button">
-          Block time
-        </button>
+        <div className="admin-filter-row">
+          <button
+            className="button ghost"
+            onClick={() => {
+              const today = new Date().toISOString().slice(0, 10);
+              setViewDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+              setSelectedDate(today);
+            }}
+            type="button"
+          >
+            Today
+          </button>
+          <button
+            className="button ghost"
+            onClick={() => {
+              const now = new Date();
+              setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
+              setSelectedDate(now.toISOString().slice(0, 10));
+            }}
+            type="button"
+          >
+            This week
+          </button>
+          <button
+            className="button ghost"
+            onClick={() => {
+              const now = new Date();
+              setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
+              setSelectedDate("");
+            }}
+            type="button"
+          >
+            This month
+          </button>
+          <button className="button" onClick={() => openBlockModal()} type="button">
+            Block time
+          </button>
+        </div>
       </div>
 
       <div className="booking-month-bar">
