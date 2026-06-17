@@ -257,10 +257,39 @@ export const BOOKING_SLOTS = [
   "16:00"
 ] as const;
 
+/** Normalize CMS image URLs for production (fix dev localhost URLs saved to DB). */
+export function normalizeImageUrl(url: string | null | undefined): string | null {
+  if (!url?.trim()) return null;
+  const trimmed = url.trim();
+
+  if (trimmed.startsWith("/")) return trimmed;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(trimmed)) {
+    const storageMatch = trimmed.match(/\/storage\/v1\/object\/public\/site-media\/(.+)$/);
+    if (storageMatch && supabaseUrl) {
+      return `${supabaseUrl}/storage/v1/object/public/site-media/${storageMatch[1]}`;
+    }
+    const siteMediaMatch = trimmed.match(/site-media\/(.+)$/);
+    if (siteMediaMatch && supabaseUrl) {
+      return `${supabaseUrl}/storage/v1/object/public/site-media/${siteMediaMatch[1]}`;
+    }
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.pathname.startsWith("/images/")) return parsed.pathname;
+    } catch {
+      /* ignore invalid URL */
+    }
+  }
+
+  return trimmed;
+}
+
 /** Resolve a display URL from a CMS media record with a legacy URL fallback. */
 export function resolveImageUrl(
   media: MediaAsset | null | undefined,
   legacyUrl?: string | null
 ): string | null {
-  return media?.public_url ?? legacyUrl ?? null;
+  return normalizeImageUrl(media?.public_url ?? legacyUrl ?? null);
 }

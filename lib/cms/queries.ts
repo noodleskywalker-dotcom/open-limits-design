@@ -79,6 +79,8 @@ const furnitureSelect = `
   )
 `;
 
+const furnitureSelectLegacy = `*, category:furniture_categories(*)`;
+
 function sortedGallery(rows: SortedImageRow[] | undefined): MediaAsset[] {
   return (rows ?? [])
     .sort((a, b) => a.sort_order - b.sort_order)
@@ -218,34 +220,42 @@ export async function getFurnitureCategories(includeUnpublished = false): Promis
 
 export async function getFurnitureItems(includeUnpublished = false): Promise<FurnitureItem[]> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return [];
+  if (!supabase) return fallbackFurnitureItems;
 
-  let query = supabase
-    .from("furniture_items")
-    .select(furnitureSelect)
-    .order("sort_order", { ascending: true });
-  if (!includeUnpublished) query = query.eq("published", true);
+  for (const select of [furnitureSelect, furnitureSelectLegacy, "*"]) {
+    let query = supabase
+      .from("furniture_items")
+      .select(select)
+      .order("sort_order", { ascending: true });
+    if (!includeUnpublished) query = query.eq("published", true);
 
-  const { data, error } = await query;
-  if (error || !data) return [];
+    const { data, error } = await query;
+    if (!error && data?.length) {
+      return (data as unknown as FurnitureItemRow[]).map(normalizeFurnitureItem);
+    }
+  }
 
-  return (data as unknown as FurnitureItemRow[]).map(normalizeFurnitureItem);
+  return fallbackFurnitureItems;
 }
 
 export async function getFurnitureItemBySlug(slug: string): Promise<FurnitureItem | null> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return null;
+  if (!supabase) {
+    return fallbackFurnitureItems.find((item) => item.slug === slug) ?? null;
+  }
 
-  const { data, error } = await supabase
-    .from("furniture_items")
-    .select(furnitureSelect)
-    .eq("slug", slug)
-    .eq("published", true)
-    .maybeSingle();
+  for (const select of [furnitureSelect, furnitureSelectLegacy, "*"]) {
+    const { data, error } = await supabase
+      .from("furniture_items")
+      .select(select)
+      .eq("slug", slug)
+      .eq("published", true)
+      .maybeSingle();
 
-  if (error || !data) return null;
+    if (!error && data) return normalizeFurnitureItem(data as unknown as FurnitureItemRow);
+  }
 
-  return normalizeFurnitureItem(data as unknown as FurnitureItemRow);
+  return fallbackFurnitureItems.find((item) => item.slug === slug) ?? null;
 }
 
 export async function getRelatedFurnitureItems(item: FurnitureItem, limit = 3): Promise<FurnitureItem[]> {
