@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { newIdempotencyKey, readAttribution } from "@/lib/crm/attribution-client";
+import { CONSENT_TEXT } from "@/lib/crm/enquiry";
 
 type SlotState = "available" | "taken" | "blocked";
 type AvailabilityResponse = {
@@ -40,6 +42,7 @@ export default function BookingCalendar() {
   const [selectedSlot, setSelectedSlot] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
@@ -113,10 +116,14 @@ export default function BookingCalendar() {
           client_phone: form.phone,
           notes: form.notes,
           booking_date: selectedDate,
-          start_time: selectedSlot
+          start_time: selectedSlot,
+          consent,
+          locale: document.documentElement.lang === "ar" ? "ar" : "en",
+          idempotencyKey: newIdempotencyKey(),
+          attribution: readAttribution()
         })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? "Unable to submit booking");
 
       setResult({
@@ -125,6 +132,7 @@ export default function BookingCalendar() {
       });
       setSelectedSlot("");
       setForm({ name: "", email: "", phone: "", notes: "" });
+      setConsent(false);
       await loadAvailability(viewDate);
     } catch (error) {
       setResult({
@@ -267,6 +275,10 @@ export default function BookingCalendar() {
                   placeholder="Tell us about your project"
                   value={form.notes}
                 />
+              </label>
+              <label className="checkbox-field booking-consent">
+                <input checked={consent} onChange={(event) => setConsent(event.target.checked)} required type="checkbox" />
+                <span>{CONSENT_TEXT.en}</span>
               </label>
               <button className="button" disabled={!selectedSlot || submitting} type="submit">
                 {submitting ? "Submitting…" : "Request meeting"}

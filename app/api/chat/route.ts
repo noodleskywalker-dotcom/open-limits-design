@@ -39,7 +39,7 @@ async function storeLead(messages: ChatMessage[]) {
   if (!supabase) return;
 
   const { error } = await supabase.from("leads").insert(lead);
-  if (error) console.error("[chat] lead insert failed:", error.message);
+  if (error) console.error("[chat] lead insert failed:", error.code ?? "DB_ERROR");
 }
 
 function inferLinksFromReply(reply: string): ChatLink[] {

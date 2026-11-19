@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:crm": "node --conditions=react-server --import ./tests/crm/register.mjs --test tests/crm/*.test.ts",
     "supabase:verify": "node scripts/verify-supabase.mjs",
     "supabase:audit": "node scripts/audit-supabase-schema.mjs",
     "supabase:apply-fix": "node scripts/apply-migration.mjs supabase/migrations/fix_media_relationships.sql",

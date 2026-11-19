@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AIAssistant from "@/components/ai/AIAssistant";
 import SiteHeader from "@/components/layout/SiteHeader";
+import AttributionCapture from "@/components/crm/AttributionCapture";
 import { LEGACY_LOGO_URL } from "@/lib/cms/legacy-images";
 import "./globals.css";
 
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        <AttributionCapture />
         <SiteHeader />
         {children}
         <footer className="site-footer">

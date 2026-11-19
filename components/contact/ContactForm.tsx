@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { newIdempotencyKey, readAttribution } from "@/lib/crm/attribution-client";
+import { CONSENT_TEXT } from "@/lib/crm/enquiry";
 
 const PROJECT_TYPES = [
   "Architecture",
@@ -19,6 +21,10 @@ export default function ContactForm() {
     projectType: "",
     message: ""
   });
+  const [consent, setConsent] = useState(false);
+  const [website, setWebsite] = useState("");
+  // One key per submission attempt: a network retry of the same attempt is deduplicated server-side.
+  const [attemptKey, setAttemptKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
@@ -26,18 +32,29 @@ export default function ContactForm() {
     event.preventDefault();
     setBusy(true);
     setResult(null);
+    const key = attemptKey ?? newIdempotencyKey();
+    setAttemptKey(key);
 
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
+        body: JSON.stringify({
+          ...form,
+          consent,
+          website,
+          locale: document.documentElement.lang === "ar" ? "ar" : "en",
+          idempotencyKey: key,
+          attribution: readAttribution()
+        })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? "Unable to send message");
 
       setResult({ ok: true, message: "Thank you — we will be in touch shortly." });
       setForm({ name: "", phone: "", email: "", projectType: "", message: "" });
+      setConsent(false);
+      setAttemptKey(null);
     } catch (error) {
       setResult({
         ok: false,
@@ -103,6 +120,26 @@ export default function ContactForm() {
               required
               rows={5}
               value={form.message}
+            />
+          </label>
+          <label className="checkbox-field full-width">
+            <input
+              checked={consent}
+              onChange={(event) => {
+                setConsent(event.target.checked);
+              }}
+              required
+              type="checkbox"
+            />
+            <span>{CONSENT_TEXT.en}</span>
+          </label>
+          <label aria-hidden="true" className="form-honeypot">
+            Website
+            <input
+              autoComplete="off"
+              onChange={(event) => setWebsite(event.target.value)}
+              tabIndex={-1}
+              value={website}
             />
           </label>
         </div>

@@ -1443,6 +1443,20 @@ a.card:hover {
   margin-top: 0.2rem;
 }
 
+.contact-form .checkbox-field input,
+.booking-consent input {
+  width: auto;
+  flex: none;
+}
+
+.form-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .import-history-list {
   display: grid;
   gap: 1rem;
