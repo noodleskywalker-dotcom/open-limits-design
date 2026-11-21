@@ -5,7 +5,11 @@ export function after(callback) {
 }
 export class NextResponse extends Response {
   static json(body, init = {}) {
-    return new Response(JSON.stringify(body), { ...init, headers: { "content-type": "application/json" } });
+    return new NextResponse(JSON.stringify(body), { ...init, headers: { "content-type": "application/json", ...(init.headers ?? {}) } });
   }
 }
-export class NextRequest extends Request {}
+export class NextRequest extends Request {
+  get nextUrl() {
+    return new URL(this.url);
+  }
+}

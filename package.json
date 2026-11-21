@@ -48,6 +48,7 @@
     "postcss": "8.5.15"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@eslint/eslintrc": "latest",
     "@types/node": "latest",
     "@types/react": "latest",

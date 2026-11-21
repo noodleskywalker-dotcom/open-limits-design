@@ -184,7 +184,8 @@ test("outbox: finds-or-creates contact, creates opportunity in the configured st
   };
   const result = await processOutbox(store, ghl, { fieldIds: { project_type: "fieldPT001", ol_tracking_ref: "fieldTR001" }, now: () => FIXED_NOW });
   assert.deepEqual(result, { claimed: 1, synced: 1, retried: 0, needsReview: 0, errors: {} });
-  assert.deepEqual(calls, ["contact:2", "find", "create:NEW_ENQUIRY"]);
+  // "Interior Design" has no GHL Project Type option, so only the tracking ref is sent.
+  assert.deepEqual(calls, ["contact:1", "find", "create:NEW_ENQUIRY"]);
   assert.deepEqual(patches.map((p) => Object.keys(p.patch)[0]), ["ghl_contact_id", "ghl_opportunity_id", "crm_status"]);
   assert.equal(patches[2].patch.crm_status, "SYNCED");
 });
@@ -253,11 +254,12 @@ const config: GhlHandoffConfig = {
 };
 
 test("ghl config: disabled by default and when any required id is missing", () => {
-  assert.equal(ghlHandoffConfig({}), null);
+  assert.equal(ghlHandoffConfig({}, "APPROVED"), null);
   const full = { GHL_HANDOFF_ENABLED: "true", GHL_PRIVATE_INTEGRATION_TOKEN: config.token, GHL_LOCATION_ID: config.locationId, GHL_PIPELINE_ID: config.pipelineId, GHL_STAGE_NEW_ENQUIRY_ID: "stage-new-001", GHL_STAGE_CONSULTATION_BOOKED_ID: "stage-consult-001" };
-  assert.ok(ghlHandoffConfig(full));
-  assert.equal(ghlHandoffConfig({ ...full, GHL_HANDOFF_ENABLED: "1" }), null);
-  assert.equal(ghlHandoffConfig({ ...full, GHL_PIPELINE_ID: "" }), null);
+  assert.ok(ghlHandoffConfig(full, "APPROVED"));
+  assert.equal(ghlHandoffConfig(full), null, "privacy notice still DRAFT, so the handoff stays off even with the switch on");
+  assert.equal(ghlHandoffConfig({ ...full, GHL_HANDOFF_ENABLED: "1" }, "APPROVED"), null);
+  assert.equal(ghlHandoffConfig({ ...full, GHL_PIPELINE_ID: "" }, "APPROVED"), null);
 });
 
 test("ghl client: sends only the three allowed calls to the official origin with version header; maps errors to codes", async () => {
@@ -286,7 +288,12 @@ test("ghl client: sends only the three allowed calls to the official origin with
   assert.equal(new URL(seen[1].url).searchParams.get("number"), "+97455501234");
   assert.equal((seen[2].body as { tags?: unknown }).tags, undefined, "create must not send tags");
   assert.equal((seen[4].body as { pipelineStageId: string }).pipelineStageId, "stage-consult-001");
-  assert.equal(new URL(seen[3].url).searchParams.get("status"), "open");
+  const search = new URL(seen[3].url).searchParams;
+  assert.equal(search.get("status"), "open");
+  assert.equal(search.get("locationId"), config.locationId, "camelCase params (snake_case location_id is rejected live with 422)");
+  assert.equal(search.get("contactId"), "contact-AAA111");
+  assert.equal(search.get("pipelineId"), config.pipelineId);
+  assert.equal(search.get("location_id"), null);
 
   const failing = (status: number, headers: Record<string, string> = {}) =>
     new GhlHandoffClient(config, (async () => new Response(`{"message":"bad ${PII.email}"}`, { status, headers })) as unknown as typeof fetch);
@@ -334,4 +341,20 @@ test("ghl client: losing a create race falls back to the contact that now exists
   }) as unknown as typeof fetch;
   const result = await new GhlHandoffClient(config, fakeFetch).findOrCreateContact({ name: "n", email: PII.email, phone: PII.phone, source: "s", customFields: [] });
   assert.deepEqual(result, { id: "contact-RACED01", created: false });
+});
+
+test("outbox: field values use the exact GHL option labels and the opportunity carries the tracking ref", async () => {
+  const contactFields: { id: string; field_value: string }[][] = [];
+  const oppFields: { id: string; field_value: string }[][] = [];
+  const ghl = {
+    async findOrCreateContact(c: { customFields: { id: string; field_value: string }[] }) { contactFields.push(c.customFields); return { id: "contact-AAA111", created: true }; },
+    async findOpportunity() { return null; },
+    async createOpportunity(input: { customFields: { id: string; field_value: string }[] }) { oppFields.push(input.customFields); return "opp-BBB222"; }
+  };
+  const ids = { project_type: "fPT", lead_source: "fLS", utm_campaign: "fUC", ol_tracking_ref: "fTR", preferred_language: "fPL", opportunity_tracking_ref: "fOTR" };
+  await processOutbox(memoryStore([lead({ project_type: "Furniture Supply", source: "booking", locale: "ar" })]).store, ghl, { fieldIds: ids, now: () => FIXED_NOW });
+  assert.deepEqual(Object.fromEntries(contactFields[0].map((f) => [f.id, f.field_value])), {
+    fPT: "FF&E / Furniture", fLS: "Website booking", fUC: "villa_q4", fTR: "0123456789abcdef0123456789abcdef", fPL: "Arabic"
+  });
+  assert.deepEqual(oppFields[0], [{ id: "fOTR", field_value: "0123456789abcdef0123456789abcdef" }]);
 });

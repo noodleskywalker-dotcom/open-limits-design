@@ -41,10 +41,10 @@ export interface GhlPort {
   /** Must never modify an existing contact (public input is unverified). */
   findOrCreateContact(contact: { name: string; email: string; phone: string | null; source: string; customFields: { id: string; field_value: string }[] }): Promise<{ id: string; created: boolean }>;
   findOpportunity(contactId: string): Promise<string | null>;
-  createOpportunity(input: { contactId: string; stage: CrmStage; name: string; source: string }): Promise<string>;
+  createOpportunity(input: { contactId: string; stage: CrmStage; name: string; source: string; customFields: { id: string; field_value: string }[] }): Promise<string>;
 }
 
-export type FieldIds = Partial<Record<"project_type" | "lead_source" | "utm_campaign" | "ol_tracking_ref" | "preferred_language", string>>;
+export type FieldIds = Partial<Record<"project_type" | "lead_source" | "utm_campaign" | "ol_tracking_ref" | "preferred_language" | "opportunity_tracking_ref", string>>;
 
 /** Retry schedule after the n-th failure. After the last entry the lead goes to NEEDS_REVIEW. */
 export const RETRY_DELAYS_SECONDS = [60, 300, 900, 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600] as const;
@@ -59,10 +59,25 @@ function errorCode(error: unknown): string {
 
 const SOURCE_LABEL: Record<string, string> = { contact_form: "Website contact form", booking: "Website consultation booking", ai_assistant: "Website AI assistant" };
 
+/** Values must match the GHL "Lead Source" single-option list exactly. */
+const LEAD_SOURCE_OPTION: Record<string, string> = { contact_form: "Website form", booking: "Website booking", ai_assistant: "Website AI assistant" };
+
+/**
+ * Website project types → GHL "Project Type" options. Website types with no matching
+ * GHL option (Architecture, Interior Design) are not sent; the raw type stays in the
+ * opportunity name. Aligning the two lists is a business decision.
+ */
+export const PROJECT_TYPE_OPTION: Record<string, string> = {
+  "Furniture Supply": "FF&E / Furniture",
+  "Fit-Out": "Fit-out / Contracting",
+  Construction: "Fit-out / Contracting",
+  Other: "Other"
+};
+
 function customFields(lead: OutboxLead, ids: FieldIds) {
   const values: [keyof FieldIds, string | null][] = [
-    ["project_type", lead.project_type],
-    ["lead_source", "Website"],
+    ["project_type", lead.project_type ? PROJECT_TYPE_OPTION[lead.project_type] ?? null : null],
+    ["lead_source", LEAD_SOURCE_OPTION[lead.source] ?? "Other"],
     ["utm_campaign", lead.utm_campaign],
     ["ol_tracking_ref", lead.tracking_ref],
     ["preferred_language", lead.locale === "ar" ? "Arabic" : lead.locale === "en" ? "English" : null]
@@ -98,7 +113,14 @@ export async function processOutbox(
       if (!lead.ghl_opportunity_id) {
         const opportunityId =
           (await ghl.findOpportunity(contactId)) ??
-          (await ghl.createOpportunity({ contactId, stage: lead.crm_stage, name: `${lead.name} — ${lead.project_type ?? "Website enquiry"}`, source }));
+          (await ghl.createOpportunity({
+            contactId,
+            stage: lead.crm_stage,
+            name: `${lead.name} — ${lead.project_type ?? "Website enquiry"}`,
+            source,
+            // The opportunity carries attribution even when the contact already existed (contacts are never modified).
+            customFields: options.fieldIds?.opportunity_tracking_ref && lead.tracking_ref ? [{ id: options.fieldIds.opportunity_tracking_ref, field_value: lead.tracking_ref }] : []
+          }));
         await store.update(lead.id, { ghl_opportunity_id: opportunityId });
       }
       await store.update(lead.id, { crm_status: "SYNCED", crm_synced_at: now().toISOString(), crm_last_error_code: null, crm_next_attempt_at: null, crm_lease_until: null });

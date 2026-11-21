@@ -39,6 +39,7 @@ export default function RootLayout({
             <Link href="/furniture">Furniture</Link>
             <Link href="/location">LOCATION</Link>
             <Link href="/book-meeting-with-ceo">Book a Meeting</Link>
+            <Link href="/privacy">Privacy</Link>
             <Link href="/admin">Admin</Link>
           </nav>
         </footer>

@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { newIdempotencyKey, readAttribution } from "@/lib/crm/attribution-client";
-import { CONSENT_TEXT } from "@/lib/crm/enquiry";
+import Link from "next/link";
+import { CONSENT_TEXT, PRIVACY_NOTICE_PATH } from "@/lib/crm/enquiry";
 
 const PROJECT_TYPES = [
   "Architecture",
@@ -131,7 +132,12 @@ export default function ContactForm() {
               required
               type="checkbox"
             />
-            <span>{CONSENT_TEXT.en}</span>
+            <span>
+                  {CONSENT_TEXT.en}{" "}
+                  <Link href={PRIVACY_NOTICE_PATH} target="_blank">
+                    Privacy notice
+                  </Link>
+                </span>
           </label>
           <label aria-hidden="true" className="form-honeypot">
             Website

@@ -1,4 +1,5 @@
 import "server-only";
+import { PRIVACY_NOTICE_STATUS } from "./enquiry";
 
 /**
  * Minimal GoHighLevel client for the website → CRM handoff. Disabled unless
@@ -16,13 +17,20 @@ export type GhlHandoffConfig = {
   locationId: string;
   pipelineId: string;
   stageIds: { NEW_ENQUIRY: string; CONSULTATION_BOOKED: string };
-  fieldIds: Partial<Record<"project_type" | "lead_source" | "utm_campaign" | "ol_tracking_ref" | "preferred_language", string>>;
+  fieldIds: Partial<Record<"project_type" | "lead_source" | "utm_campaign" | "ol_tracking_ref" | "preferred_language" | "opportunity_tracking_ref", string>>;
 };
 
 const ID = /^[A-Za-z0-9_-]{6,64}$/;
 
-/** Returns null (handoff disabled) unless explicitly enabled and fully configured. Never throws secrets. */
-export function ghlHandoffConfig(env: Record<string, string | undefined> = process.env): GhlHandoffConfig | null {
+/**
+ * Returns null (handoff disabled) unless the privacy notice is approved, the kill switch is
+ * explicitly on, and every id is configured. Never throws secrets.
+ */
+export function ghlHandoffConfig(
+  env: Record<string, string | undefined> = process.env,
+  privacyStatus: string = PRIVACY_NOTICE_STATUS
+): GhlHandoffConfig | null {
+  if (privacyStatus !== "APPROVED") return null;
   if (env.GHL_HANDOFF_ENABLED !== "true") return null;
   const token = env.GHL_PRIVATE_INTEGRATION_TOKEN ?? "";
   const ids = {
@@ -43,7 +51,8 @@ export function ghlHandoffConfig(env: Record<string, string | undefined> = proce
       lead_source: field("GHL_FIELD_LEAD_SOURCE_ID"),
       utm_campaign: field("GHL_FIELD_UTM_CAMPAIGN_ID"),
       ol_tracking_ref: field("GHL_FIELD_TRACKING_REF_ID"),
-      preferred_language: field("GHL_FIELD_PREFERRED_LANGUAGE_ID")
+      preferred_language: field("GHL_FIELD_PREFERRED_LANGUAGE_ID"),
+      opportunity_tracking_ref: field("GHL_OPP_FIELD_TRACKING_REF_ID")
     }
   };
 }
@@ -133,7 +142,8 @@ export class GhlHandoffClient {
 
   /** Duplicate guard: reuse this contact's OPEN opportunity in the pipeline (covers a crash between create and save). */
   async findOpportunity(contactId: string): Promise<string | null> {
-    const query = new URLSearchParams({ location_id: this.config.locationId, contact_id: contactId, pipeline_id: this.config.pipelineId, status: "open", limit: "5" });
+    // Current API contract is camelCase; snake_case `location_id` is rejected with 422 (verified live 2026-11-21).
+    const query = new URLSearchParams({ locationId: this.config.locationId, contactId, pipelineId: this.config.pipelineId, status: "open", limit: "5" });
     const json = await this.call("GET", `/opportunities/search?${query}`);
     const list = (json as { opportunities?: { id?: unknown; pipelineId?: unknown; contactId?: unknown }[] }).opportunities;
     if (!Array.isArray(list)) throw new GhlHandoffError("GHL_RESPONSE_INVALID");
@@ -141,7 +151,7 @@ export class GhlHandoffClient {
     return match ? String(match.id) : null;
   }
 
-  async createOpportunity(input: { contactId: string; stage: keyof GhlHandoffConfig["stageIds"]; name: string; source: string }): Promise<string> {
+  async createOpportunity(input: { contactId: string; stage: keyof GhlHandoffConfig["stageIds"]; name: string; source: string; customFields?: { id: string; field_value: string }[] }): Promise<string> {
     const json = await this.call("POST", "/opportunities/", {
       locationId: this.config.locationId,
       pipelineId: this.config.pipelineId,
@@ -149,7 +159,8 @@ export class GhlHandoffClient {
       contactId: input.contactId,
       name: input.name,
       status: "open",
-      source: input.source
+      source: input.source,
+      ...(input.customFields?.length ? { customFields: input.customFields } : {})
     });
     const id = (json as { opportunity?: { id?: unknown } }).opportunity?.id;
     if (typeof id !== "string" || !ID.test(id)) throw new GhlHandoffError("GHL_RESPONSE_INVALID");

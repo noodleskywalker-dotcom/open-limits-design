@@ -2,7 +2,8 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { newIdempotencyKey, readAttribution } from "@/lib/crm/attribution-client";
-import { CONSENT_TEXT } from "@/lib/crm/enquiry";
+import Link from "next/link";
+import { CONSENT_TEXT, PRIVACY_NOTICE_PATH } from "@/lib/crm/enquiry";
 
 type SlotState = "available" | "taken" | "blocked";
 type AvailabilityResponse = {
@@ -278,7 +279,12 @@ export default function BookingCalendar() {
               </label>
               <label className="checkbox-field booking-consent">
                 <input checked={consent} onChange={(event) => setConsent(event.target.checked)} required type="checkbox" />
-                <span>{CONSENT_TEXT.en}</span>
+                <span>
+                  {CONSENT_TEXT.en}{" "}
+                  <Link href={PRIVACY_NOTICE_PATH} target="_blank">
+                    Privacy notice
+                  </Link>
+                </span>
               </label>
               <button className="button" disabled={!selectedSlot || submitting} type="submit">
                 {submitting ? "Submitting…" : "Request meeting"}

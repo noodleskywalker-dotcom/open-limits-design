@@ -5,13 +5,17 @@
 
 /**
  * Bump when the consent wording shown to visitors changes. Stored with each enquiry.
- * TODO(approval): the site has no privacy notice page yet; link one here once the business approves its text.
+ * The consent line links to /privacy (app/privacy/page.tsx).
  */
 export const CONSENT_VERSION = "website-enquiry-v1-2026-11";
 export const CONSENT_TEXT = {
   en: "I agree that Open Limits Design may store my details and contact me about this enquiry.",
   ar: "أوافق على أن تحتفظ أوبن ليمتس ديزاين ببياناتي وتتواصل معي بخصوص هذا الاستفسار."
 } as const;
+
+/** The privacy notice text needs management approval before the GHL handoff may be enabled. */
+export const PRIVACY_NOTICE_STATUS: "DRAFT_PENDING_APPROVAL" | "APPROVED" = "DRAFT_PENDING_APPROVAL";
+export const PRIVACY_NOTICE_PATH = "/privacy";
 
 export const CRM_STAGES = ["NEW_ENQUIRY", "CONSULTATION_BOOKED"] as const;
 export type CrmStage = (typeof CRM_STAGES)[number];

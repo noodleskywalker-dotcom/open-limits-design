@@ -76,35 +76,7 @@ as $$
   returning l.*;
 $$;
 revoke all on function public.claim_crm_handoff(integer, integer) from public, anon, authenticated;
+grant execute on function public.claim_crm_handoff(integer, integer) to service_role;
 
--- Retention: once an enquiry is safely in the CRM (the system of record),
--- strip personal data from the website copy after retention_days. Rows that
--- never synced are kept for manual follow-up and are never redacted here.
-create or replace function public.redact_synced_leads(retention_days integer)
-returns integer
-language sql
-security definer
-set search_path = public
-as $$
-  with redacted as (
-    update public.leads
-       set name = '[redacted]', email = null, phone = null, message = null,
-           location = null, preferred_datetime = null, redacted_at = now()
-     where crm_status = 'SYNCED'
-       and redacted_at is null
-       and crm_synced_at < now() - make_interval(days => greatest(retention_days, 7))
-     returning 1)
-  select count(*)::integer from redacted;
-$$;
-revoke all on function public.redact_synced_leads(integer) from public, anon, authenticated;
-
--- Role permissions: the website writes leads only through server routes using
--- the service role, so the public insert policy is no longer needed (it let
--- anyone with the public anon key insert unvalidated rows). Reading leads is
--- limited to listed admins instead of any signed-in user.
-drop policy if exists "Anyone can submit a lead" on public.leads;
-drop policy if exists "Authenticated users can read leads" on public.leads;
-drop policy if exists "Admins can read leads" on public.leads;
-create policy "Admins can read leads"
-on public.leads for select to authenticated
-using (exists (select 1 from public.admin_users a where lower(a.email) = lower(auth.jwt() ->> 'email')));
+-- Retention, redaction and access control live in crm_lead_access_controls.sql
+-- (apply it next). Nothing here deletes or redacts data.

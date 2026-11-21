@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { ADMIN_STATUS, authorizeAdmin } from "@/lib/auth/admin";
 import { bookingConfirmedMessage, bookingRejectedMessage, sendSms } from "@/lib/sms/send";
 
 export const dynamic = "force-dynamic";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function formatBookingDate(isoDate: string) {
   const [year, month, day] = isoDate.split("-");
@@ -11,29 +14,20 @@ function formatBookingDate(isoDate: string) {
 
 /**
  * POST /api/bookings/manage
- * Admin-only: accept or reject a booking. Requires a Supabase access token.
- * On accept, sends a confirmation SMS (safe fallback when Twilio is missing).
+ * Approved admins only (admin_users + confirmed email; any other signed-in user gets 403).
+ * The status change and its audit row are written atomically by
+ * public.admin_set_booking_status(). Client SMS is sent only when
+ * BOOKING_SMS_ENABLED=true (client messaging needs separate approval).
  */
 export async function POST(request: NextRequest) {
   const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "Supabase service role key is not configured." },
-      { status: 503 }
-    );
+  const auth = await authorizeAdmin(supabase, request.headers.get("authorization"));
+  if (auth.state !== "ADMIN" || !supabase) {
+    const { status, error } = ADMIN_STATUS[auth.state === "ADMIN" ? "UNAVAILABLE" : auth.state];
+    return NextResponse.json({ error }, { status });
   }
 
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!token) {
-    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
-  }
-
-  const { data: userData, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !userData.user) {
-    return NextResponse.json({ error: "Invalid session." }, { status: 401 });
-  }
-
-  let payload: { id?: string; action?: string };
+  let payload: { id?: unknown; action?: unknown };
   try {
     payload = await request.json();
   } catch {
@@ -41,30 +35,25 @@ export async function POST(request: NextRequest) {
   }
 
   const { id, action } = payload;
-  if (!id || !action || !["accept", "reject"].includes(action)) {
+  if (typeof id !== "string" || !UUID.test(id) || (action !== "accept" && action !== "reject")) {
     return NextResponse.json({ error: "id and action (accept|reject) required." }, { status: 400 });
   }
 
   const status = action === "accept" ? "confirmed" : "rejected";
-
-  const { data: booking, error } = await supabase
-    .from("bookings")
-    .update({ status })
-    .eq("id", id)
-    .select("*")
-    .single();
-
+  const { data, error } = await supabase.rpc("admin_set_booking_status", { actor: auth.userId, booking: id, new_status: status });
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[bookings/manage] status change failed:", error.code ?? "DB_ERROR");
+    return NextResponse.json({ error: "Unable to update the booking right now." }, { status: 503 });
   }
+  const booking = Array.isArray(data) ? data[0] : null;
+  if (!booking) return NextResponse.json({ error: "Booking not found." }, { status: 404 });
 
   const sms =
-    status === "confirmed"
-      ? await sendSms(
-          booking.client_phone,
-          bookingConfirmedMessage(formatBookingDate(booking.booking_date))
-        )
-      : await sendSms(booking.client_phone, bookingRejectedMessage());
+    process.env.BOOKING_SMS_ENABLED !== "true"
+      ? { sent: false, reason: "Client SMS disabled" }
+      : status === "confirmed"
+        ? await sendSms(booking.client_phone, bookingConfirmedMessage(formatBookingDate(booking.booking_date)))
+        : await sendSms(booking.client_phone, bookingRejectedMessage());
 
   return NextResponse.json({ ok: true, booking, sms });
 }
