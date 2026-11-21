@@ -84,6 +84,15 @@ test("leads: anonymous and ordinary signed-in users cannot read or insert", asyn
   }
 });
 
+test("is_crm_admin cannot be used by signed-in users to probe whether another account is an admin", async () => {
+  const probe = await as(user, (tx) => tx.query<{ v: boolean }>("select public.is_crm_admin($1) as v", [ADMIN]));
+  assert.equal(probe.rows[0].v, false);
+  const self = await as(admin, (tx) => tx.query<{ v: boolean }>("select public.is_crm_admin() as v"));
+  assert.equal(self.rows[0].v, true);
+  const server = await as({ role: "service_role" }, (tx) => tx.query<{ v: boolean }>("select public.is_crm_admin($1) as v", [ADMIN]));
+  assert.equal(server.rows[0].v, true);
+});
+
 test("leads: even an admin has no direct table access; admin reads go through audited functions", async () => {
   const direct = await as(admin, (tx) => tx.query("select * from public.leads")).then((r) => r.rows.length, () => 0);
   assert.equal(direct, 0);

@@ -28,6 +28,9 @@ as $$
       from auth.users u
       join public.admin_users a on lower(a.email) = lower(u.email)
      where u.id = candidate
+       -- signed-in users may only ask about themselves (no admin-enumeration oracle);
+       -- the server (service role) may check any verified session's user id
+       and (candidate = auth.uid() or auth.role() = 'service_role')
        and u.email_confirmed_at is not null
        and a.role in ('admin', 'owner'));
 $$;
