@@ -2,9 +2,11 @@ import "server-only";
 
 /**
  * Minimal GoHighLevel client for the website → CRM handoff. Disabled unless
- * GHL_HANDOFF_ENABLED=true AND every required id is configured. Only three calls exist:
- * contact upsert (dedupes on email/phone), opportunity search (duplicate guard), opportunity create.
- * No messaging, workflow, tag, delete or update calls. Errors carry fixed codes only.
+ * GHL_HANDOFF_ENABLED=true AND every required id is configured. Only four calls exist:
+ * duplicate-contact lookup, contact create, opportunity search (duplicate guard), opportunity create.
+ * Existing contacts are NEVER modified from public form input (no upsert/update): an enquiry for a
+ * known email/phone only attaches an opportunity. No messaging, workflow, tag or delete calls.
+ * Errors carry fixed codes only.
  */
 export const GHL_API_ORIGIN = "https://services.leadconnectorhq.com";
 const API_VERSION = "2021-07-28";
@@ -81,8 +83,40 @@ export class GhlHandoffClient {
     this.timeoutMs = timeoutMs;
   }
 
-  /** Upsert by the sub-account's unique identifiers (email + phone). Deliberately sends no tags: upsert would overwrite them. */
-  async upsertContact(contact: ContactPayload): Promise<string> {
+  /**
+   * Returns the existing contact for this email (then phone) unchanged, or creates a new one.
+   * Unverified website input must not overwrite a real client's CRM record.
+   */
+  async findOrCreateContact(contact: ContactPayload): Promise<{ id: string; created: boolean }> {
+    const existing = await this.findContactId(contact);
+    if (existing) return { id: existing, created: false };
+    try {
+      return { id: await this.createContact(contact), created: true };
+    } catch (error) {
+      // Lost a race with another submission for the same person: use the contact that now exists.
+      if (error instanceof GhlHandoffError && error.code === "GHL_REJECTED") {
+        const raced = await this.findContactId(contact);
+        if (raced) return { id: raced, created: false };
+      }
+      throw error;
+    }
+  }
+
+  private async findContactId(contact: Pick<ContactPayload, "email" | "phone">): Promise<string | null> {
+    const lookups: [string, string][] = [["email", contact.email]];
+    if (contact.phone) lookups.push(["number", contact.phone.replace(/[\s-]/g, "")]);
+    for (const [key, value] of lookups) {
+      const query = new URLSearchParams({ locationId: this.config.locationId, [key]: value });
+      const json = await this.call("GET", `/contacts/search/duplicate?${query}`);
+      const id = (json as { contact?: { id?: unknown } | null } | null)?.contact?.id;
+      if (id !== undefined && (typeof id !== "string" || !ID.test(id))) throw new GhlHandoffError("GHL_RESPONSE_INVALID");
+      if (id) return id;
+    }
+    return null;
+  }
+
+  /** Create only. Sends no tags. */
+  private async createContact(contact: ContactPayload): Promise<string> {
     const body = {
       locationId: this.config.locationId,
       name: contact.name,
@@ -91,7 +125,7 @@ export class GhlHandoffClient {
       source: contact.source,
       ...(contact.customFields.length ? { customFields: contact.customFields } : {})
     };
-    const json = await this.call("POST", "/contacts/upsert", body);
+    const json = await this.call("POST", "/contacts/", body);
     const id = (json as { contact?: { id?: unknown } }).contact?.id;
     if (typeof id !== "string" || !ID.test(id)) throw new GhlHandoffError("GHL_RESPONSE_INVALID");
     return id;

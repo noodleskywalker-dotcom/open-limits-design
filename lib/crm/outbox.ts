@@ -38,7 +38,8 @@ export interface LeadStore {
 }
 
 export interface GhlPort {
-  upsertContact(contact: { name: string; email: string; phone: string | null; source: string; customFields: { id: string; field_value: string }[] }): Promise<string>;
+  /** Must never modify an existing contact (public input is unverified). */
+  findOrCreateContact(contact: { name: string; email: string; phone: string | null; source: string; customFields: { id: string; field_value: string }[] }): Promise<{ id: string; created: boolean }>;
   findOpportunity(contactId: string): Promise<string | null>;
   createOpportunity(input: { contactId: string; stage: CrmStage; name: string; source: string }): Promise<string>;
 }
@@ -91,7 +92,7 @@ export async function processOutbox(
       }
       const source = SOURCE_LABEL[lead.source] ?? "Website";
       if (!contactId) {
-        contactId = await ghl.upsertContact({ name: lead.name, email: lead.email, phone: lead.phone, source, customFields: customFields(lead, options.fieldIds ?? {}) });
+        contactId = (await ghl.findOrCreateContact({ name: lead.name, email: lead.email, phone: lead.phone, source, customFields: customFields(lead, options.fieldIds ?? {}) })).id;
         await store.update(lead.id, { ghl_contact_id: contactId });
       }
       if (!lead.ghl_opportunity_id) {

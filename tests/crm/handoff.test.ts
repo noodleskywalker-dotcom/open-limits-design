@@ -174,17 +174,17 @@ function memoryStore(input: OutboxLead[]) {
 
 const FIXED_NOW = new Date("2026-11-19T10:00:00.000Z");
 
-test("outbox: upserts contact, creates opportunity in the configured stage, stores ids after each step, marks SYNCED", async () => {
+test("outbox: finds-or-creates contact, creates opportunity in the configured stage, stores ids after each step, marks SYNCED", async () => {
   const { store, patches } = memoryStore([lead()]);
   const calls: string[] = [];
   const ghl = {
-    async upsertContact(c: { customFields: { id: string; field_value: string }[] }) { calls.push(`upsert:${c.customFields.length}`); return "contact-AAA111"; },
+    async findOrCreateContact(c: { customFields: { id: string; field_value: string }[] }) { calls.push(`contact:${c.customFields.length}`); return { id: "contact-AAA111", created: true }; },
     async findOpportunity() { calls.push("find"); return null; },
     async createOpportunity(input: { stage: string }) { calls.push(`create:${input.stage}`); return "opp-BBB222"; }
   };
   const result = await processOutbox(store, ghl, { fieldIds: { project_type: "fieldPT001", ol_tracking_ref: "fieldTR001" }, now: () => FIXED_NOW });
   assert.deepEqual(result, { claimed: 1, synced: 1, retried: 0, needsReview: 0, errors: {} });
-  assert.deepEqual(calls, ["upsert:2", "find", "create:NEW_ENQUIRY"]);
+  assert.deepEqual(calls, ["contact:2", "find", "create:NEW_ENQUIRY"]);
   assert.deepEqual(patches.map((p) => Object.keys(p.patch)[0]), ["ghl_contact_id", "ghl_opportunity_id", "crm_status"]);
   assert.equal(patches[2].patch.crm_status, "SYNCED");
 });
@@ -193,7 +193,7 @@ test("outbox: GHL outage keeps the enquiry PENDING with backoff (nothing lost) a
   const { store, rows } = memoryStore([lead(), lead({ id: "lead-2" })]);
   let attempts = 0;
   const ghl = {
-    async upsertContact() { attempts += 1; throw new GhlHandoffError("GHL_UNAVAILABLE", 503); },
+    async findOrCreateContact(): Promise<{ id: string; created: boolean }> { attempts += 1; throw new GhlHandoffError("GHL_UNAVAILABLE", 503); },
     async findOpportunity() { return null; },
     async createOpportunity() { return "x"; }
   };
@@ -211,7 +211,7 @@ test("outbox: retry resumes from the saved contact id and reuses an existing ope
   const { store, rows } = memoryStore([lead({ ghl_contact_id: "contact-AAA111", crm_attempts: 2 })]);
   const calls: string[] = [];
   const ghl = {
-    async upsertContact() { calls.push("upsert"); return "never"; },
+    async findOrCreateContact() { calls.push("contact"); return { id: "never", created: false }; },
     async findOpportunity(contactId: string) { calls.push(`find:${contactId}`); return "opp-EXISTING"; },
     async createOpportunity() { calls.push("create"); return "never"; }
   };
@@ -223,22 +223,22 @@ test("outbox: retry resumes from the saved contact id and reuses an existing ope
 
 test("outbox: rate limit honours Retry-After; rejected payload and exhausted retries go to NEEDS_REVIEW", async () => {
   const limited = memoryStore([lead()]);
-  await processOutbox(limited.store, { async upsertContact() { throw new GhlHandoffError("GHL_RATE_LIMITED", 429, 600); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
+  await processOutbox(limited.store, { async findOrCreateContact(): Promise<{ id: string; created: boolean }> { throw new GhlHandoffError("GHL_RATE_LIMITED", 429, 600); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
   assert.equal(limited.rows[0].crm_next_attempt_at, "2026-11-19T10:10:00.000Z");
 
   const rejected = memoryStore([lead()]);
-  await processOutbox(rejected.store, { async upsertContact() { throw new GhlHandoffError("GHL_REJECTED", 422); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
+  await processOutbox(rejected.store, { async findOrCreateContact(): Promise<{ id: string; created: boolean }> { throw new GhlHandoffError("GHL_REJECTED", 422); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
   assert.equal(rejected.rows[0].crm_status, "NEEDS_REVIEW");
 
   const exhausted = memoryStore([lead({ crm_attempts: MAX_ATTEMPTS - 1 })]);
-  await processOutbox(exhausted.store, { async upsertContact() { throw new GhlHandoffError("GHL_TIMEOUT"); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
+  await processOutbox(exhausted.store, { async findOrCreateContact(): Promise<{ id: string; created: boolean }> { throw new GhlHandoffError("GHL_TIMEOUT"); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
   assert.equal(exhausted.rows[0].crm_status, "NEEDS_REVIEW");
   assert.equal(exhausted.rows[0].crm_last_error_code, "GHL_TIMEOUT");
 });
 
 test("outbox: unknown errors are stored as a fixed code, never as their (possibly personal) message", async () => {
   const { store, rows } = memoryStore([lead()]);
-  await processOutbox(store, { async upsertContact() { throw new Error(`boom ${PII.email}`); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
+  await processOutbox(store, { async findOrCreateContact(): Promise<{ id: string; created: boolean }> { throw new Error(`boom ${PII.email}`); }, async findOpportunity() { return null; }, async createOpportunity() { return "x"; } }, { now: () => FIXED_NOW });
   assert.equal(rows[0].crm_last_error_code, "HANDOFF_FAILED");
 });
 
@@ -265,23 +265,28 @@ test("ghl client: sends only the three allowed calls to the official origin with
   const fakeFetch = (async (url: URL, init: RequestInit) => {
     const headers = new Headers(init.headers);
     seen.push({ method: init.method ?? "GET", url: String(url), auth: headers.get("authorization"), version: headers.get("version"), body: init.body ? JSON.parse(String(init.body)) : null });
-    if (String(url).includes("/contacts/upsert")) return Response.json({ new: true, contact: { id: "contact-AAA111" } });
+    if (String(url).includes("/contacts/search/duplicate")) return Response.json({ contact: null });
+    if (String(url).endsWith("/contacts/")) return Response.json({ contact: { id: "contact-AAA111" } });
     if (String(url).includes("/opportunities/search")) return Response.json({ opportunities: [] });
     return Response.json({ opportunity: { id: "opp-BBB222" } });
   }) as unknown as typeof fetch;
   const client = new GhlHandoffClient(config, fakeFetch);
-  assert.equal(await client.upsertContact({ name: PII.name, email: PII.email, phone: null, source: "Website contact form", customFields: [] }), "contact-AAA111");
+  assert.deepEqual(await client.findOrCreateContact({ name: PII.name, email: PII.email, phone: PII.phone, source: "Website contact form", customFields: [] }), { id: "contact-AAA111", created: true });
   assert.equal(await client.findOpportunity("contact-AAA111"), null);
   assert.equal(await client.createOpportunity({ contactId: "contact-AAA111", stage: "CONSULTATION_BOOKED", name: "n", source: "s" }), "opp-BBB222");
   assert.deepEqual(seen.map((s) => `${s.method} ${new URL(s.url).origin}${new URL(s.url).pathname}`), [
-    "POST https://services.leadconnectorhq.com/contacts/upsert",
+    "GET https://services.leadconnectorhq.com/contacts/search/duplicate",
+    "GET https://services.leadconnectorhq.com/contacts/search/duplicate",
+    "POST https://services.leadconnectorhq.com/contacts/",
     "GET https://services.leadconnectorhq.com/opportunities/search",
     "POST https://services.leadconnectorhq.com/opportunities/"
   ]);
   assert.ok(seen.every((s) => s.auth === `Bearer ${config.token}` && s.version === "2021-07-28"));
-  assert.equal((seen[0].body as { tags?: unknown }).tags, undefined, "upsert must not send tags (it would overwrite existing ones)");
-  assert.equal((seen[2].body as { pipelineStageId: string }).pipelineStageId, "stage-consult-001");
-  assert.equal(new URL(seen[1].url).searchParams.get("status"), "open");
+  assert.equal(new URL(seen[0].url).searchParams.get("email"), PII.email);
+  assert.equal(new URL(seen[1].url).searchParams.get("number"), "+97455501234");
+  assert.equal((seen[2].body as { tags?: unknown }).tags, undefined, "create must not send tags");
+  assert.equal((seen[4].body as { pipelineStageId: string }).pipelineStageId, "stage-consult-001");
+  assert.equal(new URL(seen[3].url).searchParams.get("status"), "open");
 
   const failing = (status: number, headers: Record<string, string> = {}) =>
     new GhlHandoffClient(config, (async () => new Response(`{"message":"bad ${PII.email}"}`, { status, headers })) as unknown as typeof fetch);
@@ -307,4 +312,26 @@ test("cron route: requires a long CRON_SECRET bearer token; disabled handoff doe
   assert.equal(ok.status, 200);
   assert.deepEqual(await ok.json(), { state: "DISABLED" });
   delete process.env.CRON_SECRET;
+});
+
+test("ghl client: an enquiry using an existing client's email NEVER modifies that contact (no create/update/upsert)", async () => {
+  const methods: string[] = [];
+  const fakeFetch = (async (url: URL, init: RequestInit) => {
+    methods.push(`${init.method} ${new URL(String(url)).pathname}`);
+    return Response.json({ contact: { id: "contact-EXISTING1" } });
+  }) as unknown as typeof fetch;
+  const result = await new GhlHandoffClient(config, fakeFetch).findOrCreateContact({ name: "Impostor", email: PII.email, phone: "+974 0000 0000", source: "s", customFields: [{ id: "fieldPT001", field_value: "x" }] });
+  assert.deepEqual(result, { id: "contact-EXISTING1", created: false });
+  assert.deepEqual(methods, ["GET /contacts/search/duplicate"], "only a lookup; no write to the contact");
+});
+
+test("ghl client: losing a create race falls back to the contact that now exists", async () => {
+  let lookups = 0;
+  const fakeFetch = (async (url: URL, init: RequestInit) => {
+    if (init.method === "POST") return new Response("{}", { status: 400 });
+    lookups += 1;
+    return Response.json({ contact: lookups > 2 ? { id: "contact-RACED01" } : null });
+  }) as unknown as typeof fetch;
+  const result = await new GhlHandoffClient(config, fakeFetch).findOrCreateContact({ name: "n", email: PII.email, phone: PII.phone, source: "s", customFields: [] });
+  assert.deepEqual(result, { id: "contact-RACED01", created: false });
 });
