@@ -50,6 +50,8 @@ create table if not exists public.lead_access_audit (
 create index if not exists lead_access_audit_subject_idx on public.lead_access_audit(subject_type, subject_id, created_at desc);
 create index if not exists lead_access_audit_actor_idx on public.lead_access_audit(actor_user_id, created_at desc);
 alter table public.lead_access_audit enable row level security;
+-- Clients never write the audit trail (writes come only from the security-definer functions).
+revoke insert, update, delete, truncate on public.lead_access_audit from anon, authenticated;
 drop policy if exists "Admins can read the lead access audit" on public.lead_access_audit;
 create policy "Admins can read the lead access audit"
 on public.lead_access_audit for select to authenticated using (public.is_crm_admin());
@@ -65,10 +67,21 @@ create trigger lead_access_audit_append_only
 before update or delete on public.lead_access_audit
 for each row execute function public.reject_lead_audit_mutation();
 
+-- ---------- replace ALL existing policies on leads / bookings / blocked_times ----------
+-- Production carries policies under other names (e.g. "Service insert leads" open to anon,
+-- "Authenticated users can manage bookings", "Admin all ..."); drop every one so the end state is
+-- exactly the set defined below, whatever the starting point.
+do $$
+declare p record;
+begin
+  for p in select policyname, tablename from pg_policies
+            where schemaname = 'public' and tablename in ('leads', 'bookings', 'blocked_times')
+  loop
+    execute format('drop policy %I on public.%I', p.policyname, p.tablename);
+  end loop;
+end $$;
+
 -- ---------- leads: no direct client access ----------
-drop policy if exists "Anyone can submit a lead" on public.leads;
-drop policy if exists "Authenticated users can read leads" on public.leads;
-drop policy if exists "Admins can read leads" on public.leads;
 revoke insert, update, delete on public.leads from anon, authenticated;
 -- RLS stays enabled with no policies for anon/authenticated → deny by default.
 
@@ -184,6 +197,9 @@ drop policy if exists "Authenticated users can manage blocked times" on public.b
 drop policy if exists "Admins can manage blocked times" on public.blocked_times;
 create policy "Admins can manage blocked times"
 on public.blocked_times for all to authenticated using (public.is_crm_admin()) with check (public.is_crm_admin());
+create policy "Public can read blocked times"
+on public.blocked_times for select to anon, authenticated using (true);
+revoke insert, update, delete on public.blocked_times from anon;
 
 -- ---------- retention status (no automatic deletion until approved) ----------
 create table if not exists public.data_retention_policy (
