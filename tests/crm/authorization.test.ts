@@ -40,6 +40,7 @@ before(async () => {
   await db.exec(file("supabase/migrations/restore_open_limits.sql"));
   await db.exec(file("supabase/migrations/crm_leads_schema_alignment.sql"));
   await db.exec(file("supabase/migrations/crm_handoff_outbox.sql"));
+  await db.exec(file("supabase/migrations/crm_leads_utm_term.sql"));
   await db.exec(file("supabase/migrations/crm_lead_access_controls.sql"));
   // Seeded admin (restore_open_limits.sql) with a confirmed account; a second account
   // with an UNconfirmed lookalike of an admin email; one ordinary user.

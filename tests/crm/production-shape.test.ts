@@ -10,7 +10,7 @@ import { uuid_ossp } from "@electric-sql/pglite/contrib/uuid_ossp";
 import { leadRow, parseEnquiry } from "../../lib/crm/enquiry";
 
 const file = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
-const MIGRATIONS = ["crm_leads_schema_alignment.sql", "crm_handoff_outbox.sql", "crm_lead_access_controls.sql"].map(
+const MIGRATIONS = ["crm_leads_schema_alignment.sql", "crm_handoff_outbox.sql", "crm_leads_utm_term.sql", "crm_lead_access_controls.sql"].map(
   (name) => file(`supabase/migrations/${name}`)
 );
 const OWNER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";

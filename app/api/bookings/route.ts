@@ -102,10 +102,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
-    return NextResponse.json(
-      { error: "Supabase service role key is not configured." },
-      { status: 503 }
-    );
+    console.error("[bookings] database not configured");
+    return NextResponse.json({ error: BOOKING_UNAVAILABLE }, { status: 503 });
   }
 
   let payload: Record<string, unknown>;

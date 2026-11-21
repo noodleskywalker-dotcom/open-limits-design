@@ -24,7 +24,7 @@ const validBody = (overrides: Record<string, unknown> = {}) => ({
   consent: true,
   locale: "en",
   website: "",
-  attribution: { utm_source: "instagram", utm_medium: "paid_social", utm_campaign: "villa_q4", utm_content: "0123456789abcdef0123456789abcdef" },
+  attribution: { utm_source: "instagram", utm_medium: "paid_social", utm_campaign: "villa_q4", utm_content: "0123456789abcdef0123456789abcdef", utm_term: "luxury_villa" },
   ...overrides
 });
 
@@ -86,6 +86,7 @@ test("contact: saves the enquiry with consent, attribution and a PENDING CRM sta
   assert.equal(row.crm_status, "PENDING");
   assert.equal(row.crm_stage, "NEW_ENQUIRY");
   assert.equal(row.utm_campaign, "villa_q4");
+  assert.equal(row.utm_term, "luxury_villa");
   assert.equal(row.tracking_ref, "0123456789abcdef0123456789abcdef");
   assert.equal(afterCallbacks.length, 1, "CRM handoff is scheduled after the response");
 });
@@ -143,7 +144,7 @@ test("contact: rejects missing consent, bad email, missing key, honeypot and bad
 
 test("attribution: malformed UTM values are dropped, tracking ref accepted only as 32 hex", () => {
   assert.deepEqual(parseAttribution({ utm_source: "<script>", utm_campaign: "ok_1", tracking_ref: "XYZ" }), {
-    utm_source: null, utm_medium: null, utm_campaign: "ok_1", utm_content: null, tracking_ref: null
+    utm_source: null, utm_medium: null, utm_campaign: "ok_1", utm_content: null, utm_term: null, tracking_ref: null
   });
   assert.equal(parseAttribution({ tracking_ref: "ABCDEF0123456789ABCDEF0123456789" }).tracking_ref, "abcdef0123456789abcdef0123456789");
   assert.throws(() => parseEnquiry({}, { requirePhone: false, requireMessage: false, requireProjectType: false }), EnquiryValidationError);

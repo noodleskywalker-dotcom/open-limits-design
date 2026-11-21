@@ -7,7 +7,7 @@ import { ADMIN_STATUS, authorizeAdmin } from "@/lib/auth/admin";
 /** Columns shown to admins. CRM bookkeeping included; nothing else. */
 export const ADMIN_LEAD_COLUMNS = [
   "id", "created_at", "source", "name", "email", "phone", "project_type", "message", "locale",
-  "consent_at", "consent_version", "utm_source", "utm_medium", "utm_campaign", "utm_content", "tracking_ref",
+  "consent_at", "consent_version", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "tracking_ref",
   "crm_stage", "crm_status", "crm_attempts", "crm_last_error_code", "crm_synced_at", "ghl_contact_id", "ghl_opportunity_id", "redacted_at"
 ] as const;
 

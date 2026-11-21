@@ -26,6 +26,7 @@ export type Attribution = {
   utm_medium: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
+  utm_term: string | null;
   tracking_ref: string | null;
 };
 
@@ -71,7 +72,7 @@ export function parseAttribution(raw: unknown): Attribution {
   const content = utm("utm_content");
   const explicitRef = typeof source.tracking_ref === "string" ? source.tracking_ref.trim().toLowerCase() : "";
   const tracking_ref = TRACKING_REF.test(explicitRef) ? explicitRef : content && TRACKING_REF.test(content.toLowerCase()) ? content.toLowerCase() : null;
-  return { utm_source: utm("utm_source"), utm_medium: utm("utm_medium"), utm_campaign: utm("utm_campaign"), utm_content: content, tracking_ref };
+  return { utm_source: utm("utm_source"), utm_medium: utm("utm_medium"), utm_campaign: utm("utm_campaign"), utm_content: content, utm_term: utm("utm_term"), tracking_ref };
 }
 
 /**

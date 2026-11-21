@@ -4,7 +4,7 @@
  * sessionStorage so an enquiry can be attributed to the campaign that brought the visitor.
  */
 const KEY = "ol_attribution_v1";
-const PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "tracking_ref"] as const;
+const PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "tracking_ref"] as const;
 export type ClientAttribution = Partial<Record<(typeof PARAMS)[number], string>>;
 
 export function captureAttribution(search: string = typeof window === "undefined" ? "" : window.location.search) {
