@@ -16,7 +16,7 @@ export async function sendSms(to: string | null | undefined, body: string): Prom
   const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
-    console.log("[sms] Twilio not configured — skipping SMS:", body);
+    console.log("[sms] Twilio not configured — skipping SMS");
     return { sent: false, reason: "Twilio not configured" };
   }
 
@@ -39,14 +39,15 @@ export async function sendSms(to: string | null | undefined, body: string): Prom
     );
 
     if (!response.ok) {
-      const detail = await response.text();
-      console.error("[sms] Twilio error:", detail.slice(0, 300));
+      // Twilio error bodies can echo the recipient number: log the numeric code only.
+      const code = await response.json().then((j: { code?: unknown }) => j?.code, () => undefined);
+      console.error("[sms] Twilio error:", response.status, typeof code === "number" ? code : "");
       return { sent: false, reason: `Twilio error ${response.status}` };
     }
 
     return { sent: true };
   } catch (error) {
-    console.error("[sms] Send failed:", error instanceof Error ? error.message : error);
+    console.error("[sms] Send failed:", error instanceof Error ? error.name : "unknown");
     return { sent: false, reason: "Network error" };
   }
 }
