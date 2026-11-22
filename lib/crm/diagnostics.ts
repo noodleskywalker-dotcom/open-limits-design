@@ -18,7 +18,7 @@ export function handoffGate(env: Record<string, string | undefined> = process.en
   return {
     flag: env.GHL_HANDOFF_ENABLED === "true",
     privacyStatus: PRIVACY_NOTICE_STATUS,
-    tokenConfigured: /^\S{20,4096}$/.test(env.GHL_PRIVATE_INTEGRATION_TOKEN ?? ""),
+    tokenConfigured: /^\S{20,4096}$/.test((env.GHL_PRIVATE_INTEGRATION_TOKEN ?? "").trim()),
     active: ghlHandoffConfig(env) !== null,
     // Controlled TEST lane: synthetic TEST leads only; must be off before go-live.
     testLane: ghlControlledTestConfig(env) !== null,

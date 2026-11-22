@@ -32,7 +32,8 @@ export function ghlHandoffConfig(
 ): GhlHandoffConfig | null {
   if (privacyStatus !== "APPROVED") return null;
   if (env.GHL_HANDOFF_ENABLED !== "true") return null;
-  const token = env.GHL_PRIVATE_INTEGRATION_TOKEN ?? "";
+  // Pasted secrets often carry a trailing newline; GHL tokens never contain whitespace.
+  const token = (env.GHL_PRIVATE_INTEGRATION_TOKEN ?? "").trim();
   const ids = {
     locationId: env.GHL_LOCATION_ID ?? "",
     pipelineId: env.GHL_PIPELINE_ID ?? "",
@@ -69,7 +70,7 @@ export function ghlReadiness(env: Record<string, string | undefined> = process.e
     testLaneFlag: env.GHL_CONTROLLED_TEST_ENABLED === "true",
     privacyApproved: privacyStatus === "APPROVED",
     tokenPresent: token.length > 0,
-    tokenFormatValid: /^\S{20,4096}$/.test(token),
+    tokenFormatValid: /^\S{20,4096}$/.test(token.trim()),
     tokenHasSurroundingWhitespace: token.length > 0 && token !== token.trim(),
     invalidIds: idNames.filter((name) => !ID.test(env[name] ?? ""))
   };

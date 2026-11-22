@@ -151,6 +151,12 @@ test("live gate closed and test lane off: nothing runs, simulate flag is harmles
 
 test("readiness: explains a closed gate with booleans and variable names only, never values", () => {
   const r = ghlReadiness({ ...ENV, GHL_PRIVATE_INTEGRATION_TOKEN: ENV.GHL_PRIVATE_INTEGRATION_TOKEN + " ", GHL_PIPELINE_ID: "bad id!", GHL_CONTROLLED_TEST_ENABLED: "true" });
-  assert.deepEqual(r, { liveFlag: false, testLaneFlag: true, privacyApproved: false, tokenPresent: true, tokenFormatValid: false, tokenHasSurroundingWhitespace: true, invalidIds: ["GHL_PIPELINE_ID"] });
+  assert.deepEqual(r, { liveFlag: false, testLaneFlag: true, privacyApproved: false, tokenPresent: true, tokenFormatValid: true, tokenHasSurroundingWhitespace: true, invalidIds: ["GHL_PIPELINE_ID"] });
   assert.ok(!JSON.stringify(r).includes("pit-") && !JSON.stringify(r).includes("loc123"));
+});
+
+test("config: a token saved with a trailing newline is trimmed, never sent with whitespace", () => {
+  const config = ghlControlledTestConfig({ ...ENV, GHL_PRIVATE_INTEGRATION_TOKEN: "\n" + ENV.GHL_PRIVATE_INTEGRATION_TOKEN + "\r\n", GHL_CONTROLLED_TEST_ENABLED: "true" });
+  assert.equal(config?.token, ENV.GHL_PRIVATE_INTEGRATION_TOKEN);
+  assert.equal(ghlControlledTestConfig({ ...ENV, GHL_PRIVATE_INTEGRATION_TOKEN: "pit-abc def-" + "x".repeat(30), GHL_CONTROLLED_TEST_ENABLED: "true" }), null, "inner whitespace stays invalid");
 });
