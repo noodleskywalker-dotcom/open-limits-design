@@ -16,7 +16,7 @@ Status as of 2026-11-22. **Deployed**: production = `open-limits-design-n52kq7nd
 | Data preserved | 7 leads, 10 bookings (statuses identical to backup), 270 rows overall |
 | Public sign-up disabled | `config push` (1-field diff); sign-up attempt → `422 signup_disabled` |
 | Env flags (production) | `GHL_HANDOFF_ENABLED=false`, `BOOKING_SMS_ENABLED=false`, GHL ids, `CRON_SECRET` (sensitive) |
-| Tests | `npm run test:crm` 41/41, `tsc`, eslint on all branch files, `npm run build` |
+| Tests | `npm run test:crm` 52/52 (2026-11-22, incl. controlled TEST lane), `tsc`, eslint on changed files, `npm run build` |
 
 ## B. Deploy (done 2026-11-22)
 
@@ -29,13 +29,20 @@ Status as of 2026-11-22. **Deployed**: production = `open-limits-design-n52kq7nd
 
 ## C. Required before `GHL_HANDOFF_ENABLED=true`
 
-1. [ ] **GHL Private Integration token** created in the GHL UI (scopes: contacts read/write, opportunities read/write, locations/customFields read). Store it only as Vercel sensitive env `GHL_PRIVATE_INTEGRATION_TOKEN`. Never in chat, git or docs.
+1. [x] **GHL Private Integration token** stored as Vercel sensitive env `GHL_PRIVATE_INTEGRATION_TOKEN` (Production) by the owner, 2026-11-22. It was saved with surrounding whitespace; the code now trims it (`7c79e8a`). Proven live by the controlled tests below (contact read/create, opportunity search/create).
 2. [ ] **Read-only token for Growth** (contacts/opportunities read) and the Growth read-only sync against an isolated test DB.
 3. [ ] **GHL UI settings:** location timezone Asia/Qatar, currency QAR, lost reasons. Calendar is **active** (2026-11-22); staff assignment needs a calendar-type change in the UI (NEEDS_USER_CONFIRMATION — CALENDAR STAFF).
 4. [ ] **Workflows (6)** built in the GHL UI (API returns `WORKFLOW_API_NOT_ENABLED_FOR_LOCATION`); SMS steps stay off.
 5. [ ] **Privacy notice** approved by the business (technically reviewed 2026-11-22). Then set `PRIVACY_NOTICE_STATUS = "APPROVED"` in `lib/crm/enquiry.ts` and redeploy — the gate is in code, so the env flag alone cannot enable the handoff.
-6. [ ] **Controlled test** with a test identity: new contact, duplicate email (existing contact must not be modified), booking → Consultation Booked, GHL outage → lead stays PENDING and retries.
-7. [ ] Then set `GHL_HANDOFF_ENABLED=true` and redeploy.
+6. [x] **Controlled test — PASSED 2026-11-22** via the controlled TEST lane (`GHL_CONTROLLED_TEST_ENABLED`, processes only `ol-ghl-test-*@example.com` + "TEST " leads, never sends a phone) on unpromoted production-env deployments; public site stayed on `n52kq7ndi` throughout.
+   - Enquiry → Supabase PENDING → GHL contact (4 custom fields) + opportunity in Open Limits Sales / **New Enquiry** → SYNCED.
+   - Same idempotency key twice → 1 row. Second enquiry, same email, changed name/type → same contact **unmodified** (dateUpdated unchanged), same opportunity reused.
+   - Booking → booking `pending` + linked CRM row → opportunity in **Consultation Booked** with the opportunity tracking-ref field set.
+   - Simulated outage → PENDING, attempt 1, `GHL_UNAVAILABLE`, ~60 s backoff respected (early run claimed 0), then SYNCED with error cleared.
+   - Two live contract bugs found and fixed: opportunity search needs snake_case `location_id/contact_id/pipeline_id` (`abd0ca9`); opportunity create sends no `source` and uses `fieldValue` (`2a82b06`).
+   - Cleanup: 3 GHL opportunities + 3 contacts deleted (verified gone); 4 TEST leads + 1 TEST booking deleted → 7 leads / 10 bookings / 0 pending. Test flag removed from Vercel; 7 test deployments deleted. `CRON_SECRET` rotated (owner-approved).
+   - **The live production deployment `n52kq7ndi` still has the pre-fix GHL client.** Enablement must deploy branch HEAD (or later), not just flip the flag.
+7. [ ] Then deploy HEAD with `PRIVACY_NOTICE_STATUS = "APPROVED"`, set `GHL_HANDOFF_ENABLED=true`, redeploy, and watch `/api/admin/health`.
 
 ## D. Still open / honest limits
 
