@@ -3,13 +3,13 @@
  * codes only: never names, emails, phones, messages or secrets. No external alerts are sent.
  */
 import { PRIVACY_NOTICE_STATUS } from "./enquiry";
-import { ghlHandoffConfig } from "./ghl";
+import { ghlControlledTestConfig, ghlHandoffConfig } from "./ghl";
 
 export type DiagnosticsRow = { crm_status: string; crm_last_error_code: string | null; crm_next_attempt_at: string | null; created_at: string };
 export type Diagnostics = {
   checkedAt: string;
   database: "OK" | "UNAVAILABLE";
-  handoff: { flag: boolean; privacyStatus: string; tokenConfigured: boolean; active: boolean; smsEnabled: boolean };
+  handoff: { flag: boolean; privacyStatus: string; tokenConfigured: boolean; active: boolean; testLane: boolean; smsEnabled: boolean };
   outbox: { pending: number; due: number; needsReview: number; synced: number; notQueued: number; oldestPendingMinutes: number | null; errorCodes: Record<string, number> } | null;
   warnings: string[];
 };
@@ -20,6 +20,8 @@ export function handoffGate(env: Record<string, string | undefined> = process.en
     privacyStatus: PRIVACY_NOTICE_STATUS,
     tokenConfigured: /^\S{20,4096}$/.test(env.GHL_PRIVATE_INTEGRATION_TOKEN ?? ""),
     active: ghlHandoffConfig(env) !== null,
+    // Controlled TEST lane: synthetic TEST leads only; must be off before go-live.
+    testLane: ghlControlledTestConfig(env) !== null,
     smsEnabled: env.BOOKING_SMS_ENABLED === "true"
   };
 }
@@ -30,6 +32,7 @@ export function summarize(rows: DiagnosticsRow[] | null, env: Record<string, str
   const warnings: string[] = [];
   if (handoff.smsEnabled) warnings.push("BOOKING_SMS_ENABLED_IS_TRUE");
   if (handoff.flag && !handoff.active) warnings.push("HANDOFF_FLAG_ON_BUT_GATE_CLOSED");
+  if (handoff.testLane) warnings.push("GHL_CONTROLLED_TEST_LANE_ON");
   if (!rows) return { checkedAt: now.toISOString(), database: "UNAVAILABLE", handoff, outbox: null, warnings: [...warnings, "DATABASE_UNAVAILABLE"] };
   const count = (status: string) => rows.filter((r) => r.crm_status === status).length;
   const pendingRows = rows.filter((r) => r.crm_status === "PENDING");

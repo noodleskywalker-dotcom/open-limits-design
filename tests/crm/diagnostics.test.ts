@@ -34,7 +34,7 @@ test("diagnostics: database outage and unsafe flags are reported, secrets never 
   assert.equal(d.handoff.tokenConfigured, true);
   assert.equal(d.handoff.active, false, "privacy notice not approved keeps the handoff closed");
   assert.ok(!JSON.stringify(d).includes("pit-secret"));
-  assert.deepEqual(handoffGate({}), { flag: false, privacyStatus: "DRAFT_PENDING_APPROVAL", tokenConfigured: false, active: false, smsEnabled: false });
+  assert.deepEqual(handoffGate({}), { flag: false, privacyStatus: "DRAFT_PENDING_APPROVAL", tokenConfigured: false, active: false, testLane: false, smsEnabled: false });
 });
 
 test("health route: anonymous and non-admin callers are refused; admin gets counts", async () => {

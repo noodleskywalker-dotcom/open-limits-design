@@ -19,6 +19,8 @@ function authorized(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const run = await runCrmHandoff(25);
+  // Outage simulation only ever affects the controlled TEST lane (ignored by the live handoff).
+  const simulateOutage = request.nextUrl?.searchParams.get("simulate") === "ghl_unavailable";
+  const run = await runCrmHandoff(25, { simulateOutage });
   return NextResponse.json(run, { status: run.state === "FAILED" ? 500 : 200 });
 }

@@ -57,6 +57,17 @@ export function ghlHandoffConfig(
   };
 }
 
+/**
+ * Controlled TEST lane (temporary, for pre-activation verification). Uses the same token and ids
+ * but is independent of the live gate: it only ever processes synthetic TEST leads (see
+ * isControlledTestLead in handoff.ts), so no real person's data reaches GHL while the privacy
+ * notice is unapproved. Off unless GHL_CONTROLLED_TEST_ENABLED=true.
+ */
+export function ghlControlledTestConfig(env: Record<string, string | undefined> = process.env): GhlHandoffConfig | null {
+  if (env.GHL_CONTROLLED_TEST_ENABLED !== "true") return null;
+  return ghlHandoffConfig({ ...env, GHL_HANDOFF_ENABLED: "true" }, "APPROVED");
+}
+
 export type GhlErrorCode = "GHL_AUTH" | "GHL_RATE_LIMITED" | "GHL_UNAVAILABLE" | "GHL_TIMEOUT" | "GHL_REJECTED" | "GHL_RESPONSE_INVALID";
 export class GhlHandoffError extends Error {
   readonly code: GhlErrorCode;
