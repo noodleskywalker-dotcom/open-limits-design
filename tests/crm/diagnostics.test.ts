@@ -32,9 +32,9 @@ test("diagnostics: database outage and unsafe flags are reported, secrets never 
   assert.equal(d.database, "UNAVAILABLE");
   assert.deepEqual(d.warnings.sort(), ["BOOKING_SMS_ENABLED_IS_TRUE", "DATABASE_UNAVAILABLE", "HANDOFF_FLAG_ON_BUT_GATE_CLOSED"]);
   assert.equal(d.handoff.tokenConfigured, true);
-  assert.equal(d.handoff.active, false, "privacy notice not approved keeps the handoff closed");
+  assert.equal(d.handoff.active, false, "missing GHL ids keep the handoff closed even with the switch on");
   assert.ok(!JSON.stringify(d).includes("pit-secret"));
-  assert.deepEqual(handoffGate({}), { flag: false, privacyStatus: "DRAFT_PENDING_APPROVAL", tokenConfigured: false, active: false, testLane: false, smsEnabled: false });
+  assert.deepEqual(handoffGate({}), { flag: false, privacyStatus: "APPROVED", tokenConfigured: false, active: false, testLane: false, smsEnabled: false });
 });
 
 test("health route: anonymous and non-admin callers are refused; admin gets counts", async () => {

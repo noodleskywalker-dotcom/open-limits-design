@@ -141,8 +141,8 @@ test("test lane: simulated outage keeps the TEST lead PENDING with backoff and m
   assert.equal(synthetic.crm_last_error_code, null);
 });
 
-test("live gate closed and test lane off: nothing runs, simulate flag is harmless", async () => {
-  Object.assign(process.env, ENV, { GHL_HANDOFF_ENABLED: "true" }); // privacy notice still unapproved in code
+test("live switch off and test lane off: nothing runs, simulate flag is harmless", async () => {
+  Object.assign(process.env, ENV); // GHL_HANDOFF_ENABLED and GHL_CONTROLLED_TEST_ENABLED unset
   (globalThis as { __supabaseFake?: unknown }).__supabaseFake = fakeSupabase([lead("real-1", "Real Client", "client@gmail.com")]);
   const calls = fakeGhl();
   assert.deepEqual(await runCrmHandoff(10, { simulateOutage: true }), { state: "DISABLED" });
@@ -151,8 +151,9 @@ test("live gate closed and test lane off: nothing runs, simulate flag is harmles
 
 test("readiness: explains a closed gate with booleans and variable names only, never values", () => {
   const r = ghlReadiness({ ...ENV, GHL_PRIVATE_INTEGRATION_TOKEN: ENV.GHL_PRIVATE_INTEGRATION_TOKEN + " ", GHL_PIPELINE_ID: "bad id!", GHL_CONTROLLED_TEST_ENABLED: "true" });
-  assert.deepEqual(r, { liveFlag: false, testLaneFlag: true, privacyApproved: false, tokenPresent: true, tokenFormatValid: true, tokenHasSurroundingWhitespace: true, invalidIds: ["GHL_PIPELINE_ID"] });
+  assert.deepEqual(r, { liveFlag: false, testLaneFlag: true, privacyApproved: true, tokenPresent: true, tokenFormatValid: true, tokenHasSurroundingWhitespace: true, invalidIds: ["GHL_PIPELINE_ID"] });
   assert.ok(!JSON.stringify(r).includes("pit-") && !JSON.stringify(r).includes("loc123"));
+  assert.equal(ghlReadiness({}, "DRAFT_PENDING_APPROVAL").privacyApproved, false);
 });
 
 test("config: a token saved with a trailing newline is trimmed, never sent with whitespace", () => {

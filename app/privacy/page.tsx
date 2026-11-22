@@ -3,12 +3,12 @@ import { CONSENT_VERSION } from "@/lib/crm/enquiry";
 
 /**
  * Privacy notice for website enquiries and consultation bookings.
- * STATUS: see PRIVACY_NOTICE_STATUS in lib/crm/enquiry.ts (DRAFT — PENDING BUSINESS APPROVAL). Written for what this website actually
- * does (see lib/crm/*, app/api/contact, app/api/bookings). The GoHighLevel handoff
- * must stay disabled (GHL_HANDOFF_ENABLED=false) until management approves this text.
- * Update PRIVACY_NOTICE_UPDATED and CONSENT_VERSION together when the wording changes.
+ * STATUS: APPROVED by the business owner 2026-11-22 (PRIVACY_NOTICE_STATUS in lib/crm/enquiry.ts).
+ * Written for what this website actually does (see lib/crm/*, app/api/contact, app/api/bookings).
+ * Any wording change needs a new approval: set PRIVACY_NOTICE_STATUS back to DRAFT_PENDING_APPROVAL
+ * (which closes the GoHighLevel handoff), and update PRIVACY_NOTICE_UPDATED and CONSENT_VERSION together.
  */
-const PRIVACY_NOTICE_UPDATED = "Pending approval";
+const PRIVACY_NOTICE_UPDATED = "22 November 2026";
 
 export const metadata = {
   title: "Privacy Notice — Open Limits Design",

@@ -258,7 +258,9 @@ test("ghl config: disabled by default and when any required id is missing", () =
   assert.equal(ghlHandoffConfig({}, "APPROVED"), null);
   const full = { GHL_HANDOFF_ENABLED: "true", GHL_PRIVATE_INTEGRATION_TOKEN: config.token, GHL_LOCATION_ID: config.locationId, GHL_PIPELINE_ID: config.pipelineId, GHL_STAGE_NEW_ENQUIRY_ID: "stage-new-001", GHL_STAGE_CONSULTATION_BOOKED_ID: "stage-consult-001" };
   assert.ok(ghlHandoffConfig(full, "APPROVED"));
-  assert.equal(ghlHandoffConfig(full), null, "privacy notice still DRAFT, so the handoff stays off even with the switch on");
+  assert.equal(ghlHandoffConfig(full, "DRAFT_PENDING_APPROVAL"), null, "an unapproved notice keeps the handoff off even with the switch on");
+  assert.ok(ghlHandoffConfig(full), "notice approved in code (2026-11-22): the switch decides");
+  assert.equal(ghlHandoffConfig({ ...full, GHL_HANDOFF_ENABLED: undefined }), null, "switch off by default");
   assert.equal(ghlHandoffConfig({ ...full, GHL_HANDOFF_ENABLED: "1" }, "APPROVED"), null);
   assert.equal(ghlHandoffConfig({ ...full, GHL_PIPELINE_ID: "" }, "APPROVED"), null);
 });

@@ -13,8 +13,12 @@ export const CONSENT_TEXT = {
   ar: "أوافق على أن تحتفظ أوبن ليمتس ديزاين ببياناتي وتتواصل معي بخصوص هذا الاستفسار."
 } as const;
 
-/** The privacy notice text needs management approval before the GHL handoff may be enabled. */
-export const PRIVACY_NOTICE_STATUS: "DRAFT_PENDING_APPROVAL" | "APPROVED" = "DRAFT_PENDING_APPROVAL";
+/**
+ * The privacy notice text needs management approval before the GHL handoff may be enabled.
+ * APPROVED by the business owner on 2026-11-22 (notice and consent wording as published, consent
+ * reference CONSENT_VERSION). Changing the wording requires a new approval and a new CONSENT_VERSION.
+ */
+export const PRIVACY_NOTICE_STATUS: "DRAFT_PENDING_APPROVAL" | "APPROVED" = "APPROVED";
 export const PRIVACY_NOTICE_PATH = "/privacy";
 
 export const CRM_STAGES = ["NEW_ENQUIRY", "CONSULTATION_BOOKED"] as const;
