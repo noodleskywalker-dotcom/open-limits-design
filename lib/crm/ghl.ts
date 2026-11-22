@@ -172,8 +172,9 @@ export class GhlHandoffClient {
 
   /** Duplicate guard: reuse this contact's OPEN opportunity in the pipeline (covers a crash between create and save). */
   async findOpportunity(contactId: string): Promise<string | null> {
-    // Current API contract is camelCase; snake_case `location_id` is rejected with 422 (verified live 2026-11-21).
-    const query = new URLSearchParams({ locationId: this.config.locationId, contactId, pipelineId: this.config.pipelineId, status: "open", limit: "5" });
+    // With a Private Integration token (Version 2021-07-28) this endpoint takes snake_case params; camelCase
+    // locationId/contactId/pipelineId is rejected with 422 "should not exist" (verified live 2026-11-22, TEST lane).
+    const query = new URLSearchParams({ location_id: this.config.locationId, contact_id: contactId, pipeline_id: this.config.pipelineId, status: "open", limit: "5" });
     const json = await this.call("GET", `/opportunities/search?${query}`);
     const list = (json as { opportunities?: { id?: unknown; pipelineId?: unknown; contactId?: unknown }[] }).opportunities;
     if (!Array.isArray(list)) throw new GhlHandoffError("GHL_RESPONSE_INVALID");
@@ -189,8 +190,8 @@ export class GhlHandoffClient {
       contactId: input.contactId,
       name: input.name,
       status: "open",
-      // Opportunity create has no `source` field (the contact carries the source; a create with it
-      // was rejected live 2026-11-22), and its custom fields use camelCase `fieldValue`.
+      // The published create contract has no `source` field (the contact carries the source) and its
+      // custom fields use camelCase `fieldValue`.
       ...(input.customFields?.length ? { customFields: input.customFields.map((f) => ({ id: f.id, fieldValue: f.field_value })) } : {})
     });
     const id = (json as { opportunity?: { id?: unknown } }).opportunity?.id;

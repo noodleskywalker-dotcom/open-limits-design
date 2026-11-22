@@ -294,10 +294,10 @@ test("ghl client: sends only the three allowed calls to the official origin with
   assert.deepEqual((seen[4].body as { customFields: unknown }).customFields, [{ id: "fOTR01", fieldValue: "ref" }]);
   const search = new URL(seen[3].url).searchParams;
   assert.equal(search.get("status"), "open");
-  assert.equal(search.get("locationId"), config.locationId, "camelCase params (snake_case location_id is rejected live with 422)");
-  assert.equal(search.get("contactId"), "contact-AAA111");
-  assert.equal(search.get("pipelineId"), config.pipelineId);
-  assert.equal(search.get("location_id"), null);
+  assert.equal(search.get("location_id"), config.locationId, "snake_case params (camelCase is rejected live with 422)");
+  assert.equal(search.get("contact_id"), "contact-AAA111");
+  assert.equal(search.get("pipeline_id"), config.pipelineId);
+  assert.equal(search.get("locationId"), null);
 
   const failing = (status: number, headers: Record<string, string> = {}) =>
     new GhlHandoffClient(config, (async () => new Response(`{"message":"bad ${PII.email}"}`, { status, headers })) as unknown as typeof fetch);
