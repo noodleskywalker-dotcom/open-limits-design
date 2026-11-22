@@ -189,8 +189,9 @@ export class GhlHandoffClient {
       contactId: input.contactId,
       name: input.name,
       status: "open",
-      source: input.source,
-      ...(input.customFields?.length ? { customFields: input.customFields } : {})
+      // Opportunity create has no `source` field (the contact carries the source; a create with it
+      // was rejected live 2026-11-22), and its custom fields use camelCase `fieldValue`.
+      ...(input.customFields?.length ? { customFields: input.customFields.map((f) => ({ id: f.id, fieldValue: f.field_value })) } : {})
     });
     const id = (json as { opportunity?: { id?: unknown } }).opportunity?.id;
     if (typeof id !== "string" || !ID.test(id)) throw new GhlHandoffError("GHL_RESPONSE_INVALID");

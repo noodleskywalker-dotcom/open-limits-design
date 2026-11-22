@@ -276,7 +276,7 @@ test("ghl client: sends only the three allowed calls to the official origin with
   const client = new GhlHandoffClient(config, fakeFetch);
   assert.deepEqual(await client.findOrCreateContact({ name: PII.name, email: PII.email, phone: PII.phone, source: "Website contact form", customFields: [] }), { id: "contact-AAA111", created: true });
   assert.equal(await client.findOpportunity("contact-AAA111"), null);
-  assert.equal(await client.createOpportunity({ contactId: "contact-AAA111", stage: "CONSULTATION_BOOKED", name: "n", source: "s" }), "opp-BBB222");
+  assert.equal(await client.createOpportunity({ contactId: "contact-AAA111", stage: "CONSULTATION_BOOKED", name: "n", source: "s", customFields: [{ id: "fOTR01", field_value: "ref" }] }), "opp-BBB222");
   assert.deepEqual(seen.map((s) => `${s.method} ${new URL(s.url).origin}${new URL(s.url).pathname}`), [
     "GET https://services.leadconnectorhq.com/contacts/search/duplicate",
     "GET https://services.leadconnectorhq.com/contacts/search/duplicate",
@@ -289,6 +289,9 @@ test("ghl client: sends only the three allowed calls to the official origin with
   assert.equal(new URL(seen[1].url).searchParams.get("number"), "+97455501234");
   assert.equal((seen[2].body as { tags?: unknown }).tags, undefined, "create must not send tags");
   assert.equal((seen[4].body as { pipelineStageId: string }).pipelineStageId, "stage-consult-001");
+  // Live API contract: no `source` on opportunity create; custom fields as { id, fieldValue }.
+  assert.equal((seen[4].body as { source?: unknown }).source, undefined);
+  assert.deepEqual((seen[4].body as { customFields: unknown }).customFields, [{ id: "fOTR01", fieldValue: "ref" }]);
   const search = new URL(seen[3].url).searchParams;
   assert.equal(search.get("status"), "open");
   assert.equal(search.get("locationId"), config.locationId, "camelCase params (snake_case location_id is rejected live with 422)");
