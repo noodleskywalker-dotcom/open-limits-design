@@ -2,7 +2,7 @@
 // TEST leads. Real enquiries must never be read into the worker, leased, modified or sent to GHL.
 import { test, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { ghlControlledTestConfig, ghlHandoffConfig } from "../../lib/crm/ghl";
+import { ghlControlledTestConfig, ghlHandoffConfig, ghlReadiness } from "../../lib/crm/ghl";
 import { isControlledTestLead, runCrmHandoff } from "../../lib/crm/handoff";
 import { GET as cronGET } from "../../app/api/crm/handoff/route";
 
@@ -147,4 +147,10 @@ test("live gate closed and test lane off: nothing runs, simulate flag is harmles
   const calls = fakeGhl();
   assert.deepEqual(await runCrmHandoff(10, { simulateOutage: true }), { state: "DISABLED" });
   assert.equal(calls.length, 0);
+});
+
+test("readiness: explains a closed gate with booleans and variable names only, never values", () => {
+  const r = ghlReadiness({ ...ENV, GHL_PRIVATE_INTEGRATION_TOKEN: ENV.GHL_PRIVATE_INTEGRATION_TOKEN + " ", GHL_PIPELINE_ID: "bad id!", GHL_CONTROLLED_TEST_ENABLED: "true" });
+  assert.deepEqual(r, { liveFlag: false, testLaneFlag: true, privacyApproved: false, tokenPresent: true, tokenFormatValid: false, tokenHasSurroundingWhitespace: true, invalidIds: ["GHL_PIPELINE_ID"] });
+  assert.ok(!JSON.stringify(r).includes("pit-") && !JSON.stringify(r).includes("loc123"));
 });

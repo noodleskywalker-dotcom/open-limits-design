@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { GhlHandoffClient, ghlControlledTestConfig, ghlHandoffConfig } from "./ghl";
+import { GhlHandoffClient, ghlControlledTestConfig, ghlHandoffConfig, ghlReadiness } from "./ghl";
 import { processOutbox, type LeadStore, type OutboxLead, type OutboxResult } from "./outbox";
 
 const OUTBOX_COLUMNS =
@@ -68,7 +68,7 @@ export function controlledTestLeadStore(supabase: SupabaseClient, now: () => Dat
   };
 }
 
-export type HandoffRun = { state: "DISABLED" | "STORE_UNAVAILABLE" | "RAN" | "TEST_LANE" | "FAILED"; result?: OutboxResult; code?: string };
+export type HandoffRun = { state: "DISABLED" | "STORE_UNAVAILABLE" | "RAN" | "TEST_LANE" | "FAILED"; result?: OutboxResult; code?: string; readiness?: ReturnType<typeof ghlReadiness> };
 
 const simulatedOutage = (async () => {
   throw new TypeError("simulated network failure");

@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { runCrmHandoff } from "@/lib/crm/handoff";
+import { ghlReadiness } from "@/lib/crm/ghl";
 
 export const dynamic = "force-dynamic";
 
@@ -22,5 +23,7 @@ export async function GET(request: NextRequest) {
   // Outage simulation only ever affects the controlled TEST lane (ignored by the live handoff).
   const simulateOutage = request.nextUrl?.searchParams.get("simulate") === "ghl_unavailable";
   const run = await runCrmHandoff(25, { simulateOutage });
-  return NextResponse.json(run, { status: run.state === "FAILED" ? 500 : 200 });
+  // Authenticated caller only: explain a closed gate with booleans/variable names (no values).
+  const body = run.state === "DISABLED" ? { ...run, readiness: ghlReadiness() } : run;
+  return NextResponse.json(body, { status: run.state === "FAILED" ? 500 : 200 });
 }

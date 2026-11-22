@@ -58,6 +58,24 @@ export function ghlHandoffConfig(
 }
 
 /**
+ * Why the handoff is closed, as booleans and variable NAMES only (never values). Returned to the
+ * CRON_SECRET-authenticated cron route so a misconfiguration can be diagnosed without reading secrets.
+ */
+export function ghlReadiness(env: Record<string, string | undefined> = process.env, privacyStatus: string = PRIVACY_NOTICE_STATUS) {
+  const token = env.GHL_PRIVATE_INTEGRATION_TOKEN ?? "";
+  const idNames = ["GHL_LOCATION_ID", "GHL_PIPELINE_ID", "GHL_STAGE_NEW_ENQUIRY_ID", "GHL_STAGE_CONSULTATION_BOOKED_ID"];
+  return {
+    liveFlag: env.GHL_HANDOFF_ENABLED === "true",
+    testLaneFlag: env.GHL_CONTROLLED_TEST_ENABLED === "true",
+    privacyApproved: privacyStatus === "APPROVED",
+    tokenPresent: token.length > 0,
+    tokenFormatValid: /^\S{20,4096}$/.test(token),
+    tokenHasSurroundingWhitespace: token.length > 0 && token !== token.trim(),
+    invalidIds: idNames.filter((name) => !ID.test(env[name] ?? ""))
+  };
+}
+
+/**
  * Controlled TEST lane (temporary, for pre-activation verification). Uses the same token and ids
  * but is independent of the live gate: it only ever processes synthetic TEST leads (see
  * isControlledTestLead in handoff.ts), so no real person's data reaches GHL while the privacy

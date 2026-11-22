@@ -318,7 +318,10 @@ test("cron route: requires a long CRON_SECRET bearer token; disabled handoff doe
   assert.equal((await call(`Bearer ${"t".repeat(48)}`)).status, 401);
   const ok = await call(`Bearer ${"s".repeat(48)}`);
   assert.equal(ok.status, 200);
-  assert.deepEqual(await ok.json(), { state: "DISABLED" });
+  const body = await ok.json();
+  assert.equal(body.state, "DISABLED");
+  assert.equal(body.readiness.liveFlag, false);
+  assert.equal(body.readiness.tokenPresent, false);
   delete process.env.CRON_SECRET;
 });
 
