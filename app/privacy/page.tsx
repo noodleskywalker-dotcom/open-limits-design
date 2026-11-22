@@ -74,13 +74,21 @@ export default function PrivacyPage() {
 
           <h2>Where it is stored</h2>
           <p>
-            Your enquiry is first saved in our website database (hosted by Supabase), so it is never lost. It is then
-            stored in our customer relationship management system (GoHighLevel), which our team uses to follow up
-            with you. The website is hosted by Vercel. These providers process data on our behalf and may store it
+            Your enquiry is first saved in our website database (hosted by Supabase), so it is never lost. Enquiries
+            and consultation requests sent with your consent are then also stored in our customer relationship
+            management system (GoHighLevel), which our team uses to follow up with you. Details shared only through the
+            website assistant stay in our website database. The website is hosted by Vercel. These providers process data on our behalf and may store it
             outside Qatar. If you use the website assistant, your messages may also be processed by our AI service
             provider to generate replies.
           </p>
 
+          <h2>Cookies and browser storage</h2>
+          <p>
+            This website does not use advertising or analytics cookies, tracking pixels or third-party trackers. It
+            keeps two small notes in your own browser: whether you have already seen the opening animation, and, for
+            the current visit only, the campaign labels from the link you arrived with (so they can be attached to an
+            enquiry you choose to send). Neither contains your name or contact details.
+          </p>
           <h2>How we contact you</h2>
           <p>
             A member of our team will reply personally by phone, WhatsApp or email, using the details you gave us,

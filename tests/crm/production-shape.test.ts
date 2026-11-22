@@ -10,7 +10,7 @@ import { uuid_ossp } from "@electric-sql/pglite/contrib/uuid_ossp";
 import { leadRow, parseEnquiry } from "../../lib/crm/enquiry";
 
 const file = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
-const MIGRATIONS = ["crm_leads_schema_alignment.sql", "crm_handoff_outbox.sql", "crm_leads_utm_term.sql", "crm_lead_access_controls.sql"].map(
+const MIGRATIONS = ["crm_leads_schema_alignment.sql", "crm_handoff_outbox.sql", "crm_leads_utm_term.sql", "crm_lead_access_controls.sql", "cms_admin_write_access.sql"].map(
   (name) => file(`supabase/migrations/${name}`)
 );
 const OWNER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -119,4 +119,25 @@ test("owner: reads bookings directly; leads only via audited server functions; s
   await assert.rejects(as(server, (tx) => tx.query("update public.lead_access_audit set action = 'VIEW'")), /append-only/);
   const retention = await db.query<{ status: string }>("select distinct status from public.data_retention_policy");
   assert.deepEqual(retention.rows, [{ status: "RETENTION_POLICY_PENDING_BUSINESS_APPROVAL" }]);
+});
+
+test("CMS: only admins write content; drafts hidden from ordinary users; legacy anon inserts closed", async () => {
+  await db.query("insert into public.furniture_categories (name, slug, published) values ('Draft Cat', 'draft-cat', false), ('Live Cat', 'live-cat', true)");
+  await db.query("insert into public.company_profile default values on conflict do nothing");
+  for (const who of [anon, user]) {
+    await denied(as(who, (tx) => tx.query("insert into public.furniture_categories (name, slug, published) values ('x', 'x-' || gen_random_uuid(), true)")));
+    const changed = await as(who, (tx) => tx.query("update public.company_profile set name = 'hijack'")).then((r) => r.affectedRows ?? 0, () => 0);
+    assert.equal(changed, 0, `${who.role} cannot change the company profile`);
+    const names = (await as(who, (tx) => tx.query<{ name: string }>("select name from public.furniture_categories"))).rows.map((r) => r.name);
+    assert.ok(names.includes("Live Cat") && !names.includes("Draft Cat"), `${who.role} sees published only`);
+    for (const t of ["appointments", "callback_requests", "conversations", "messages"]) {
+      await denied(as(who, (tx) => tx.query(`insert into public.${t} default values`)), `${who.role} insert ${t}`);
+    }
+  }
+  const ownerNames = (await as(owner, (tx) => tx.query<{ name: string }>("select name from public.furniture_categories"))).rows.map((r) => r.name);
+  assert.ok(ownerNames.includes("Draft Cat"), "owner sees drafts");
+  await as(owner, (tx) => tx.query("insert into public.furniture_categories (name, slug, published) values ('Owner Cat', 'owner-cat', false)"));
+  await as(owner, (tx) => tx.query("delete from public.furniture_categories where slug = 'owner-cat'"));
+  const leftovers = await db.query("select policyname from pg_policies where schemaname = 'public' and (policyname like 'Authenticated users can manage%' or policyname like 'Service insert%')");
+  assert.deepEqual(leftovers.rows, []);
 });
