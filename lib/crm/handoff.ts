@@ -72,6 +72,25 @@ export function controlledTestLeadStore(supabase: SupabaseClient, now: () => Dat
 
 export type HandoffRun = { state: "DISABLED" | "STORE_UNAVAILABLE" | "RAN" | "TEST_LANE" | "FAILED"; result?: OutboxResult; code?: string; readiness?: ReturnType<typeof ghlReadiness> };
 
+/**
+ * TEST lane only (synthetic data): log GHL rejections with method, path (no query string), status
+ * and GHL's message so contract mismatches can be diagnosed. Never used for real leads, whose
+ * logs stay code-only.
+ */
+const testLaneFetch = (async (input: URL | RequestInfo, init?: RequestInit) => {
+  const response = await fetch(input, init);
+  if (!response.ok) {
+    let message = "";
+    try {
+      message = JSON.stringify(await response.clone().json()).slice(0, 500);
+    } catch {
+      message = "(non-JSON body)";
+    }
+    console.warn("[crm-handoff:test-lane] GHL rejected", init?.method ?? "GET", new URL(String(input)).pathname, response.status, message);
+  }
+  return response;
+}) as typeof fetch;
+
 const simulatedOutage = (async () => {
   throw new TypeError("simulated network failure");
 }) as unknown as typeof fetch;
@@ -89,7 +108,7 @@ export async function runCrmHandoff(batchSize = 10, options: { simulateOutage?: 
   const supabase = getSupabaseAdminClient();
   if (!supabase) return { state: "STORE_UNAVAILABLE" };
   const store = live ? supabaseLeadStore(supabase) : controlledTestLeadStore(supabase);
-  const client = new GhlHandoffClient(config, test && options.simulateOutage ? simulatedOutage : fetch);
+  const client = new GhlHandoffClient(config, test ? (options.simulateOutage ? simulatedOutage : testLaneFetch) : fetch);
   try {
     const result = await processOutbox(store, client, { fieldIds: config.fieldIds, batchSize });
     if (result.claimed) console.info(live ? "[crm-handoff]" : "[crm-handoff:test-lane]", JSON.stringify(result));
