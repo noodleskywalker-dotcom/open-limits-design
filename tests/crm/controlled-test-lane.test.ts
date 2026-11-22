@@ -82,23 +82,22 @@ test("test lane: off by default, independent of the live gate, and requires the 
   assert.equal(ghlHandoffConfig({ ...ENV, GHL_CONTROLLED_TEST_ENABLED: "true" }), null, "the test flag never opens the live handoff");
 });
 
-test("test lane: only synthetic identities qualify (reserved domain, TEST name, no phone)", () => {
-  assert.ok(isControlledTestLead({ name: "TEST Enquiry", email: "ol-ghl-test-abcd1234@example.com", phone: null }));
+test("test lane: only synthetic identities qualify (reserved domain and TEST name)", () => {
+  assert.ok(isControlledTestLead({ name: "TEST Enquiry", email: "ol-ghl-test-abcd1234@example.com" }));
   for (const bad of [
     { name: "Real Person", email: "ol-ghl-test-abcd1234@example.com" },
     { name: "TEST Enquiry", email: "someone@gmail.com" },
     { name: "TEST Enquiry", email: "ol-ghl-test-abcd1234@example.com.evil.qa" },
     { name: "TEST Enquiry", email: "OL-GHL-TEST-abcd1234@example.com" },
-    { name: "TEST Enquiry", email: "ol-ghl-test-abcd1234@example.com", phone: "+97455501234" },
     { name: null, email: null }
-  ]) assert.equal(isControlledTestLead({ phone: null, ...bad }), false, JSON.stringify(bad));
+  ]) assert.equal(isControlledTestLead(bad), false, JSON.stringify(bad));
 });
 
 test("test lane: sends ONLY the TEST lead to GHL; real pending leads are never read into the worker or modified", async () => {
   Object.assign(process.env, ENV, { GHL_CONTROLLED_TEST_ENABLED: "true" });
   const real = lead("real-1", "Real Client", "client@gmail.com");
-  const lookalike = lead("real-2", "TEST but real", "ol-ghl-test-abcd1234@example.com", { phone: "+97455501234" });
-  const synthetic = lead("test-1", "TEST Enquiry", "ol-ghl-test-abcd1234@example.com");
+  const lookalike = lead("real-2", "Real Client", "ol-ghl-test-abcd1234@example.com"); // test address, real-looking name
+  const synthetic = lead("test-1", "TEST Enquiry", "ol-ghl-test-abcd1234@example.com", { phone: "+97455501234" });
   const before = JSON.stringify([real, lookalike]);
   const db = fakeSupabase([real, lookalike, synthetic]);
   (globalThis as { __supabaseFake?: unknown }).__supabaseFake = db;
@@ -112,6 +111,7 @@ test("test lane: sends ONLY the TEST lead to GHL; real pending leads are never r
   assert.equal(JSON.stringify([real, lookalike]), before, "real rows untouched");
   assert.deepEqual([...new Set(db.writes)], ["test-1"]);
   assert.ok(calls.every((c) => !c.body.includes("client@gmail.com") && !c.path.includes("gmail")));
+  assert.ok(calls.every((c) => !c.body.includes("55501234") && !c.path.includes("55501234") && !c.path.includes("number=")), "TEST lane never sends or looks up a phone");
   assert.deepEqual(calls.map((c) => `${c.method} ${c.path}`), ["GET /contacts/search/duplicate", "POST /contacts/", "GET /opportunities/search", "POST /opportunities/"]);
 });
 

@@ -24,10 +24,10 @@ export function supabaseLeadStore(supabase: SupabaseClient): LeadStore {
   };
 }
 
-/** Synthetic identities used for controlled production tests. No phone, reserved domain, "TEST " name. */
+/** Synthetic identities used for controlled production tests: reserved example.com address and a "TEST " name. */
 export const CONTROLLED_TEST_EMAIL = /^ol-ghl-test-[a-z0-9]{4,24}@example\.com$/;
-export function isControlledTestLead(lead: { name: string | null; email: string | null; phone?: string | null }) {
-  return Boolean(lead.email && CONTROLLED_TEST_EMAIL.test(lead.email) && lead.name?.startsWith("TEST ") && !lead.phone);
+export function isControlledTestLead(lead: { name: string | null; email: string | null }) {
+  return Boolean(lead.email && CONTROLLED_TEST_EMAIL.test(lead.email) && lead.name?.startsWith("TEST "));
 }
 
 /**
@@ -58,7 +58,9 @@ export function controlledTestLeadStore(supabase: SupabaseClient, now: () => Dat
       const { error: leaseError } = await supabase.from("leads").update({ crm_lease_until: until }).in("id", ids);
       if (leaseError) throw Object.assign(new Error("STORE_CLAIM_FAILED"), { code: "STORE_CLAIM_FAILED" });
       ids.forEach((id) => claimed.add(id));
-      return due.map(pick);
+      // The phone is never sent from the TEST lane: a made-up number could match a real GHL contact
+      // in the duplicate lookup. TEST contacts are identified by their reserved email only.
+      return due.map((row) => ({ ...pick(row), phone: null }));
     },
     async update(id, patch) {
       if (!claimed.has(id)) throw Object.assign(new Error("STORE_UPDATE_FAILED"), { code: "STORE_UPDATE_FAILED" });
